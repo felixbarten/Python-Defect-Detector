@@ -20,10 +20,10 @@ public class TrafficHandler {
 //			String msg = connection.getResponseMessage();
 			InputStream is = status == 200 ? connection.getInputStream() : connection.getErrorStream();
 			if (status == 200) {
-				System.out.println("URL [" + targetUrl + "] PASSED");
+				System.out.println(ScraperUtil.getTimestamp() + "URL [" + targetUrl + "] PASSED");
 			}
 			else {
-				System.err.println("URL [" + targetUrl + "] FAILED: (" + status + ") ");
+				System.err.println(ScraperUtil.getTimestamp() + "URL [" + targetUrl + "] FAILED: (" + status + ") ");
 			}
 			response = processInput(is);
 

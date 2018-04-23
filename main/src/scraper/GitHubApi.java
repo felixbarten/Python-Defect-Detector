@@ -24,7 +24,7 @@ public class GitHubApi {
 	}
 
 	public void updateRepoInfo(GitHubRepo repo) {
-		String resp = get("/repos/" + repo.getOwner() + '/' + repo.getName());
+		String resp = get("/repos/" + repo.getOwner() + '/' + repo.getName()); // 1 request to API . Receives project information.  
 		JSONObject responsePart = new JSONObject(resp);
 
 		if (responsePart.has("parent")) {
@@ -42,7 +42,7 @@ public class GitHubApi {
 	}
 
 	public Map<String, Long> getLanguageUse(GitHubRepo repo) {
-		String resp = this.get("/repos/" + repo.getOwner() + '/' + repo.getName() + "/languages");
+		String resp = this.get("/repos/" + repo.getOwner() + '/' + repo.getName() + "/languages"); // 1 API request. checks language bytes for project. 
 		JSONObject responsePart = new JSONObject(resp);
 		Map<String, Long> langUse = new HashMap<>();
 		for (String lang : responsePart.keySet()) {
@@ -78,5 +78,19 @@ public class GitHubApi {
 		catch (UnsupportedEncodingException e) {
 			return s;
 		}
+	}
+	
+	public Map<String, Long> getRateLimit() {
+		String resp = this.get("/rate_limit");
+		JSONObject responsePart = new JSONObject(resp);
+		Map<String, Long> rateMap = new HashMap<>();
+
+		if (responsePart.has("rate")) {
+			JSONObject rate = responsePart.getJSONObject("rate");
+			for (String key : rate.keySet()) {
+				rateMap.put(key, rate.getLong(key));
+			}
+		}
+		return rateMap;
 	}
 }

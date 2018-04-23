@@ -1,5 +1,6 @@
 # Test data
 data/*
+scraper/*
 notes/*
 test-data/*
 
@@ -20,3 +21,4 @@ build/*
 
 #Git API Token
 token.txt
+/build/

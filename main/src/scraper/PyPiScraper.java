@@ -25,6 +25,7 @@ public class PyPiScraper {
 	public List<GitHubRepo> getAllGitRepoLinks() {
 		Set<String> allGitRepoLinks = new HashSet<>();
 		for (String url : this.urlsToCheck) {
+			System.out.println(ScraperUtil.getTimestamp() + "Fetching from: " + url);
 			String strResp = TrafficHandler.performGet(url);
 			Document doc = Jsoup.parse(strResp, url);
 			List<String> packageUrls = this.processPyPiListHtml(doc.child(0));
@@ -37,7 +38,8 @@ public class PyPiScraper {
 				);
 			}
 		}
-		allGitRepoLinks.forEach(System.out::println);
+		System.out.println(ScraperUtil.getTimestamp() + "Finished Fetching results from PyPi");
+		allGitRepoLinks.forEach(System.out::println); // output gathered urls -> no web access here. In next step. 
 		return allGitRepoLinks.stream().map(rl -> new GitHubRepo(rl)).collect(Collectors.toList());
 	}
 
@@ -62,7 +64,7 @@ public class PyPiScraper {
 					.collect(Collectors.toSet()));
 		}
 		else {
-			System.err.println("REQUEST TO [" + piPyPackageUrl + "] FAILED");
+			System.err.println(ScraperUtil.getTimestamp() + "REQUEST TO [" + piPyPackageUrl + "] FAILED");
 		}
 		return links;
 	}
