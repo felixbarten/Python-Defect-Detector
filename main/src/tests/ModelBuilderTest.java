@@ -17,7 +17,7 @@ public class ModelBuilderTest {
 
 	@Test
 	public void collectClasses() {
-		Map<String, Class> classes = TestHelper.getClasses("collect_classes");
+		Map<String, Class> classes = TestHelper.getClasses("main/src/tests/samples/collect_classes");
 		assert (classes.size() == 10);
 
 		assert (classes.keySet().contains("First"));
@@ -34,7 +34,7 @@ public class ModelBuilderTest {
 
 	@Test
 	public void collectVariables() {
-		Map<String, Class> classes = TestHelper.getClasses("collect_variables/collect_variables.py");
+		Map<String, Class> classes = TestHelper.getClasses("main/src/tests/samples/collect_variables/collect_variables.py");
 
 		Class one = classes.get("ClsOne");
 		Set<Variable> oneVars = one.getDefinedVariablesSet();
@@ -47,7 +47,7 @@ public class ModelBuilderTest {
 
 	@Test
 	public void collectMethods() {
-		Map<String, Class> classes = TestHelper.getClasses("collect_methods/collect_methods.py");
+		Map<String, Class> classes = TestHelper.getClasses("main/src/tests/samples/collect_methods/collect_methods.py");
 		assert (classes.size() == 2);
 
 		Class one = classes.get("ClsOne");
@@ -60,7 +60,7 @@ public class ModelBuilderTest {
 
 	@Test
 	public void collectGlobals() {
-		Map<String, Class> classes = TestHelper.getClasses("globals");
+		Map<String, Class> classes = TestHelper.getClasses("main/src/tests/samples/globals");
 
 		Map<String, Variable> srcCls = this.sortVarsByName(classes.get("SrcCls").getReferencedGlobalsSet());
 		Map<String, Variable> usrCls = this.sortVarsByName(classes.get("UsrCls").getReferencedGlobalsSet());
@@ -84,7 +84,7 @@ public class ModelBuilderTest {
 
 	@Test
 	public void checkMethodNonClassVarUsage() {
-		Map<String, Class> classes = TestHelper.getClasses("method_variables");
+		Map<String, Class> classes = TestHelper.getClasses("main/src/tests/samples/method_variables");
 
 		Map<String, Subroutine> userCls = this.sortSubroutinesByName(classes.get("UserCls").getDefinedSubroutinesSet());
 		Map<String, Subroutine> userCls2 = this.sortSubroutinesByName(classes.get("UserCls2").getDefinedSubroutinesSet());
@@ -98,7 +98,7 @@ public class ModelBuilderTest {
 
 	@Test
 	public void checkMethodClassVarUsage() {
-		Map<String, Class> classes = TestHelper.getClasses("method_variables");
+		Map<String, Class> classes = TestHelper.getClasses("main/src/tests/samples/method_variables");
 		Map<String, Subroutine> userCls = this.sortSubroutinesByName(classes.get("UserCls").getDefinedSubroutinesSet());
 
 		assert (userCls.get("method_three").getReferencedInsideVariables().size() == 1);
@@ -107,7 +107,7 @@ public class ModelBuilderTest {
 
 	@Test
 	public void checkParentDependencies() {
-		Map<String, Class> classes = TestHelper.getClasses("parents");
+		Map<String, Class> classes = TestHelper.getClasses("main/src/tests/samples/parents");
 
 		Class baseCls = classes.get("BaseCls");
 		Class subBaseCls = classes.get("SubBaseCls");
@@ -122,7 +122,7 @@ public class ModelBuilderTest {
 
 	@Test
 	public void checkDependencies() {
-		Map<String, Class> classes = TestHelper.getClasses("dependencies");
+		Map<String, Class> classes = TestHelper.getClasses("main/src/tests/samples/dependencies");
 
 		Class main = classes.get("Main");
 		Set<Class> dependencies = main.getReferencedClassesSet();
@@ -141,7 +141,7 @@ public class ModelBuilderTest {
 
 	@Test
 	public void checkCyclicDependencies() {
-		Map<String, Class> classes = TestHelper.getClasses("cyclic_dependencies");
+		Map<String, Class> classes = TestHelper.getClasses("main/src/tests/samples/cyclic_dependencies");
 
 		Class cls1 = classes.get("ClassOne");
 		Class cls2 = classes.get("ClassTwo");

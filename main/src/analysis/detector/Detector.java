@@ -62,6 +62,13 @@ public abstract class Detector {
 		}
 	}
 
+	/**
+	 * This method is called after DeserializeData()
+	 * @param gitLocs
+	 * @param csvCreator
+	 * @param csvName
+	 * @throws IOException
+	 */
 	public void finish(GitLocationProcessor gitLocs, CsvCreator csvCreator, String csvName) throws IOException {
 		this.defects.deserialize(false);
 		String projectPath = this.defects.getNextKey();
@@ -113,6 +120,10 @@ public abstract class Detector {
 
 	}
 
+	/**
+	 * Loops through the Storage maps in DataStores and writes them to file.
+	 * @throws IOException
+	 */
 	public void deserializeData() throws IOException {
 		for (analysis.storage.Map m : this.dataStores.values()) {
 			m.deserialize();
@@ -120,6 +131,15 @@ public abstract class Detector {
 
 	}
 
+	/**
+	 * What does this do?
+	 * 
+	 * If there is a suspects.properties file and if it contains properties it can return the file name in the property.
+	 * If there is no suspects.properties file a new filename will be generated.
+	 * 
+	 * @return String Filename
+	 * @throws IOException
+	 */
 	protected String getSuspectFilePath() throws IOException {
 		Properties suspectConfig = Settings.getSuspectConfig();
 		boolean exists = suspectConfig.containsKey(this.getName());
@@ -127,7 +147,20 @@ public abstract class Detector {
 		return exists ? suspectConfig.getProperty(this.getName()) : FileHelper.stampedFileName(folder, this.getName(), DATA_STORES_EXTENSION);
 	}
 
-	protected String getStoreFilePath(String type) throws IOException {
+	
+	/**
+	 * What does this do? 
+	 * 
+	 * I think it does: checks the maps.properties to see if there is a property like.... LCOM and then if there is retrieve those values?
+	 * 
+	 * If there is no property a new filename is created and data is stored there.
+	 * 
+	 * 
+	 * @param type
+	 * @return
+	 * @throws IOException
+	 */
+	protected String getDataStoreFilePath(String type) throws IOException {
 		Properties mapsConfig = Settings.getMapsConfig();
 		String fullName = this.getName() + "_" + type;
 		boolean exists = mapsConfig.containsKey(fullName);

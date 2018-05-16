@@ -18,7 +18,7 @@ public class LargeClassDecorDetector extends Detector {
 
 	@Override
 	public void addDataStores() throws IOException {
-		this.addDataStore(METVARS, new PrimitiveIntMap(this.getStoreFilePath(METVARS)));
+		this.addDataStore(METVARS, new PrimitiveIntMap(this.getDataStoreFilePath(METVARS)));
 	}
 
 	@Override

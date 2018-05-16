@@ -21,8 +21,8 @@ public class DataClassDetector extends Detector {
 
 	@Override
 	public void addDataStores() throws IOException {
-		this.addDataStore(ACCESS, new PrimitiveIntMap(this.getStoreFilePath(ACCESS)));
-		this.addDataStore(PUBF, new PrimitiveIntMap(this.getStoreFilePath(PUBF)));
+		this.addDataStore(ACCESS, new PrimitiveIntMap(this.getDataStoreFilePath(ACCESS)));
+		this.addDataStore(PUBF, new PrimitiveIntMap(this.getDataStoreFilePath(PUBF)));
 	}
 
 	@Override

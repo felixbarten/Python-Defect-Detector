@@ -7,13 +7,13 @@ import model.Subroutine;
 import java.io.IOException;
 
 /**
- * Created by Nik on 10-11-2015
+ * Created by felixb on 9-4-2018
  */
-public class LongParamListDetector extends Detector {
+public class InappropriateIntimacyDetector extends Detector {
 
 	private final static String PARAMS = "PARAMS";
 
-	public LongParamListDetector() throws IOException {
+	public InappropriateIntimacyDetector() throws IOException {
 		super();
 	}
 
@@ -35,6 +35,6 @@ public class LongParamListDetector extends Detector {
 
 	@Override
 	protected String getName() {
-		return "Long Parameter List";
+		return "Inappropriate Intimacy";
 	}
 }

@@ -26,7 +26,7 @@ public class FeatureEnvyLiShatnawiDetector extends Detector {
 
 	@Override
 	public void addDataStores() throws IOException {
-		this.addDataStore(AIDS, new PrimitiveIntMap(this.getStoreFilePath(AIDS)));
+		this.addDataStore(AIDS, new PrimitiveIntMap(this.getDataStoreFilePath(AIDS)));
 	}
 
 	@Override

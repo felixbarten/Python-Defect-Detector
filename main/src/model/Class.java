@@ -181,4 +181,28 @@ public class Class extends ContentContainer {
 		result = 31 * result + this.parent.hashCode();
 		return result;
 	}
+	
+	public VarDefinitions getPrivateParentVars() {
+		VarDefinitions privVars = new VarDefinitions();
+		
+		for( Variable v : inheritedVars.getAsSet()) {
+			if (v.isPrivate()) privVars.add(v);
+		}
+		
+		return privVars;
+	}
+
+	/**
+	 * Get class Cyclomatic Complexity
+	 * @return Cyclomatic Complexity
+	 */
+	public Integer getCC() {
+		Integer complexity = 0; 
+		List<Subroutine> ms = this.definedSubroutines.values().stream().collect(Collectors.toList());
+		for (Subroutine s : ms) {
+			//complexity += s.getCC();
+		}
+		
+		return complexity;
+	}
 }

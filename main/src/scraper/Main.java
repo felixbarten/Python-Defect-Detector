@@ -24,6 +24,11 @@ public class Main {
 	// "https://pypi.python.org/pypi?:action=browse&show=all&c=640" v3.7 800 projects
 	// added categories for v3.6, v3.7
 	// from: https://pypi.python.org/pypi?:action=browse&c=595
+	/**
+	 * Main method to scrape projects. 
+	 * @param args first argument is the token, all arguments afterwards are URLs to scrape.
+	 * @throws IOException
+	 */
 	public static void main(String[] args) throws IOException {
 
 		Properties config = Settings.getConfig();
@@ -33,6 +38,7 @@ public class Main {
 		System.setOut(out);
 		System.setErr(err);
 
+		@SuppressWarnings("resource")
 		PrintStream allLinks = new PrintStream(new FileOutputStream(FileHelper.stampedFileName("all_links", "txt")));
 		PrintStream databaseScript = new PrintStream(new FileOutputStream(FileHelper.stampedFileName("git_locations", "csv")));
 		PrintStream cloneScript = new PrintStream(new FileOutputStream(FileHelper.stampedFileName("get_data", "sh")));
@@ -54,6 +60,12 @@ public class Main {
 				.forEach(r -> addToScript(cloneScript, databaseScript, r));
 	}
 
+	/**
+	 * Prints the repository data to output files.
+	 * @param cloneScript Printstream with location of the Shell git clone script
+	 * @param repoInfo PrintStream with the information of the project and the location on disk after cloning.
+	 * @param repo Repository information object.
+	 */
 	private static void addToScript(PrintStream cloneScript, PrintStream repoInfo, GitHubRepo repo) {
 		String diskLocation = "data/" + repo.getName() + "_" + UUID.randomUUID();
 		cloneScript.println("git clone " + repo.getUrl() + " " + diskLocation);
@@ -61,6 +73,12 @@ public class Main {
 		System.out.println(ScraperUtil.getTimestamp() + "Added repo: " + repo.getName());
 	}
 
+	/**
+	 * Processes a list of projects from PyPi and checks if they have a GitHub Link and if the project has a large amount of Python code.
+	 * @param repos List of Pypi projects to check
+	 * @param token GitHub API token
+	 * @return Map with URL's as key and Repository objects as value. 
+	 */
 	public static Map<String, GitHubRepo> getValidGitHubRepos(List<GitHubRepo> repos, String token) {
 		Map<String, GitHubRepo> results = new HashMap<>();
 		GitHubApi gitHubApi = new GitHubApi(token);
@@ -130,6 +148,14 @@ public class Main {
 		return results;
 	}
 	
+	/**
+	 * Resyncs the API rate limit from projected values to actual values. 
+	 * Due to the calls in getValidGitHubRepos() that rate limit counter can be incremented higher than the actual limit. 
+	 * @param api API Object that performs calls.
+	 * @param current Current amount of requests attempted this time cycle.
+	 * @param max Maximum requests allowed per time cycle.
+	 * @return Current requests attempted, to be used to calculate how many requests can be performed in cycle. 
+	 */
 	private static long resyncRateLimit(GitHubApi api, long current, long max) {
 		Map<String, Long> rateLimit = api.getRateLimit();
 		if (rateLimit.containsKey("remaining") && rateLimit.get("remaining") > 0) {

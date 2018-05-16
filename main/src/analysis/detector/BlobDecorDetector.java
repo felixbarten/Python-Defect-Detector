@@ -33,9 +33,9 @@ public class BlobDecorDetector extends Detector {
 
 	@Override
 	public void addDataStores() throws IOException {
-		this.addDataStore(RAC, new SetIntMap(this.getStoreFilePath(RAC)));
-		this.addDataStore(METVARS, new PrimitiveIntMap(this.getStoreFilePath(METVARS)));
-		this.addDataStore(LCOM, new PrimitiveIntMap(this.getStoreFilePath(LCOM)));
+		this.addDataStore(RAC, new SetIntMap(this.getDataStoreFilePath(RAC)));
+		this.addDataStore(METVARS, new PrimitiveIntMap(this.getDataStoreFilePath(METVARS)));
+		this.addDataStore(LCOM, new PrimitiveIntMap(this.getDataStoreFilePath(LCOM)));
 	}
 
 	@Override

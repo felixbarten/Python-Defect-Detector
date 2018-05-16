@@ -24,12 +24,12 @@ public class Main {
 	private static final String CSV_NAME = "RESULTS";
 
 	public static void main(String[] args) throws IOException {
-
 		Properties config = Settings.getConfig();
 		createLocations(config);
 
-		boolean filtered = config.containsKey("locations.data.input.filter");
-
+		//boolean filtered = config.containsKey("locations.data.input.filter");
+		boolean filtered = false;
+		
 		PrintStream out = new PrintStream(new FileOutputStream(FileHelper.stampedFileName(config.getProperty("locations.log.out"), "out", "log")));
 		PrintStream err = new PrintStream(new FileOutputStream(FileHelper.stampedFileName(config.getProperty("locations.log.error"), "err", "log")));
 		System.setOut(out);
@@ -38,9 +38,13 @@ public class Main {
 		Register register = new Register();
 		registerDetectors(register);
 
+		System.out.println("Reading Git Location data");
 		gitLocs = new GitLocationProcessor(config.getProperty("locations.data.input.disklocations"));
 		gitLocs.readData();
+		System.out.println("Finished reading Git Location data");
 
+		
+		// Filtered list EXCLUDES projects from parsing????
 		List<String> projects = Collections.emptyList();
 		if (filtered) {
 			BufferedReader br = new BufferedReader(new FileReader(config.getProperty("locations.data.input.filter")));
@@ -50,6 +54,8 @@ public class Main {
 
 		File projectsFolder = new File(config.getProperty("locations.data.input"));
 		for (File file : projectsFolder.listFiles()) {
+			//System.out.println(file.isDirectory());
+			//System.out.print(file.getAbsolutePath());
 			if (file.isDirectory() && (!filtered || projects.contains(file.getAbsolutePath()))) {
 				processProject(register, file);
 			}
@@ -92,7 +98,7 @@ public class Main {
 	}
 
 	private static Project createProject(File projectFolder) {
-//		System.out.println("Project: " + projectFolder.getAbsolutePath());
+		//System.out.println("Project: " + projectFolder.getAbsolutePath());
 		List<String> allFiles = FileHelper.getPythonFilePaths(projectFolder);
 		Map<String, Module> trees = File2Tree.getAsts(allFiles);
 		ModelBuilder mb = new ModelBuilder(projectFolder, trees.values());

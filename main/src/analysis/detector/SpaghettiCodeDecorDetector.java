@@ -31,8 +31,8 @@ public class SpaghettiCodeDecorDetector extends Detector {
 
 	@Override
 	public void addDataStores() throws IOException {
-		this.addDataStore(MLOCS, new ListMap(this.getStoreFilePath(MLOCS)));
-		this.addDataStore(MNOPARAM, new PrimitiveIntMap(this.getStoreFilePath(MNOPARAM)));
+		this.addDataStore(MLOCS, new ListMap(this.getDataStoreFilePath(MLOCS)));
+		this.addDataStore(MNOPARAM, new PrimitiveIntMap(this.getDataStoreFilePath(MNOPARAM)));
 	}
 
 	@Override

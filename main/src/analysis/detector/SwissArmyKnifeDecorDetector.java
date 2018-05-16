@@ -18,7 +18,7 @@ public class SwissArmyKnifeDecorDetector extends Detector {
 
 	@Override
 	public void addDataStores() throws IOException {
-		this.addDataStore(PARENTS, new PrimitiveIntMap(this.getStoreFilePath(PARENTS)));
+		this.addDataStore(PARENTS, new PrimitiveIntMap(this.getDataStoreFilePath(PARENTS)));
 	}
 
 	@Override

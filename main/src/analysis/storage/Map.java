@@ -24,6 +24,11 @@ public abstract class Map<T> {
 	protected String currentKey;
 	protected String currentVal;
 
+	/**
+	 * Constructor for Map objects. If file already exists don't create a new one.
+	 * @param filePath
+	 * @throws IOException
+	 */
 	public Map(String filePath) throws IOException {
 		this.filePath = filePath;
 		File file = new File(this.filePath);
@@ -56,9 +61,17 @@ public abstract class Map<T> {
 	}
 
 	public void deserialize() throws IOException {
-	this.deserialize(true);
+		this.deserialize(true);
 	}
 
+	/**
+	 * This method closes the printstream if it doesn't exist. 
+	 * Opens a new reader for the filepath and if the argument is true deserializes the data to the reader's file. 
+	 * If it's false only the reader is initiated.
+	 * 
+	 * @param Boolean all
+	 * @throws IOException
+	 */
 	public void deserialize(Boolean all) throws IOException {
 		if (!this.existing) {
 			this.stream.close();

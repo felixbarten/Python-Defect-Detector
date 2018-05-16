@@ -18,7 +18,7 @@ public class DataClassDecorDetector extends Detector {
 
 	@Override
 	public void addDataStores() throws IOException {
-		this.addDataStore(ACCESS, new PrimitiveIntMap(this.getStoreFilePath(ACCESS)));
+		this.addDataStore(ACCESS, new PrimitiveIntMap(this.getDataStoreFilePath(ACCESS)));
 	}
 
 	@Override

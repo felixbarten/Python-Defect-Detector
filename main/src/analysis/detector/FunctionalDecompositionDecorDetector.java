@@ -24,7 +24,7 @@ public class FunctionalDecompositionDecorDetector extends Detector {
 
 	@Override
 	public void addDataStores() throws IOException {
-		this.addDataStore(RCPF, new SetIntMap(this.getStoreFilePath(RCPF)));
+		this.addDataStore(RCPF, new SetIntMap(this.getDataStoreFilePath(RCPF)));
 	}
 
 	@Override

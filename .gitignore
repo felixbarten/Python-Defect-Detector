@@ -22,3 +22,4 @@ build/*
 #Git API Token
 token.txt
 /build/
+/target/

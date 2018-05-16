@@ -21,6 +21,9 @@ public class DesignDefect {
 		return this.defect;
 	}
 
+	/**
+	 * Check if object o is a design defect and if it is if it is the same object as 'this'. 
+	 */
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {

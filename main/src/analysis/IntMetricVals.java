@@ -33,10 +33,7 @@ public class IntMetricVals {
 	private Double q3;
 
 	public IntMetricVals(String type) throws IOException {
-		Properties metricsConfig = Settings.getMetricsConfig();
-		boolean exists = metricsConfig.containsKey(type);
-		String folder = Settings.getConfig().getProperty("locations.data.output");
-		this.valuesFileName = exists ? metricsConfig.getProperty(type) : FileHelper.stampedFileName(folder, type, METRIC_VALS_EXTENSION);
+		this.valuesFileName = getValuesFileName(type);
 
 		File file = new File(this.valuesFileName);
 		this.existing = file.exists();
@@ -157,6 +154,10 @@ public class IntMetricVals {
 		this.values = Collections.emptyList();
 	}
 
+	/**
+	 * Load existing values from disk and store them internally. 
+	 * @throws IOException
+	 */
 	private void loadValuesAndHandleFile() throws IOException {
 		if (!this.existing) {
 			this.valueStream.close();
@@ -197,5 +198,19 @@ public class IntMetricVals {
 		index = Math.min(index, maxSize);
 		index = Math.max(index, 0);
 		return index;
+	}
+	
+	/**
+	 * Checks if metrics configuration exists, retrieves filename if it is configured. 
+	 * Returns filename for storing/retrieving metrics.
+	 * @param String type
+	 * @return String filename
+	 * @throws IOException
+	 */
+	private String getValuesFileName(String type) throws IOException {
+		Properties metricsConfig = Settings.getMetricsConfig();
+		boolean exists = metricsConfig.containsKey(type);
+		String folder = Settings.getConfig().getProperty("locations.data.output");
+		return exists ? metricsConfig.getProperty(type) : FileHelper.stampedFileName(folder, type, METRIC_VALS_EXTENSION);
 	}
 }

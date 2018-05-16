@@ -122,4 +122,10 @@ public class Subroutine extends ContentContainer {
 		result = 31 * result + this.parent.hashCode();
 		return result;
 	}
+
+	public Integer getCC() {
+
+		// TODO
+		return 0;
+	}
 }

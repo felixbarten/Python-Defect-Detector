@@ -19,7 +19,7 @@ public class LargeClassDetector extends Detector {
 
 	@Override
 	public void addDataStores() throws IOException {
-		this.addDataStore(LOC, new PrimitiveIntMap(this.getStoreFilePath(LOC)));
+		this.addDataStore(LOC, new PrimitiveIntMap(this.getDataStoreFilePath(LOC)));
 	}
 
 	@Override

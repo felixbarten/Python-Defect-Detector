@@ -14,6 +14,7 @@ import java.util.Set;
 public class Metrics {
 
 	private final Collector collector;
+	// Variable to keep track of when the metrics are finished collecting. 
 	private boolean finishedCollecting;
 
 	private final Map<Metric, IntMetricVals> intMetrics;
@@ -35,6 +36,7 @@ public class Metrics {
 		this.intMetrics.put(Metric.SUBROUTINE_LOC, new IntMetricVals(Metric.SUBROUTINE_LOC.toString()));
 		this.intMetrics.put(Metric.SUBROUTINE_PARAMS, new IntMetricVals(Metric.SUBROUTINE_PARAMS.toString()));
 		this.intMetrics.put(Metric.SUBROUTINE_AID, new IntMetricVals(Metric.SUBROUTINE_AID.toString()));
+		this.intMetrics.put(Metric.CLASS_CC, new IntMetricVals(Metric.CLASS_CC.toString()));
 	}
 
 	public void register(ContentContainer contentContainer) {
@@ -97,6 +99,7 @@ public class Metrics {
 			getCounter(Metric.CLASS_PUBLIC_FIELDS).add(publicFields.intValue());
 			Long privateFields = m.getDefinedVarsInclParentsVars().getAsSet().stream().filter(Variable::isPrivate).count();
 			getCounter(Metric.CLASS_PRIVATE_FIELDS).add(privateFields.intValue());
+			getCounter(Metric.CLASS_CC).add(m.getCC());
 			return null;
 		}
 

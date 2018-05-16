@@ -1,6 +1,7 @@
 package util;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
@@ -24,10 +25,10 @@ public class Settings {
 	}
 
 	private Settings() throws IOException {
-		this.config = this.load("main\\src\\config.properties");
-		this.mapsConfig = this.loadOptional("main\\src\\maps.properties");
-		this.metricsConfig = this.loadOptional("main\\src\\metrics.properties");
-		this.suspectConfig = this.loadOptional("main\\src\\suspects.properties");
+		this.config = this.load("config\\config2.properties");
+		this.mapsConfig = this.loadOptional("config\\maps.properties");
+		this.metricsConfig = this.loadOptional("config\\metrics.properties");
+		this.suspectConfig = this.loadOptional("config\\suspects.properties");
 	}
 
 	public static Properties getConfig() throws IOException {
@@ -52,7 +53,11 @@ public class Settings {
 
 	private Properties loadOptional(String fileName) {
 		try {
+			System.out.println("Loading optional properties file: " + fileName + ".");
 			return this.load(fileName);
+		}
+		catch (FileNotFoundException e) {
+			System.out.println("Optional properties file: " + fileName + " was not found.");
 		}
 		catch (IOException e) {
 			e.printStackTrace();
