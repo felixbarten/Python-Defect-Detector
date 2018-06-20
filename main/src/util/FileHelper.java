@@ -24,19 +24,70 @@ public class FileHelper {
 			file.mkdir();
 		}
 	}
-
-	public static String stampedFileName(String fileName, String extension) {
+	
+	/**
+	 * Creates files in a date subdirectory when enabled. 
+	 * @param path
+	 * @param useDateSubDirs
+	 */
+	public static void createLocation(String path, Boolean useDateSubDirs) {
 		Date now = new Date();
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-SSS");
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		String date = dateFormat.format(now);
-		return date + "_" + fileName + "." + extension;
+		
+		File file;
+		if (useDateSubDirs) {
+			file = new File(path + "/" + date);
+			file.mkdirs();
+		}	else {
+			file = new File(path);
+		}
+		
+		if (!file.isDirectory()) {
+			createLocation(file.getParent());
+		}
+		if (file.isDirectory() && !file.exists()) {
+			createLocation(file.getParent());
+			file.mkdir();
+		}
 	}
 
+	/**
+	 * Creates a datetime stamped file name
+	 * @param fileName
+	 * @param extension
+	 * @return String filename
+	 */
+	public static String stampedFileName(String fileName, String extension) {
+		Date now = new Date();
+		SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+		String datetime = timeFormat.format(now);
+		return datetime + "_" + fileName + "." + extension;
+	}
+
+	/**
+	 * Creates time stamped filenames in a date subdirectory.
+	 * @param directory
+	 * @param fileName
+	 * @param extension
+	 * @return
+	 */
 	public static String stampedFileName(String directory, String fileName, String extension) {
 		Date now = new Date();
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-SSS");
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		String date = dateFormat.format(now);
-		return directory + "/" + date + "_" + fileName + "." + extension;
+		
+		SimpleDateFormat timeFormat = new SimpleDateFormat("HH-mm-SSS");
+		String time = timeFormat.format(now);
+		createDateDir(directory + "/" + date + "/");
+		return directory + "/" + date + "/" + time + "_" + fileName + "." + extension;
+	}
+	
+	private static void createDateDir(String path) {
+		File file = new File(path);
+		if(!file.exists() && file.isDirectory()) {
+			file.mkdir();
+		}
 	}
 
 	public static List<String> getPythonFilePaths(List<String> paths) {

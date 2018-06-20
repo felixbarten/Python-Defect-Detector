@@ -1,9 +1,11 @@
-// Generated from D:/intellij_projects/thesis/main/grammar\Python.g4 by ANTLR 4.5.1
-package gen;
+// Generated from Python.g4 by ANTLR 4.5
 
+	package gen;
+	
     import java.util.List;
     import java.util.ArrayList;
 
+import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
@@ -19,539 +21,569 @@ public interface PythonVisitor<T> extends ParseTreeVisitor<T> {
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitSingle_input(PythonParser.Single_inputContext ctx);
+	T visitSingle_input(@NotNull PythonParser.Single_inputContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#file_input}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFile_input(PythonParser.File_inputContext ctx);
+	T visitFile_input(@NotNull PythonParser.File_inputContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#eval_input}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitEval_input(PythonParser.Eval_inputContext ctx);
+	T visitEval_input(@NotNull PythonParser.Eval_inputContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#decorator}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDecorator(PythonParser.DecoratorContext ctx);
+	T visitDecorator(@NotNull PythonParser.DecoratorContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#decorators}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDecorators(PythonParser.DecoratorsContext ctx);
+	T visitDecorators(@NotNull PythonParser.DecoratorsContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#decorated}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDecorated(PythonParser.DecoratedContext ctx);
+	T visitDecorated(@NotNull PythonParser.DecoratedContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#name}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitName(PythonParser.NameContext ctx);
+	T visitName(@NotNull PythonParser.NameContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#async_funcdef}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitAsync_funcdef(PythonParser.Async_funcdefContext ctx);
+	T visitAsync_funcdef(@NotNull PythonParser.Async_funcdefContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#funcdef}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFuncdef(PythonParser.FuncdefContext ctx);
+	T visitFuncdef(@NotNull PythonParser.FuncdefContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#parameters}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitParameters(PythonParser.ParametersContext ctx);
+	T visitParameters(@NotNull PythonParser.ParametersContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#typedargslist}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitTypedargslist(PythonParser.TypedargslistContext ctx);
+	T visitTypedargslist(@NotNull PythonParser.TypedargslistContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#tfpdef}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitTfpdef(PythonParser.TfpdefContext ctx);
+	T visitTfpdef(@NotNull PythonParser.TfpdefContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#varargslist}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitVarargslist(PythonParser.VarargslistContext ctx);
+	T visitVarargslist(@NotNull PythonParser.VarargslistContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#vfpdef}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitVfpdef(PythonParser.VfpdefContext ctx);
+	T visitVfpdef(@NotNull PythonParser.VfpdefContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#vfplist}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitVfplist(PythonParser.VfplistContext ctx);
+	T visitVfplist(@NotNull PythonParser.VfplistContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitStmt(PythonParser.StmtContext ctx);
+	T visitStmt(@NotNull PythonParser.StmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#simple_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitSimple_stmt(PythonParser.Simple_stmtContext ctx);
+	T visitSimple_stmt(@NotNull PythonParser.Simple_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#small_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitSmall_stmt(PythonParser.Small_stmtContext ctx);
+	T visitSmall_stmt(@NotNull PythonParser.Small_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#expr_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExpr_stmt(PythonParser.Expr_stmtContext ctx);
+	T visitExpr_stmt(@NotNull PythonParser.Expr_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#testlist_star_expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitTestlist_star_expr(PythonParser.Testlist_star_exprContext ctx);
+	T visitTestlist_star_expr(@NotNull PythonParser.Testlist_star_exprContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#augassign}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitAugassign(PythonParser.AugassignContext ctx);
+	T visitAugassign(@NotNull PythonParser.AugassignContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#print_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitPrint_stmt(PythonParser.Print_stmtContext ctx);
+	T visitPrint_stmt(@NotNull PythonParser.Print_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#del_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDel_stmt(PythonParser.Del_stmtContext ctx);
+	T visitDel_stmt(@NotNull PythonParser.Del_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#pass_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitPass_stmt(PythonParser.Pass_stmtContext ctx);
+	T visitPass_stmt(@NotNull PythonParser.Pass_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#flow_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFlow_stmt(PythonParser.Flow_stmtContext ctx);
+	T visitFlow_stmt(@NotNull PythonParser.Flow_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#break_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitBreak_stmt(PythonParser.Break_stmtContext ctx);
+	T visitBreak_stmt(@NotNull PythonParser.Break_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#continue_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitContinue_stmt(PythonParser.Continue_stmtContext ctx);
+	T visitContinue_stmt(@NotNull PythonParser.Continue_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#return_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitReturn_stmt(PythonParser.Return_stmtContext ctx);
+	T visitReturn_stmt(@NotNull PythonParser.Return_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#yield_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitYield_stmt(PythonParser.Yield_stmtContext ctx);
+	T visitYield_stmt(@NotNull PythonParser.Yield_stmtContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link PythonParser#super_stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSuper_stmt(@NotNull PythonParser.Super_stmtContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link PythonParser#instance_method_call}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInstance_method_call(@NotNull PythonParser.Instance_method_callContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link PythonParser#method_call}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMethod_call(@NotNull PythonParser.Method_callContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link PythonParser#method_args}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMethod_args(@NotNull PythonParser.Method_argsContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link PythonParser#chained_method}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitChained_method(@NotNull PythonParser.Chained_methodContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#raise_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitRaise_stmt(PythonParser.Raise_stmtContext ctx);
+	T visitRaise_stmt(@NotNull PythonParser.Raise_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#import_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitImport_stmt(PythonParser.Import_stmtContext ctx);
+	T visitImport_stmt(@NotNull PythonParser.Import_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#import_name}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitImport_name(PythonParser.Import_nameContext ctx);
+	T visitImport_name(@NotNull PythonParser.Import_nameContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#import_from}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitImport_from(PythonParser.Import_fromContext ctx);
+	T visitImport_from(@NotNull PythonParser.Import_fromContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#import_as_name}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitImport_as_name(PythonParser.Import_as_nameContext ctx);
+	T visitImport_as_name(@NotNull PythonParser.Import_as_nameContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#dotted_as_name}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDotted_as_name(PythonParser.Dotted_as_nameContext ctx);
+	T visitDotted_as_name(@NotNull PythonParser.Dotted_as_nameContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#import_as_names}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitImport_as_names(PythonParser.Import_as_namesContext ctx);
+	T visitImport_as_names(@NotNull PythonParser.Import_as_namesContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#dotted_as_names}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDotted_as_names(PythonParser.Dotted_as_namesContext ctx);
+	T visitDotted_as_names(@NotNull PythonParser.Dotted_as_namesContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#dotted_name}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDotted_name(PythonParser.Dotted_nameContext ctx);
+	T visitDotted_name(@NotNull PythonParser.Dotted_nameContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#global_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitGlobal_stmt(PythonParser.Global_stmtContext ctx);
+	T visitGlobal_stmt(@NotNull PythonParser.Global_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#nonlocal_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitNonlocal_stmt(PythonParser.Nonlocal_stmtContext ctx);
+	T visitNonlocal_stmt(@NotNull PythonParser.Nonlocal_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#exec_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExec_stmt(PythonParser.Exec_stmtContext ctx);
+	T visitExec_stmt(@NotNull PythonParser.Exec_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#assert_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitAssert_stmt(PythonParser.Assert_stmtContext ctx);
+	T visitAssert_stmt(@NotNull PythonParser.Assert_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#compound_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitCompound_stmt(PythonParser.Compound_stmtContext ctx);
+	T visitCompound_stmt(@NotNull PythonParser.Compound_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#async_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitAsync_stmt(PythonParser.Async_stmtContext ctx);
+	T visitAsync_stmt(@NotNull PythonParser.Async_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#if_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitIf_stmt(PythonParser.If_stmtContext ctx);
+	T visitIf_stmt(@NotNull PythonParser.If_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#while_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitWhile_stmt(PythonParser.While_stmtContext ctx);
+	T visitWhile_stmt(@NotNull PythonParser.While_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#for_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFor_stmt(PythonParser.For_stmtContext ctx);
+	T visitFor_stmt(@NotNull PythonParser.For_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#try_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitTry_stmt(PythonParser.Try_stmtContext ctx);
+	T visitTry_stmt(@NotNull PythonParser.Try_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#with_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitWith_stmt(PythonParser.With_stmtContext ctx);
+	T visitWith_stmt(@NotNull PythonParser.With_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#with_item}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitWith_item(PythonParser.With_itemContext ctx);
+	T visitWith_item(@NotNull PythonParser.With_itemContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#except_clause}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExcept_clause(PythonParser.Except_clauseContext ctx);
+	T visitExcept_clause(@NotNull PythonParser.Except_clauseContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#suite}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitSuite(PythonParser.SuiteContext ctx);
+	T visitSuite(@NotNull PythonParser.SuiteContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#test}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitTest(PythonParser.TestContext ctx);
+	T visitTest(@NotNull PythonParser.TestContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#test_nocond}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitTest_nocond(PythonParser.Test_nocondContext ctx);
+	T visitTest_nocond(@NotNull PythonParser.Test_nocondContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#lambdef}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitLambdef(PythonParser.LambdefContext ctx);
+	T visitLambdef(@NotNull PythonParser.LambdefContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#lambdef_nocond}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitLambdef_nocond(PythonParser.Lambdef_nocondContext ctx);
+	T visitLambdef_nocond(@NotNull PythonParser.Lambdef_nocondContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#or_test}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitOr_test(PythonParser.Or_testContext ctx);
+	T visitOr_test(@NotNull PythonParser.Or_testContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#and_test}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitAnd_test(PythonParser.And_testContext ctx);
+	T visitAnd_test(@NotNull PythonParser.And_testContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#not_test}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitNot_test(PythonParser.Not_testContext ctx);
+	T visitNot_test(@NotNull PythonParser.Not_testContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#comparison}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitComparison(PythonParser.ComparisonContext ctx);
+	T visitComparison(@NotNull PythonParser.ComparisonContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#comp_op}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitComp_op(PythonParser.Comp_opContext ctx);
+	T visitComp_op(@NotNull PythonParser.Comp_opContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#star_expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitStar_expr(PythonParser.Star_exprContext ctx);
+	T visitStar_expr(@NotNull PythonParser.Star_exprContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExpr(PythonParser.ExprContext ctx);
+	T visitExpr(@NotNull PythonParser.ExprContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#xor_expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitXor_expr(PythonParser.Xor_exprContext ctx);
+	T visitXor_expr(@NotNull PythonParser.Xor_exprContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#and_expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitAnd_expr(PythonParser.And_exprContext ctx);
+	T visitAnd_expr(@NotNull PythonParser.And_exprContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#shift_expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitShift_expr(PythonParser.Shift_exprContext ctx);
+	T visitShift_expr(@NotNull PythonParser.Shift_exprContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#arith_expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitArith_expr(PythonParser.Arith_exprContext ctx);
+	T visitArith_expr(@NotNull PythonParser.Arith_exprContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#term}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitTerm(PythonParser.TermContext ctx);
+	T visitTerm(@NotNull PythonParser.TermContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#factor}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFactor(PythonParser.FactorContext ctx);
+	T visitFactor(@NotNull PythonParser.FactorContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#power}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitPower(PythonParser.PowerContext ctx);
+	T visitPower(@NotNull PythonParser.PowerContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#atom}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitAtom(PythonParser.AtomContext ctx);
+	T visitAtom(@NotNull PythonParser.AtomContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#testlist_comp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitTestlist_comp(PythonParser.Testlist_compContext ctx);
+	T visitTestlist_comp(@NotNull PythonParser.Testlist_compContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#trailer}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitTrailer(PythonParser.TrailerContext ctx);
+	T visitTrailer(@NotNull PythonParser.TrailerContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#subscriptlist}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitSubscriptlist(PythonParser.SubscriptlistContext ctx);
+	T visitSubscriptlist(@NotNull PythonParser.SubscriptlistContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#subscript}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitSubscript(PythonParser.SubscriptContext ctx);
+	T visitSubscript(@NotNull PythonParser.SubscriptContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#sliceop}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitSliceop(PythonParser.SliceopContext ctx);
+	T visitSliceop(@NotNull PythonParser.SliceopContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#exprlist}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExprlist(PythonParser.ExprlistContext ctx);
+	T visitExprlist(@NotNull PythonParser.ExprlistContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#testlist}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitTestlist(PythonParser.TestlistContext ctx);
+	T visitTestlist(@NotNull PythonParser.TestlistContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#dictorsetmaker}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDictorsetmaker(PythonParser.DictorsetmakerContext ctx);
+	T visitDictorsetmaker(@NotNull PythonParser.DictorsetmakerContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#classdef}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitClassdef(PythonParser.ClassdefContext ctx);
+	T visitClassdef(@NotNull PythonParser.ClassdefContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#arglist}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitArglist(PythonParser.ArglistContext ctx);
+	T visitArglist(@NotNull PythonParser.ArglistContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#argument}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitArgument(PythonParser.ArgumentContext ctx);
+	T visitArgument(@NotNull PythonParser.ArgumentContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#comp_iter}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitComp_iter(PythonParser.Comp_iterContext ctx);
+	T visitComp_iter(@NotNull PythonParser.Comp_iterContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#comp_for}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitComp_for(PythonParser.Comp_forContext ctx);
+	T visitComp_for(@NotNull PythonParser.Comp_forContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#comp_if}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitComp_if(PythonParser.Comp_ifContext ctx);
+	T visitComp_if(@NotNull PythonParser.Comp_ifContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#yield_expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitYield_expr(PythonParser.Yield_exprContext ctx);
+	T visitYield_expr(@NotNull PythonParser.Yield_exprContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#yield_arg}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitYield_arg(PythonParser.Yield_argContext ctx);
+	T visitYield_arg(@NotNull PythonParser.Yield_argContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#string}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitString(PythonParser.StringContext ctx);
+	T visitString(@NotNull PythonParser.StringContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#number}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitNumber(PythonParser.NumberContext ctx);
+	T visitNumber(@NotNull PythonParser.NumberContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#integer}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitInteger(PythonParser.IntegerContext ctx);
+	T visitInteger(@NotNull PythonParser.IntegerContext ctx);
 }

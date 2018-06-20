@@ -14,13 +14,17 @@ public class Subroutine extends ContentContainer {
 	private ContentContainer parent;
 	private final Boolean isAccessor;
 	private final List<String> params;
+	protected final Integer complexity;
+	private final Class parentCls;
 
-	public Subroutine(String name, Integer loc, ContentContainer parent, SubroutineType subroutineType, List<String> params, Boolean isAccessor) {
+	public Subroutine(String name, Integer loc, Integer cc, ContentContainer parent, SubroutineType subroutineType, List<String> params, Boolean isAccessor, Class cls) {
 		super(name, loc);
 		this.parent = parent;
 		this.subroutineType = subroutineType;
 		this.params = params;
 		this.isAccessor = isAccessor;
+		this.complexity = cc;
+		this.parentCls = cls;
 	}
 
 	public Integer getAccessOfImportData() {
@@ -122,10 +126,16 @@ public class Subroutine extends ContentContainer {
 		result = 31 * result + this.parent.hashCode();
 		return result;
 	}
+	
+	/**
+	 * Returns parent class if set. 
+	 * @return Class or null;
+	 */
+	public Class getParentClass() {
+		return this.parentCls;
+	}
 
 	public Integer getCC() {
-
-		// TODO
-		return 0;
+		return complexity;
 	}
 }

@@ -51,6 +51,8 @@ tokens { INDENT, DEDENT }
 
 @header
 {
+	package gen;
+	
     import java.util.List;
     import java.util.ArrayList;
 }
@@ -212,7 +214,7 @@ async_funcdef
 /// funcdef: 'def' NAME parameters ['->' test] ':' suite
 funcdef
  : DEF name parameters ( '->' test )? ':' suite //added print and exec because they are keywords in Python2 but not in Python3, nonlocal is a keyword in Python3 but not Python2
- ;
+ ; 
 
 /// parameters: '(' [typedargslist] ')'
 // 2.6: parameters: '(' [varargslist] ')'
@@ -308,6 +310,7 @@ small_stmt
  | nonlocal_stmt
  | exec_stmt
  | assert_stmt
+ | super_stmt
  ;
 
 /// expr_stmt: testlist_star_expr (augassign (yield_expr|testlist) |
@@ -381,14 +384,42 @@ continue_stmt
  : CONTINUE
  ;
 
+
+// return needs super_stmt or it will get stuck on return super(); doesnt sound like a good fix. 
+
 /// return_stmt: 'return' [testlist]
 return_stmt
  : RETURN testlist?
+ | RETURN super_stmt
  ;
 
 /// yield_stmt: yield_expr
 yield_stmt
  : yield_expr
+ ;
+
+ /// TODO
+ /// super_stmt: 'super()' in Python 3
+ ///  super(<subclass>, instance).<method_call> in Python 2
+super_stmt
+ : SUPER '(' superArgs=method_args? ')' chained_method?
+ ; 
+ 
+
+instance_method_call
+ : name '.' method_call
+ ;  
+ 
+method_call
+ : name '(' args=method_args* ')' (chained_method)?
+ ;
+
+method_args 
+ : argument (',' argument)*
+ ;
+
+chained_method
+ : '.' method_call
  ;
 
 /// raise_stmt: 'raise' [test ['from' test]]
@@ -889,6 +920,8 @@ DEL : 'del';
 PASS : 'pass';
 CONTINUE : 'continue';
 BREAK : 'break';
+SUPER : 'super';
+
 
 NEWLINE
  : ( {atStartOfInput()}?   SPACES

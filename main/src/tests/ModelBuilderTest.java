@@ -156,6 +156,25 @@ public class ModelBuilderTest {
 		}
 		return sorted;
 	}
+	
+	@Test
+	public void checkSuperCalls() {
+		Map<String, Class> classes = TestHelper.getClasses("main/src/tests/samples/super_statements");
+		
+		Class cls = classes.get("A");
+		Class cls2 = classes.get("B");
+		
+		
+		
+	}
+	
+	@Test
+	public void checkSuperCall() {
+		Map<String, Class> classes = TestHelper.getClasses("main/src/tests/samples/super_statements");
+		
+		Class test = classes.get("MetaTestCase");
+	
+	}
 
 	private Map<String, Variable> sortVarsByName(Set<Variable> vars) {
 		Map<String, Variable> sorted = new HashMap<>();

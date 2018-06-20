@@ -1,5 +1,6 @@
 package model;
 
+import ast.CCVisitor;
 import ast.DefaultVisitor;
 import ast.argument.*;
 import ast.expression.ExprList;
@@ -8,12 +9,14 @@ import ast.expression.nocond.atom.trailed.AttributeRef;
 import ast.expression.nocond.atom.trailed.Call;
 import ast.expression.nocond.atom.trailed.ObjectMethodCall;
 import ast.path.Path;
+import ast.statement.MethodCallStmt;
 import ast.statement.compound.ClassDef;
 import ast.statement.compound.Function;
 import ast.statement.simple.Assign;
 import ast.statement.simple.Global;
 import ast.statement.simple.ImportFrom;
 import ast.statement.simple.ImportPaths;
+import ast.statement.simple.SuperStmt;
 import util.LexicalHelper;
 import util.StringHelper;
 
@@ -27,6 +30,7 @@ import java.util.stream.Collectors;
 public class ModelBuilder {
 
 	private final Project project;
+	private final Stack<SuperCall> statements;
 
 	public ModelBuilder(Project oldProject, Map<String, ast.Module> oldTrees, Map<String, ast.Module> trees) {
 		this.project = new Project(oldProject.getFolder());
@@ -41,6 +45,7 @@ public class ModelBuilder {
 				.map(m -> oldProject.getModule(m.getFilePath()))
 				.collect(Collectors.toSet());
 		oldModules.forEach(this.project::addModule);
+		this.statements = buildingVisitor.getStatements();
 
 		//link
 		LinkingVisitor linkingVisitor = new LinkingVisitor(this.project);
@@ -51,12 +56,17 @@ public class ModelBuilder {
 		this.project = new Project(projectFolder);
 		BuildingVisitor buildingVisitor = new BuildingVisitor(this.project);
 		buildingVisitor.build(trees);
+		this.statements = buildingVisitor.getStatements();
 		LinkingVisitor linkingVisitor = new LinkingVisitor(this.project);
 		linkingVisitor.link(trees);
 	}
 
 	public Project getProject() {
 		return this.project;
+	}
+	
+	public Stack<SuperCall> getStatements() {
+		return statements;
 	}
 
 	private class LinkingVisitor extends DefaultVisitor<Void> {
@@ -111,13 +121,14 @@ public class ModelBuilder {
 
 		private final Stack<model.Class> classes;
 		private final Stack<Subroutine> subroutines;
+		private final Stack<SuperCall> statements;
 		private boolean inAssign;
 
 		private boolean inAssignLeft;
 		private boolean inAssignRight;
 		private String leftAssign;
 		private String rightAssign;
-
+		
 		public BuildingVisitor(Project project) {
 			super();
 			this.project = project;
@@ -128,6 +139,7 @@ public class ModelBuilder {
 			this.inAssign = false;
 			this.inAssignLeft = false;
 			this.inAssignRight = false;
+			this.statements = new Stack<>();
 		}
 
 		public void build(Collection<ast.Module> trees) {
@@ -189,7 +201,7 @@ public class ModelBuilder {
 
 			Class c = new Class(n.getName().getValue(), locInfo, this.getCurrentContainer(), superclassNames);
 			this.getCurrentContainer().addClassDefinition(c);
-
+			
 			this.classes.push(c);
 			this.contentContainers.push(c);
 			this.visitChildren(n);
@@ -201,12 +213,17 @@ public class ModelBuilder {
 
 		@Override
 		public Void visit(Function n) {
+			CCVisitor cc = new CCVisitor();
+			cc.visit(n);	
+			
 			List<String> paramNames = n.getParams().getParamNames().stream()
 					.filter(p -> !p.equals(LexicalHelper.SELF_KEYWORD))
 					.collect(Collectors.toList());
 			SubroutineType type = !this.inClass() ? SubroutineType.FUNCTION :
 					(n.isStatic() ? SubroutineType.STATIC_METHOD : SubroutineType.INSTANCE_METHOD);
-			Subroutine subroutine = new Subroutine(n.getNameString(), n.getLocInfo(), this.getCurrentContainer(), type, paramNames, n.isAccessor());
+			// if a function is encountered after a class is parsed set it back to null.
+			Class current =  (type == SubroutineType.FUNCTION) ? null : getCurrentClass();
+			Subroutine subroutine = new Subroutine(n.getNameString(), n.getLocInfo(), cc.getComplexity(), this.getCurrentContainer(), type, paramNames, n.isAccessor(), current);
 			this.getCurrentContainer().addSubroutineDefinition(subroutine);
 
 			this.subroutines.push(subroutine);
@@ -214,10 +231,38 @@ public class ModelBuilder {
 			this.visitChildren(n);
 			this.contentContainers.pop();
 			this.subroutines.pop();
+			
 
 			return null;
 		}
+		
+		
+		// TODO
+		@Override
+		public Void visit(MethodCallStmt n) {
+			MethodCall call;
+			
+		
+			return null;
+		}
 
+		
+		// TODO
+
+		@Override
+		public Void visit(SuperStmt n) {
+			SuperCall call;
+			
+			String name = (n.getCaller() != null && n.getCaller().getName().toString() != null) ? n.getCaller().getName().toString() : null;
+			
+			if (name != null && name == subroutines.peek().name) {
+				call = new SuperCall(subroutines.peek(), null);
+				statements.add(call);
+			}
+			
+			return null;
+		}
+		
 		@Override
 		public void visitChildren(ClassDef n) {
 			//prevents registering class names as variables
@@ -359,7 +404,7 @@ public class ModelBuilder {
 			return this.classes.peek();
 		}
 
-		//
+		
 //		private Method getCurrentMethod() {
 //			return this.subroutines.peek();
 //		}
@@ -378,6 +423,10 @@ public class ModelBuilder {
 
 		private ContentContainer getCurrentContainer() {
 			return this.contentContainers.peek();
+		}
+	
+		public Stack<SuperCall> getStatements() {
+			return statements;
 		}
 	}
 

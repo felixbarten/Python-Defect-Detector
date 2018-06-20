@@ -36,10 +36,15 @@ import ast.param.*;
 import ast.path.DottedPath;
 import ast.path.Path;
 import ast.path.SimplePath;
+import ast.statement.MethodCallStmt;
 import ast.statement.compound.*;
 import ast.statement.flow.*;
 import ast.statement.simple.*;
 import gen.PythonParser;
+import gen.PythonParser.Chained_methodContext;
+import gen.PythonParser.Instance_method_callContext;
+import gen.PythonParser.Method_argsContext;
+import gen.PythonParser.Method_callContext;
 import gen.PythonVisitor;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.NotNull;
@@ -331,6 +336,9 @@ public class AstBuilder {
 			if (ctx.assert_stmt() != null) {
 				return ctx.assert_stmt().accept(this);
 			}
+			if (ctx.super_stmt() != null ) {
+				return ctx.super_stmt().accept(this);
+			}
 			throw new IllegalArgumentException("Unknown context");
 		}
 
@@ -607,6 +615,36 @@ public class AstBuilder {
 			Expr vars = ctx.vars == null ? null : (Expr) ctx.vars.accept(this);
 			Expr localVars = ctx.localVars == null ? null : (Expr) ctx.localVars.accept(this);
 			return new Exec(this.getLocInfo(ctx), target, vars, localVars);
+		}
+		
+		@Override 
+		public AstNode visitSuper_stmt(PythonParser.Super_stmtContext ctx) {
+			
+			ArgList superArgs = null;
+			if (ctx.superArgs != null) {
+				superArgs = (ArgList) ctx.superArgs.accept(this);
+			}
+					
+			ParserRuleContext traversal = ctx;
+			Function parent = null;
+			
+			/*
+			 * infinite loop
+			int i = 0;
+			while (true) {
+				if (traversal.getParent() instanceof PythonParser.FuncdefContext) {
+					parent = (Function) traversal.getParent().accept(this);
+					break;
+				} 
+				i++;
+				traversal = traversal.getParent();
+				// failsafe to break out of parent getting loop
+				if (i == 30) break;
+			}
+			*/
+			MethodCallStmt chain = (MethodCallStmt) ctx.chained_method().accept(this);
+			//System.out.println("let me break here");
+			return new SuperStmt(this.getLocInfo(ctx), superArgs, parent, chain);	
 		}
 
 		@Override
@@ -1422,6 +1460,44 @@ public class AstBuilder {
 			public <T> T accept(Visitor<T> visitor) {
 				throw new IllegalArgumentException("Cannot visit CollectionWrapper");
 			}
+		}
+
+		@Override
+		public AstNode visitInstance_method_call(Instance_method_callContext ctx) {
+			
+			//ctx.name().accept(this);
+			//ctx.method_call().accept(this);
+			return 	ctx.method_call().accept(this);
+
+		}
+
+		@Override
+		public AstNode visitMethod_call(Method_callContext ctx) {
+			Identifier name = (Identifier) ctx.name().accept(this);
+
+			ArgList argList = ctx.args == null ? null : (ArgList) ctx.args.accept(this);
+			MethodCallStmt chain = ctx.chained_method() == null ? null : (MethodCallStmt) ctx.chained_method().accept(this);
+			
+			return new MethodCallStmt(this.getLocInfo(ctx), name, argList, null, chain);
+		}
+
+		@Override
+		public AstNode visitChained_method(Chained_methodContext ctx) {
+		
+			return ctx.method_call().accept(this);
+		}
+
+		@Override
+		public AstNode visitMethod_args(Method_argsContext ctx) {
+
+			ctx.argument();
+			//System.out.println("Method args here");
+			//      argument (',' argument)* ','?
+			List<Argument> arguments = ctx.argument().stream()
+					.map(e -> (Argument) e.accept(this))
+					.collect(Collectors.toList());
+			return new ArgList(this.getLocInfo(ctx), arguments);
+			
 		}
 	}
 }

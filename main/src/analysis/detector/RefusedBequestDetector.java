@@ -40,6 +40,8 @@ public class RefusedBequestDetector extends Detector {
 	@Override
 	protected Boolean isPreliminarilyDefective(model.Class cls) {
 		this.cls = cls;
+		this.getPrimitiveMapStore(CLASS_CC).add(cls.getFullPath(), cls.getCC());
+		
 		return fewProtectedMembers(cls);
 	}
 
@@ -53,7 +55,6 @@ public class RefusedBequestDetector extends Detector {
 	protected String getName() {
 		return "Refused (Parent) Bequest";
 	}
-	
 	
 	private boolean cls_ignores_bequest(Class cls) {
 		

@@ -27,8 +27,7 @@ public class Main {
 		Properties config = Settings.getConfig();
 		createLocations(config);
 
-		//boolean filtered = config.containsKey("locations.data.input.filter");
-		boolean filtered = false;
+		boolean filterEnabled = config.containsKey("locations.data.input.filter");;
 		
 		PrintStream out = new PrintStream(new FileOutputStream(FileHelper.stampedFileName(config.getProperty("locations.log.out"), "out", "log")));
 		PrintStream err = new PrintStream(new FileOutputStream(FileHelper.stampedFileName(config.getProperty("locations.log.error"), "err", "log")));
@@ -44,19 +43,12 @@ public class Main {
 		System.out.println("Finished reading Git Location data");
 
 		
-		// Filtered list EXCLUDES projects from parsing????
-		List<String> projects = Collections.emptyList();
-		if (filtered) {
-			BufferedReader br = new BufferedReader(new FileReader(config.getProperty("locations.data.input.filter")));
-			projects = br.lines().collect(Collectors.toList());
-			br.close();
-		}
+		// Only projects in the filtered list are processed. If filtered list exists.
+		List<String> projects = fetchFilteredProjects(config, filterEnabled);
 
 		File projectsFolder = new File(config.getProperty("locations.data.input"));
 		for (File file : projectsFolder.listFiles()) {
-			//System.out.println(file.isDirectory());
-			//System.out.print(file.getAbsolutePath());
-			if (file.isDirectory() && (!filtered || projects.contains(file.getAbsolutePath()))) {
+			if (file.isDirectory() && (!filterEnabled || projects.contains(file.getAbsolutePath()))) {
 				processProject(register, file);
 			}
 		}
@@ -64,6 +56,17 @@ public class Main {
 		CsvCreator csvCreator = new CsvCreator(config.getProperty("locations.data.results"));
 		csvCreator.createStream(CSV_NAME, "Project", "Url", "Location", "Defect");
 		register.finish(gitLocs, csvCreator);
+	}
+
+	private static List<String> fetchFilteredProjects(Properties config, boolean filterEnabled)
+			throws FileNotFoundException, IOException {
+		List<String> projects = Collections.emptyList();
+		if (filterEnabled) {
+			BufferedReader br = new BufferedReader(new FileReader(config.getProperty("locations.data.input.filter")));
+			projects = br.lines().collect(Collectors.toList());
+			br.close();
+		}
+		return projects;
 	}
 
 	private static void processProject(Register register, File file) throws FileNotFoundException {
@@ -74,6 +77,12 @@ public class Main {
 		System.out.println(" -> " + ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024) + "\t\t" + file.getAbsolutePath());
 	}
 
+	
+	/**
+	 * Registers all detector classes to the Register for futher processing.
+	 * @param register
+	 * @throws IOException
+	 */
 	private static void registerDetectors(Register register) throws IOException {
 		register.add(new LongMethodDetector());
 		register.add(new LongParamListDetector());
@@ -87,14 +96,19 @@ public class Main {
 		register.add(new LargeClassDecorDetector());
 		register.add(new DataClassDecorDetector());
 		register.add(new DataClassDetector());
+		register.add(new RefusedBequestDetector());
 	}
 
+	/**
+	 * Creates logs, temporary and final result files.
+	 * @param config 
+	 */
 	private static void createLocations(Properties config) {
-		FileHelper.createLocation(config.getProperty("locations.log.out"));
-		FileHelper.createLocation(config.getProperty("locations.log.error"));
-		FileHelper.createLocation(config.getProperty("locations.data.input"));
-		FileHelper.createLocation(config.getProperty("locations.data.output"));
-		FileHelper.createLocation(config.getProperty("locations.data.results"));
+		FileHelper.createLocation(config.getProperty("locations.log.out"), true);
+		FileHelper.createLocation(config.getProperty("locations.log.error"), true);
+		FileHelper.createLocation(config.getProperty("locations.data.input"), true);
+		FileHelper.createLocation(config.getProperty("locations.data.output"), true);
+		FileHelper.createLocation(config.getProperty("locations.data.results"), true);
 	}
 
 	private static Project createProject(File projectFolder) {

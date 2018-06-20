@@ -39,6 +39,7 @@ import ast.param.TypedParam;
 import ast.param.UntypedParam;
 import ast.path.DottedPath;
 import ast.path.SimplePath;
+import ast.statement.MethodCallStmt;
 import ast.statement.compound.*;
 import ast.statement.flow.*;
 import ast.statement.simple.*;
@@ -150,6 +151,11 @@ public class DefaultVisitor<T> implements Visitor<T> {
 
 	@Override
 	public T visit(Exec n) {
+		this.visitChildren(n);
+		return null;
+	}
+	
+	public T visit(SuperStmt n) {
 		this.visitChildren(n);
 		return null;
 	}
@@ -505,6 +511,21 @@ public class DefaultVisitor<T> implements Visitor<T> {
 	public T visit(SubscriptIndex n) {
 		this.visitChildren(n);
 		return null;
+	}
+	
+	// TODO
+	private void visitChildren(SuperStmt n) {
+		
+		if (n.hasSuperArgs()) {
+			n.getSuperArgs().accept(this);
+		}
+		
+		if (n.hasCaller()) {
+			n.getCaller().accept(this);
+		}
+		if (n.hasChain()) {
+			n.getChainedMethod().accept(this);
+		}
 	}
 
 	public void visitChildren(Module n) {
@@ -893,6 +914,25 @@ public class DefaultVisitor<T> implements Visitor<T> {
 
 	public void visitChildren(Unary n) {
 		n.getValue().accept(this);
+	}
+
+	@Override
+	public T visit(MethodCallStmt n) {
+		this.visitChildren(n);
+		return null;
+	}
+
+	private void visitChildren(MethodCallStmt n) {
+		n.getName().accept(this);
+		if (n.hasArgList()) {
+			n.getArguments().accept(this);
+			
+		}
+		if (n.hasChain()) {
+			n.getChained_method().accept(this);
+
+		}
+		
 	}
 
 }

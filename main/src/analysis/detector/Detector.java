@@ -117,7 +117,6 @@ public abstract class Detector {
 	public void removeData() {
 		this.defects.clean();
 		this.dataStores.values().forEach(analysis.storage.Map::clean);
-
 	}
 
 	/**
@@ -204,6 +203,11 @@ public abstract class Detector {
 		@Override
 		public Boolean visit(Subroutine m) {
 			return isPreliminarilyDefective(m);
+		}
+
+		@Override
+		public Boolean visit(Project m) {
+			return false;
 		}
 	}
 }

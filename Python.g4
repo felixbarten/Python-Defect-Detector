@@ -345,6 +345,14 @@ print_stmt
 del_stmt
  : DEL exprlist
  ;
+ 
+ /// TODO
+ /// super_stmt: 'super()' in Python 3
+ ///  super(<subclass>, instance).<method_call> in Python 2
+super_stmt
+ : SUPER '(' ')'
+ | SUPER '(' argument ',' argument ')' 
+ ;
 
 /// pass_stmt: 'pass'
 pass_stmt
@@ -843,6 +851,7 @@ DEL : 'del';
 PASS : 'pass';
 CONTINUE : 'continue';
 BREAK : 'break';
+SUPER : 'super';
 
 NEWLINE
  : ( {atStartOfInput()}?   SPACES

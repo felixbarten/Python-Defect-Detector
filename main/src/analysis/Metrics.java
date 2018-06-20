@@ -36,7 +36,13 @@ public class Metrics {
 		this.intMetrics.put(Metric.SUBROUTINE_LOC, new IntMetricVals(Metric.SUBROUTINE_LOC.toString()));
 		this.intMetrics.put(Metric.SUBROUTINE_PARAMS, new IntMetricVals(Metric.SUBROUTINE_PARAMS.toString()));
 		this.intMetrics.put(Metric.SUBROUTINE_AID, new IntMetricVals(Metric.SUBROUTINE_AID.toString()));
+		
 		this.intMetrics.put(Metric.CLASS_CC, new IntMetricVals(Metric.CLASS_CC.toString()));
+		this.intMetrics.put(Metric.SUBROUTINE_CC, new IntMetricVals(Metric.SUBROUTINE_CC.toString()));
+		this.intMetrics.put(Metric.PROJECT_CC, new IntMetricVals(Metric.PROJECT_CC.toString()));
+		this.intMetrics.put(Metric.PROJECT_LOC, new IntMetricVals(Metric.PROJECT_LOC.toString()));
+		this.intMetrics.put(Metric.PROJECT_GLOBAL_CC, new IntMetricVals(Metric.PROJECT_GLOBAL_CC.toString()));
+
 	}
 
 	public void register(ContentContainer contentContainer) {
@@ -47,6 +53,7 @@ public class Metrics {
 	}
 
 	public void terminateCollecting(Map<Metric, Set<Integer>> requiredMetricPercentages) throws IOException {
+		this.collector.finishCollection();
 		this.finishedCollecting = true;
 		for (Metric metric : this.intMetrics.keySet()) {
 			IntMetricVals counter = this.intMetrics.get(metric);
@@ -77,15 +84,36 @@ public class Metrics {
 
 	private class Collector implements ContentContainerVisitor<Void> {
 
+		private int projectLOC = 0;
+		private int projectCC = 0;
+		// sub cc is used for subroutines outside of classes(imperative style files). 
+		private int projectSubCC = 0;
+		
+		
+		/**
+		 * This Method is ran at the end of the data collection process not on each project. 
+		 */
+		public void finishCollection() {
+			getCounter(Metric.PROJECT_GLOBAL_CC).add(projectSubCC);	
+		}
+		
 		public void collect(ContentContainer contentContainer) {
 			contentContainer.accept(this);
 		}
 
 		@Override
-		public Void visit(Module m) {
+		public Void visit(Project m) { 
+			getCounter(Metric.PROJECT_LOC).add(projectLOC);
+			getCounter(Metric.PROJECT_CC).add(projectCC);
 			return null;
 		}
-
+		
+		@Override
+		public Void visit(Module m) {
+			projectLOC += m.getLoc();
+			return null;
+		}
+		
 		@Override
 		public Void visit(model.Class m) {
 			getCounter(Metric.CLASS_LOC).add(m.getLoc());
@@ -100,6 +128,7 @@ public class Metrics {
 			Long privateFields = m.getDefinedVarsInclParentsVars().getAsSet().stream().filter(Variable::isPrivate).count();
 			getCounter(Metric.CLASS_PRIVATE_FIELDS).add(privateFields.intValue());
 			getCounter(Metric.CLASS_CC).add(m.getCC());
+			projectCC += m.getCC();
 			return null;
 		}
 
@@ -108,6 +137,8 @@ public class Metrics {
 			getCounter(Metric.SUBROUTINE_LOC).add(m.getLoc());
 			getCounter(Metric.SUBROUTINE_PARAMS).add(m.paramCount());
 			getCounter(Metric.SUBROUTINE_AID).add(m.getAccessOfImportData());
+			getCounter(Metric.SUBROUTINE_CC).add(m.getCC());
+			projectSubCC += m.getCC();
 			return null;
 		}
 	}

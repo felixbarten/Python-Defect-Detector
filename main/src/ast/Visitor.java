@@ -42,6 +42,7 @@ import ast.param.TypedParam;
 import ast.param.UntypedParam;
 import ast.path.DottedPath;
 import ast.path.SimplePath;
+import ast.statement.MethodCallStmt;
 import ast.statement.compound.*;
 import ast.statement.flow.*;
 import ast.statement.simple.*;
@@ -82,6 +83,9 @@ public interface Visitor<T> {
 	//--------------------------------------------- STATEMENTS --------------------------------------------\\
 	//-----------------------------------------------------------------------------------------------------\\
 
+	// unknown type
+	T visit(MethodCallStmt n);
+	
 	//............................................... SIMPLE ..............................................\\
 	T visit(Assert n);
 	T visit(Assign n);
@@ -93,6 +97,7 @@ public interface Visitor<T> {
 	T visit(Nonlocal n);
 	T visit(Pass n);
 	T visit(Print n);
+	T visit(SuperStmt n);
 
 	//............................................... FLOW ................................................\\
 	T visit(Break n);

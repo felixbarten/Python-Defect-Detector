@@ -3,6 +3,8 @@ package model;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import ast.CCVisitor;
+
 /**
  * Created by Nik on 30-06-2015
  */
@@ -13,7 +15,16 @@ public class Class extends ContentContainer {
 	private final Map<String, Class> superclasses;
 
 	private final VarDefinitions inheritedVars;
-
+	private Integer complexity;
+	
+	/**
+	 * Class model constructor. 
+	 * Complexity value is initialized lazily as defined subroutines get inserted after object creation.
+	 * @param name
+	 * @param loc
+	 * @param parent
+	 * @param superclassNames
+	 */
 	public Class(String name, Integer loc, ContentContainer parent, List<String> superclassNames) {
 		super(name, loc);
 		this.parent = parent;
@@ -193,16 +204,23 @@ public class Class extends ContentContainer {
 	}
 
 	/**
-	 * Get class Cyclomatic Complexity
+	 * Get class Cyclomatic Complexity.
 	 * @return Cyclomatic Complexity
 	 */
 	public Integer getCC() {
-		Integer complexity = 0; 
-		List<Subroutine> ms = this.definedSubroutines.values().stream().collect(Collectors.toList());
-		for (Subroutine s : ms) {
-			//complexity += s.getCC();
+		if (complexity == null) {
+			complexity = calculateCC();
 		}
 		
 		return complexity;
+	}
+
+	private Integer calculateCC() {
+		int cc = 0; 
+		List<Subroutine> ms = this.definedSubroutines.values().stream().collect(Collectors.toList());
+		for (Subroutine s : ms) {
+			cc += s.getCC();
+		}
+		return cc;
 	}
 }
