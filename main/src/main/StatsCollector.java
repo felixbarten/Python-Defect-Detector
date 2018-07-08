@@ -15,6 +15,11 @@ import java.util.Properties;
  */
 public class StatsCollector {
 
+	/**
+	 * Aggregates stats from projects
+	 * @param args
+	 * @throws IOException
+	 */
 	//args[0] = the location of the projects
 	//args[1] = the CSV file which contains project disk location, github link
 	public static void main(String[] args) throws IOException {

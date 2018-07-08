@@ -104,6 +104,14 @@ public class IntMetricVals {
 		Double iqr = this.q3 - this.q1;
 		return val < this.q1 - iqrMultiplicand * iqr || val > this.q3 + iqrMultiplicand * iqr;
 	}
+	
+	/**
+	 * Calculate the average for the integers in data set
+	 * @return int average 
+	 */
+	public int average() {
+		return (int) Math.round(average);
+	}
 
 	public void sortAndCalculateStats(Set<Integer> requiredPercentages) throws IOException {
 		if (this.sorted) {

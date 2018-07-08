@@ -13,7 +13,9 @@ public class Class extends ContentContainer {
 	private ContentContainer parent;
 	private final List<String> superclassNames;
 	private final Map<String, Class> superclasses;
-
+	private final Project project; 
+	private List<Subroutine> subroutines;
+	
 	private final VarDefinitions inheritedVars;
 	private Integer complexity;
 	
@@ -24,12 +26,15 @@ public class Class extends ContentContainer {
 	 * @param loc
 	 * @param parent
 	 * @param superclassNames
+	 * @param project 
 	 */
-	public Class(String name, Integer loc, ContentContainer parent, List<String> superclassNames) {
+	public Class(String name, Integer loc, ContentContainer parent, List<String> superclassNames, Project project) {
 		super(name, loc);
 		this.parent = parent;
 		this.superclassNames = superclassNames;
 		this.superclasses = new HashMap<>();
+		this.project = project;
+		this.subroutines = new LinkedList<Subroutine>();
 
 		this.inheritedVars = new VarDefinitions();
 	}
@@ -203,16 +208,24 @@ public class Class extends ContentContainer {
 		return privVars;
 	}
 
+	public Project getProject() {
+		return project;
+	}
+
+	
 	/**
 	 * Get class Cyclomatic Complexity.
 	 * @return Cyclomatic Complexity
 	 */
 	public Integer getCC() {
+		/*
 		if (complexity == null) {
 			complexity = calculateCC();
 		}
 		
 		return complexity;
+		*/
+		return calculateCC();
 	}
 
 	private Integer calculateCC() {
@@ -223,4 +236,19 @@ public class Class extends ContentContainer {
 		}
 		return cc;
 	}
+	
+	public void addSubroutine(Subroutine m) {
+		if(!subroutines.contains(m)) {
+			subroutines.add(m);
+		}
+	}
+	
+	/**
+	 * Returns the NOM metric (number of metrics per class) 
+	 * @return int NOM
+	 */
+	public Integer getNOM() {
+		return this.subroutines.size();
+	}
+	
 }

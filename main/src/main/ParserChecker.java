@@ -20,6 +20,11 @@ import java.util.Properties;
  */
 public class ParserChecker {
 
+	/**
+	 * Collects files that are unparsable with grammar for later inspection.
+	 * @param args
+	 * @throws IOException
+	 */
 	//args[0] = the location of the projects
 	//args[1] = the destination to which the unparsable files will be copied to
 	public static void main(String[] args) throws IOException {
@@ -30,8 +35,13 @@ public class ParserChecker {
 		PrintStream err = new PrintStream(new FileOutputStream(FileHelper.stampedFileName(config.getProperty("locations.log.error"), "err", "log")));
 		System.setOut(out);
 		System.setErr(err);
-
-		ParserChecker.collectUnparsable(args[0], args.length == 2 ? args[1] : null);
+		
+		// if arguments are empty try to fallback to config
+		if (args.length == 0 ) {
+			ParserChecker.collectUnparsable(config.getProperty("locations.data.input"), config.getProperty("locations.data.unparsable"));
+		} else {
+			ParserChecker.collectUnparsable(args[0], args.length == 2 ? args[1] : null);		
+		}
 	}
 
 	private static void collectUnparsable(String path, String destination) {

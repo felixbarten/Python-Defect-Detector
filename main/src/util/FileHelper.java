@@ -28,7 +28,7 @@ public class FileHelper {
 	/**
 	 * Creates files in a date subdirectory when enabled. 
 	 * @param path
-	 * @param useDateSubDirs
+	 * @param useDateSubDirs 
 	 */
 	public static void createLocation(String path, Boolean useDateSubDirs) {
 		Date now = new Date();
@@ -56,7 +56,7 @@ public class FileHelper {
 	 * Creates a datetime stamped file name
 	 * @param fileName
 	 * @param extension
-	 * @return String filename
+	 * @return filename with datetime prefix
 	 */
 	public static String stampedFileName(String fileName, String extension) {
 		Date now = new Date();
@@ -67,10 +67,10 @@ public class FileHelper {
 
 	/**
 	 * Creates time stamped filenames in a date subdirectory.
-	 * @param directory
-	 * @param fileName
-	 * @param extension
-	 * @return
+	 * @param directory Path to directory
+	 * @param fileName Name of file
+	 * @param extension File extension
+	 * @return Path to timestamped file
 	 */
 	public static String stampedFileName(String directory, String fileName, String extension) {
 		Date now = new Date();
@@ -113,6 +113,11 @@ public class FileHelper {
 		return subfolders;
 	}
 
+	/**
+	 * Recursively seeks all files contained in a folder
+	 * @param folder File object to find files in
+	 * @return list of paths to files in folder
+	 */
 	private static List<String> getFilePaths(File folder) {
 		List<String> fileNames = new ArrayList<>();
 

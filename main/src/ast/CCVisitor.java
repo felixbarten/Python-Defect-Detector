@@ -4,6 +4,7 @@ import ast.statement.compound.For;
 import ast.statement.compound.If;
 import ast.statement.compound.Try;
 import ast.statement.compound.While;
+import ast.statement.flow.Break;
 
 /**
  * 
@@ -38,7 +39,7 @@ public class CCVisitor extends DefaultVisitor<Void>{
 	public Void visit(Try n) {
 		// -1?
 		int catchBlocks = n.getExceptBodies().size();
-		complexity += catchBlocks;
+		complexity += catchBlocks + 1;
 		this.visitChildren(n);
 
 		return null;
@@ -46,11 +47,15 @@ public class CCVisitor extends DefaultVisitor<Void>{
 	
 	@Override
 	public Void visit(While n) {
+		/*
 		if(n.hasElseBody()){
 			complexity += 2;
 		} else {
 			complexity += 1;
 		}
+		*/
+		complexity += 1;
+		
 		this.visitChildren(n);
 
 		return null;
@@ -58,9 +63,11 @@ public class CCVisitor extends DefaultVisitor<Void>{
 	
 	@Override
 	public Void visit(For n) {
+		/*
 		if(n.hasElseBody()){
 			complexity += 1;
-		}
+		}*/
+		complexity += 1;
 		
 		n.getBody().accept(this);
 		if (n.hasElseBody()) {
@@ -69,6 +76,14 @@ public class CCVisitor extends DefaultVisitor<Void>{
 		n.getIterator().accept(this);
 		n.getSource().accept(this);
 		return null;
+	}
+	
+	@Override
+	public Void visit(Break n) {
+		//complexity += 1;
+		
+		return null;
+		
 	}
 
 	public void resetCC() {

@@ -138,4 +138,8 @@ public class Subroutine extends ContentContainer {
 	public Integer getCC() {
 		return complexity;
 	}
+
+	public boolean isFunction() {
+		return getSubroutineType() == SubroutineType.FUNCTION;
+	}
 }

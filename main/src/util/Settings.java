@@ -25,7 +25,9 @@ public class Settings {
 	}
 
 	private Settings() throws IOException {
-		this.config = this.load("config\\config2.properties");
+		String configName = "large_dataset";
+		System.out.println("Starting detector with config file: " + configName);
+		this.config = this.load("config\\" + configName + ".properties");
 		this.mapsConfig = this.loadOptional("config\\maps.properties");
 		this.metricsConfig = this.loadOptional("config\\metrics.properties");
 		this.suspectConfig = this.loadOptional("config\\suspects.properties");

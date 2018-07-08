@@ -20,13 +20,13 @@ public class Register {
 
 	private final List<Detector> detectors;
 	private final Metrics metrics;
-	private boolean detectorsAdded;
+	private boolean allDetectorsAdded;
 	private boolean finished;
 
 	public Register() throws IOException {
 		this.detectors = new ArrayList<>();
 		this.metrics = new Metrics();
-		this.detectorsAdded = false;
+		this.allDetectorsAdded = false;
 	}
 
 	/**
@@ -34,7 +34,7 @@ public class Register {
 	 * @param detector
 	 */
 	public void add(Detector detector) {
-		if (this.detectorsAdded) {
+		if (this.allDetectorsAdded) {
 			throw new IllegalStateException();
 		}
 		detector.addMetrics(this.metrics);
@@ -50,15 +50,23 @@ public class Register {
 		if (this.finished) {
 			throw new IllegalStateException();
 		}
-		if (!this.detectorsAdded) {
-			this.detectorsAdded = true; //don't allow any additional detectors
+		if (!this.allDetectorsAdded) {
+			this.allDetectorsAdded = true; //don't allow any additional detectors
 		}
+		
 		project.getModules().forEach(m -> this.check(project.getPath(), m));
+		this.metrics.getProjectData(project); //write metric data for one project. 
+		
 		project.unlink();
 	}
 
+	private void checkProject(String path, Project project) {
+		//this.metrics.register(contentContainer);
+
+	}
+
 	/**
-	 * Overloaded check method. Goes deeper into modules in previous check method. Recurses on itself untill there are no more internal children in the container. 
+	 * Overloaded check method. Goes deeper into modules in previous check method. Recurses on itself untill there are no more internal children in the ContentContainer. 
 	 * @param projectPath
 	 * @param contentContainer
 	 */
@@ -70,6 +78,9 @@ public class Register {
 
 	/**
 	 * Finish method after all checking has been performed. BLocks additional checking from taking place. Iterates through detectors to save data to disk. 
+	 * 
+	 * *important* Deserialize has to be called before anything else. If deserialize is called late the data gathered during the running of the detector 
+	 * will only exist on disk and will not be loaded into memory.
 	 * @param gitLocs
 	 * @param csvCreator
 	 * @throws IOException
@@ -78,12 +89,15 @@ public class Register {
 		this.finished = true; //don't allow any additional checking
 		Map<Metric, Set<Integer>> reqMetrics = aggregateRequiredMetrics();
 		this.metrics.terminateCollecting(reqMetrics);
+		this.metrics.getGlobalData().deserializeData();
 
 		for (Detector detector : this.detectors) {
 			detector.deserializeData();
 			detector.finish(gitLocs, csvCreator, CSV_NAME);
 			detector.removeData();
 		}
+		this.metrics.getGlobalData().deserializeData();
+		// where to deserialize
 	}
 
 	private Map<Metric, Set<Integer>> aggregateRequiredMetrics() {

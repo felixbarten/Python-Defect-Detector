@@ -32,7 +32,9 @@ public class Main {
 		PrintStream out = new PrintStream(new FileOutputStream(FileHelper.stampedFileName(config.getProperty("locations.log.out"), "out", "log")));
 		PrintStream err = new PrintStream(new FileOutputStream(FileHelper.stampedFileName(config.getProperty("locations.log.error"), "err", "log")));
 		System.setOut(out);
-		System.setErr(err);
+		
+		// Don't redirect error stream for development
+		//System.setErr(err);
 
 		Register register = new Register();
 		registerDetectors(register);
@@ -58,6 +60,14 @@ public class Main {
 		register.finish(gitLocs, csvCreator);
 	}
 
+	/**
+	 * Replaces the projects list with a new List of projects if filtering is enabled. 
+	 * @param config
+	 * @param boolean to enable or disable filtering. 
+	 * @return list of projects for processing
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
 	private static List<String> fetchFilteredProjects(Properties config, boolean filterEnabled)
 			throws FileNotFoundException, IOException {
 		List<String> projects = Collections.emptyList();
@@ -69,6 +79,12 @@ public class Main {
 		return projects;
 	}
 
+	/**
+	 * Method processes a project. After gathering data from a project memory is flushed with the garbage collector to prevent running out of RAM. 
+	 * @param register object with detectors that are in use for code smell detection
+	 * @param file object with a path to the project location
+	 * @throws FileNotFoundException
+	 */
 	private static void processProject(Register register, File file) throws FileNotFoundException {
 		System.out.print(((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024));
 		Project project = createProject(file);
@@ -80,7 +96,7 @@ public class Main {
 	
 	/**
 	 * Registers all detector classes to the Register for futher processing.
-	 * @param register
+	 * @param register object where detectors will be registrered 
 	 * @throws IOException
 	 */
 	private static void registerDetectors(Register register) throws IOException {
@@ -100,8 +116,8 @@ public class Main {
 	}
 
 	/**
-	 * Creates logs, temporary and final result files.
-	 * @param config 
+	 * Creates files necessary for the detector to work. Creates split log files, temporary data storage files and the result files.
+	 * @param Config object from which to retrieve the file paths. 
 	 */
 	private static void createLocations(Properties config) {
 		FileHelper.createLocation(config.getProperty("locations.log.out"), true);
@@ -111,6 +127,13 @@ public class Main {
 		FileHelper.createLocation(config.getProperty("locations.data.results"), true);
 	}
 
+	/**
+	 * Returns a Project object. In this method the path to the project is checked for all relevant Python files. 
+	 * The next step is to generate the Abstract Syntax trees. After AST's are created 
+	 * a symantic model is created from which a Project object can be returned.
+	 * @param File object which contains the path to the project folder
+	 * @return Project object after processing the files.
+	 */
 	private static Project createProject(File projectFolder) {
 		//System.out.println("Project: " + projectFolder.getAbsolutePath());
 		List<String> allFiles = FileHelper.getPythonFilePaths(projectFolder);

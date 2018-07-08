@@ -199,7 +199,7 @@ public class ModelBuilder {
 					.map(p -> p.accept(argCollector))
 					.collect(Collectors.toList());
 
-			Class c = new Class(n.getName().getValue(), locInfo, this.getCurrentContainer(), superclassNames);
+			Class c = new Class(n.getName().getValue(), locInfo, this.getCurrentContainer(), superclassNames, project);
 			this.getCurrentContainer().addClassDefinition(c);
 			
 			this.classes.push(c);

@@ -5,6 +5,8 @@ import model.Subroutine;
 import model.Variable;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -173,8 +175,33 @@ public class ModelBuilderTest {
 		Map<String, Class> classes = TestHelper.getClasses("main/src/tests/samples/super_statements");
 		
 		Class test = classes.get("MetaTestCase");
+		
 	
 	}
+	
+	@Test
+	public void checkCyclomaticTest1() {
+		Map<String, Class> classes = TestHelper.getClasses("main/src/tests/samples/cyclomatic_complexity");
+		
+		Class test = classes.get("ClassOne");
+		
+		Set<Subroutine> funcs = test.getDefinedSubroutinesSet();
+		
+		int complexity = 0;
+		for (Subroutine s : funcs) {
+			System.out.println(s.getName() + " CC: " + s.getCC());
+			if (s.getName().equals("switchStmt")) {
+				assert (s.getCC() == 7);
+			} else if (s.getName().equals("advLoops")) {
+				assert (s.getCC() == 7);
+			}
+			complexity += s.getCC();
+		}
+		assert (test.getCC() > 0);
+		assert (test.getCC() == complexity);
+		
+	}
+	
 
 	private Map<String, Variable> sortVarsByName(Set<Variable> vars) {
 		Map<String, Variable> sorted = new HashMap<>();

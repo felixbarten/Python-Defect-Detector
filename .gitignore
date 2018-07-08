@@ -24,5 +24,8 @@ token.txt
 /build/
 /target/
 
-#eclipse plugin 
+# Eclipse 
 .settings/
+
+#Exclude some testing data
+main/src/tests/samples/super_statements/src/
