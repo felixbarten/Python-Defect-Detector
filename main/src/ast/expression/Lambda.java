@@ -1,8 +1,7 @@
 package ast.expression;
 
-import ast.param.Params;
-import org.antlr.v4.runtime.misc.NotNull;
 import ast.Visitor;
+import ast.param.Params;
 
 /**
  * Created by Nik on 26-05-2015
@@ -12,7 +11,7 @@ public class Lambda extends Expr {
 	private final Params parameters;
 	private final Expr expression;
 
-	public Lambda(@NotNull Integer locInfo, @NotNull Expr expression, Params parameters) {
+	public Lambda( Integer locInfo,  Expr expression, Params parameters) {
 		super(locInfo);
 		this.expression = expression;
 		this.parameters = parameters;

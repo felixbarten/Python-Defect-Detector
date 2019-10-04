@@ -1,11 +1,10 @@
 package ast.statement.compound;
 
+import java.util.List;
+
 import ast.Suite;
 import ast.Visitor;
 import ast.statement.Statement;
-import org.antlr.v4.runtime.misc.NotNull;
-
-import java.util.List;
 
 /**
  * Created by Nik on 24-06-2015
@@ -18,8 +17,8 @@ public class Try extends Statement {
 	private final Suite elseBlock;
 	private final Suite finallyBlock;
 
-	public Try(@NotNull Integer locInfo, @NotNull Suite tryBlock, @NotNull List<Except> exceptions,
-	           @NotNull List<Suite> exceptBodies, Suite elseBlock, Suite finallyBlock) {
+	public Try( Integer locInfo,  Suite tryBlock,  List<Except> exceptions,
+	            List<Suite> exceptBodies, Suite elseBlock, Suite finallyBlock) {
 		super(locInfo);
 		this.tryBlock = tryBlock;
 		this.exceptions = exceptions;

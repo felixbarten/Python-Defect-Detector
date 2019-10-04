@@ -1,14 +1,13 @@
 package ast.statement.flow;
 
-import ast.statement.Statement;
-import org.antlr.v4.runtime.misc.NotNull;
 import ast.Visitor;
+import ast.statement.Statement;
 
 /**
  * Created by Nik on 15-06-2015
  */
 public class Continue extends Statement {
-	public Continue(@NotNull Integer locInfo) {
+	public Continue( Integer locInfo) {
 		super(locInfo);
 	}
 

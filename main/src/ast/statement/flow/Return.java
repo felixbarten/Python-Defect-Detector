@@ -1,8 +1,7 @@
 package ast.statement.flow;
 
-import ast.expression.ExprList;
-import org.antlr.v4.runtime.misc.NotNull;
 import ast.Visitor;
+import ast.expression.ExprList;
 
 /**
  * Created by Nik on 15-06-2015
@@ -11,11 +10,11 @@ public class Return extends ast.statement.Statement {
 
 	private final ExprList values;
 
-	public Return(@NotNull Integer locInfo) {
+	public Return( Integer locInfo) {
 		this(locInfo, null);
 	}
 
-	public Return(@NotNull Integer locInfo, ExprList values) {
+	public Return( Integer locInfo, ExprList values) {
 		super(locInfo);
 		this.values = values;
 	}

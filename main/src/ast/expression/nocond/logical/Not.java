@@ -1,8 +1,7 @@
 package ast.expression.nocond.logical;
 
-import ast.expression.Expr;
-import org.antlr.v4.runtime.misc.NotNull;
 import ast.Visitor;
+import ast.expression.Expr;
 
 /**
  * Created by Nik on 09-06-2015
@@ -11,7 +10,7 @@ public class Not extends Logical {
 
 	private final Expr expression;
 
-	public Not(@NotNull Integer locInfo, @NotNull Expr expression) {
+	public Not( Integer locInfo,  Expr expression) {
 		super(locInfo);
 		this.expression = expression;
 	}

@@ -1,10 +1,9 @@
 package ast.param;
 
-import ast.expression.nocond.atom.Identifier;
-import org.antlr.v4.runtime.misc.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import ast.expression.nocond.atom.Identifier;
 
 /**
  * Created by Nik on 01-09-2015
@@ -13,7 +12,7 @@ public abstract class SimpleParam extends Param {
 
 	private final Identifier id;
 
-	public SimpleParam(@NotNull Integer locInfo, Identifier id) {
+	public SimpleParam( Integer locInfo, Identifier id) {
 		super(locInfo);
 		this.id = id;
 	}

@@ -1,15 +1,14 @@
 package ast.statement.compound;
 
+import java.util.Collections;
+import java.util.List;
+
 import ast.Decorator;
 import ast.Suite;
 import ast.Visitor;
 import ast.argument.Argument;
 import ast.expression.nocond.atom.Identifier;
 import ast.statement.Statement;
-import org.antlr.v4.runtime.misc.NotNull;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Created by Nik on 19-05-2015
@@ -21,7 +20,7 @@ public class ClassDef extends Statement {
 	private final List<Argument> inheritance;
 	private List<Decorator> decorators;
 
-	public ClassDef(@NotNull Integer locInfo, @NotNull Identifier name, @NotNull Suite body, @NotNull List<Argument> inheritance) {
+	public ClassDef(Integer locInfo, Identifier name, Suite body, List<Argument> inheritance) {
 		super(locInfo);
 		this.name = name;
 		this.body = body;

@@ -1,12 +1,12 @@
 package analysis.storage;
 
-import util.StringHelper;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import util.StringHelper;
 
 /**
  * Created by Nik on 26-11-2015

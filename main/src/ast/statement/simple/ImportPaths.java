@@ -1,17 +1,16 @@
 package ast.statement.simple;
 
+import java.util.List;
+
 import ast.Visitor;
 import ast.path.Path;
-import org.antlr.v4.runtime.misc.NotNull;
-
-import java.util.List;
 
 /**
  * Created by Nik on 25-05-15
  */
 public class ImportPaths extends Import {
 
-    public ImportPaths(@NotNull Integer locInfo, @NotNull List<Path> paths) {
+    public ImportPaths( Integer locInfo,  List<Path> paths) {
         super(locInfo, paths);
     }
 

@@ -1,9 +1,10 @@
 package tests;
 
-import org.junit.Test;
-import ast.LocCounter;
-
 import java.io.File;
+
+import org.junit.Test;
+
+import ast.LocCounter;
 
 /**
  * Created by Nik on 27-07-2015

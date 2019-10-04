@@ -2,7 +2,6 @@ package ast.expression.nocond.trailer;
 
 import ast.Visitor;
 import ast.expression.Expr;
-import org.antlr.v4.runtime.misc.NotNull;
 
 /**
  * Created by Nik on 17-06-2015
@@ -13,7 +12,7 @@ public class SliceBound extends SubscriptSliceListElem {
 	private final Expr upperBound;
 	private final Expr stride;
 
-	public SliceBound(@NotNull Integer locInfo, Expr lowerBound, Expr upperBound, Expr stride) {
+	public SliceBound( Integer locInfo, Expr lowerBound, Expr upperBound, Expr stride) {
 		super(locInfo);
 		this.lowerBound = lowerBound;
 		this.upperBound = upperBound;

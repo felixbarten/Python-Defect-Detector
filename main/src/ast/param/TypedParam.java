@@ -3,7 +3,6 @@ package ast.param;
 import ast.Visitor;
 import ast.expression.Expr;
 import ast.expression.nocond.atom.Identifier;
-import org.antlr.v4.runtime.misc.NotNull;
 
 /**
  * Created by Nik on 23-06-2015
@@ -11,7 +10,7 @@ import org.antlr.v4.runtime.misc.NotNull;
 public class TypedParam extends SimpleParam {
 	private final Expr returnVal;
 
-	public TypedParam(@NotNull Integer locInfo, @NotNull Identifier id, @NotNull Expr returnVal) {
+	public TypedParam( Integer locInfo,  Identifier id,  Expr returnVal) {
 		super(locInfo, id);
 		this.returnVal = returnVal;
 	}

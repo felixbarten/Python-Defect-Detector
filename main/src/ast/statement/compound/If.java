@@ -1,12 +1,11 @@
 package ast.statement.compound;
 
+import java.util.List;
+
 import ast.Suite;
 import ast.Visitor;
 import ast.expression.Expr;
 import ast.statement.Statement;
-import org.antlr.v4.runtime.misc.NotNull;
-
-import java.util.List;
 
 /**
  * Created by Nik on 17-06-2015
@@ -17,7 +16,7 @@ public class If extends Statement {
 	private final List<Suite> bodies;
 	private final Suite elseBody;
 
-	public If(@NotNull Integer locInfo, @NotNull List<Expr> conditions, @NotNull List<Suite> condBodies, Suite elseBody) {
+	public If( Integer locInfo,  List<Expr> conditions,  List<Suite> condBodies, Suite elseBody) {
 		super(locInfo);
 
 		this.conditions = conditions;

@@ -1,10 +1,9 @@
 package ast.statement.compound;
 
 import ast.Suite;
+import ast.Visitor;
 import ast.expression.Expr;
 import ast.statement.Statement;
-import org.antlr.v4.runtime.misc.NotNull;
-import ast.Visitor;
 
 /**
  * Created by Nik on 17-06-2015
@@ -15,7 +14,7 @@ public class While extends Statement {
 	private final Suite body;
 	private final Suite elseBody;
 
-	public While(@NotNull Integer locInfo, @NotNull Expr condition, @NotNull Suite body, Suite elseBody) {
+	public While( Integer locInfo,  Expr condition,  Suite body, Suite elseBody) {
 		super(locInfo);
 		this.condition = condition;
 		this.body = body;

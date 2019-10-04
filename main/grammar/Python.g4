@@ -50,7 +50,7 @@ tokens { INDENT, DEDENT }
 
 
 @header
-{
+{ 
 	package gen;
 	
     import java.util.List;
@@ -159,7 +159,7 @@ tokens { INDENT, DEDENT }
 /*
  * parser rules
  */
-
+ 
 /// single_input: NEWLINE | simple_stmt | compound_stmt NEWLINE
 single_input
  : NEWLINE
@@ -192,7 +192,7 @@ decorators
 decorated
  : decorators ( classdef | funcdef | async_funcdef )
  ;
-
+  
 // NOTE: this parse rule was introduced because of the keyword inconsistency between different versions of Python
 // print and exec are keywords in Python 2.x, but not in Python 3.x
 // nonlocal is a keyword in Python 3.x, but not in Python 2.x
@@ -205,7 +205,7 @@ name
  | ASYNC
  | AWAIT
  ;
-
+ 
 // 3.5: async_funcdef: ASYNC funcdef
 async_funcdef
  : ASYNC funcdef
@@ -244,7 +244,7 @@ typedargslist returns [List<TfpdefContext> regular, List<TestContext> regVals]
    ( ',' '**' keyword=tfpdef )?
  | '**' keyword=tfpdef
  ;
-
+ 
 /// tfpdef: NAME [':' test]
 tfpdef
  : name ( ':' test )?
@@ -1065,7 +1065,7 @@ RIGHT_SHIFT_ASSIGN : '>>=';
 POWER_ASSIGN : '**=';
 IDIV_ASSIGN : '//=';
 
-SKIP
+SKIPIT
  : ( SPACES | COMMENT | LINE_JOINING ) -> skip
  ;
 
@@ -1092,7 +1092,7 @@ fragment SHORT_STRING
 fragment LONG_STRING
  : '\'\'\'' LONG_STRING_ITEM*? '\'\'\''
  | '"""' LONG_STRING_ITEM*? '"""'
- ;
+ ; 
 
 /// longstringitem  ::=  longstringchar | stringescapeseq
 fragment LONG_STRING_ITEM

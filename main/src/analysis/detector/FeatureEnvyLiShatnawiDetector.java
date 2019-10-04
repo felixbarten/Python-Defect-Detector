@@ -1,11 +1,11 @@
 package analysis.detector;
 
+import java.io.IOException;
+
 import analysis.Metric;
 import analysis.storage.PrimitiveIntMap;
 import model.Subroutine;
 import model.SubroutineType;
-
-import java.io.IOException;
 
 /**
  * Created by Nik on 09-11-2015

@@ -3,7 +3,6 @@ package ast.expression.nocond.atom;
 import ast.Visitor;
 import ast.expression.nocond.trailer.Trailer;
 import ast.expression.nocond.trailer.TrailerVisitor;
-import org.antlr.v4.runtime.misc.NotNull;
 
 /**
  * Created by Nik on 25-05-2015
@@ -12,7 +11,7 @@ public class Identifier extends Atom implements Trailer {
 
 	private final String value;
 
-	public Identifier(Integer locInfo, @NotNull String value) {
+	public Identifier(Integer locInfo,  String value) {
 		super(locInfo);
 		this.value = value;
 	}

@@ -1,10 +1,9 @@
 package ast.expression.nocond.logical;
 
-import ast.expression.Expr;
-import org.antlr.v4.runtime.misc.NotNull;
-import ast.Visitor;
-
 import java.util.List;
+
+import ast.Visitor;
+import ast.expression.Expr;
 
 /**
  * Created by Nik on 25-05-2015
@@ -14,7 +13,7 @@ public class Comparison extends Logical {
 	private final List<Expr> operands;
 	private final List<String> operators;
 
-	public Comparison(@NotNull Integer locInfo, @NotNull List<Expr> operands, @NotNull List<String> operators) {
+	public Comparison( Integer locInfo,  List<Expr> operands,  List<String> operators) {
 		super(locInfo);
 
 		assert operands.size() - 1 == operators.size();

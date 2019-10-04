@@ -1,21 +1,22 @@
 package process;
 
-import ast.AstBuilder;
-import ast.Module;
-import gen.PythonLexer;
-import gen.PythonParser;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.atn.ATNSimulator;
 import org.antlr.v4.runtime.atn.LexerATNSimulator;
 import org.antlr.v4.runtime.atn.ParserATNSimulator;
 import org.antlr.v4.runtime.atn.PredictionContextCache;
+
+import ast.AstBuilder;
+import ast.Module;
+import gen.PythonLexer;
+import gen.PythonParser;
 import util.FileOpener;
 import util.StringHelper;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Nik on 05-08-2015

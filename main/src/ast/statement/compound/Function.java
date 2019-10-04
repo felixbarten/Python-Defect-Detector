@@ -1,5 +1,8 @@
 package ast.statement.compound;
 
+import java.util.Collections;
+import java.util.List;
+
 import ast.Decorator;
 import ast.Suite;
 import ast.Visitor;
@@ -7,10 +10,6 @@ import ast.expression.Expr;
 import ast.expression.nocond.atom.Identifier;
 import ast.param.Params;
 import ast.statement.Statement;
-import org.antlr.v4.runtime.misc.NotNull;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Created by Nik on 25-05-15
@@ -24,7 +23,7 @@ public class Function extends Statement {
 	private Boolean async;
 	private List<Decorator> decorators;
 
-	public Function(@NotNull Integer locInfo, @NotNull Identifier name, Expr returnType, @NotNull Suite body, @NotNull Params params) {
+	public Function( Integer locInfo,  Identifier name, Expr returnType,  Suite body,  Params params) {
 		super(locInfo);
 		this.name = name;
 		this.returnType = returnType;

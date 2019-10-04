@@ -1,6 +1,5 @@
 package ast.statement;
 
-import ast.AstNode;
 import ast.Visitor;
 import ast.expression.nocond.atom.Identifier;
 import ast.expression.nocond.trailer.ArgList;

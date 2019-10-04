@@ -1,7 +1,6 @@
 package ast.expression.nocond.atom.numeric;
 
 import ast.Visitor;
-import org.antlr.v4.runtime.misc.NotNull;
 
 /**
  * Created by Nik on 02-09-2015
@@ -10,7 +9,7 @@ public class Long extends Numeric {
 
 	private final String value;
 
-	public Long(@NotNull Integer locInfo, @NotNull String value) {
+	public Long( Integer locInfo,  String value) {
 		super(locInfo);
 		this.value = value;
 	}

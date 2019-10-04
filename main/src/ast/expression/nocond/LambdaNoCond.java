@@ -1,8 +1,7 @@
 package ast.expression.nocond;
 
-import ast.param.Params;
-import org.antlr.v4.runtime.misc.NotNull;
 import ast.Visitor;
+import ast.param.Params;
 
 /**
  * Created by Nik on 22-06-2015
@@ -12,7 +11,7 @@ public class LambdaNoCond extends NonConditional {
 	private final Params parameters;
 	private final NonConditional expression;
 
-	public LambdaNoCond(@NotNull Integer locInfo, @NotNull NonConditional expression, Params parameters) {
+	public LambdaNoCond( Integer locInfo,  NonConditional expression, Params parameters) {
 		super(locInfo);
 		this.expression = expression;
 		this.parameters = parameters;

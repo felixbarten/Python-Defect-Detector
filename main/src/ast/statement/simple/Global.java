@@ -1,11 +1,10 @@
 package ast.statement.simple;
 
+import java.util.List;
+
 import ast.Visitor;
 import ast.expression.nocond.atom.Identifier;
 import ast.statement.Statement;
-import org.antlr.v4.runtime.misc.NotNull;
-
-import java.util.List;
 
 /**
  * Created by Nik on 25-05-2015
@@ -14,7 +13,7 @@ public class Global extends Statement {
 
 	private final List<Identifier> identifiers;
 
-	public Global(@NotNull Integer locInfo, @NotNull List<Identifier> identifiers) {
+	public Global( Integer locInfo,  List<Identifier> identifiers) {
 		super(locInfo);
 		this.identifiers = identifiers;
 	}

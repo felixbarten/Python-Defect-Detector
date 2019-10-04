@@ -1,10 +1,5 @@
 package main;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-import process.File2Tree;
-import util.FileHelper;
-import util.Settings;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -14,6 +9,12 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Properties;
+
+import org.antlr.v4.runtime.ParserRuleContext;
+
+import process.File2Tree;
+import util.FileHelper;
+import util.Settings;
 
 /**
  * Created by Nik on 08-10-2015

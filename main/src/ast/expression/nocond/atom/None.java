@@ -1,13 +1,12 @@
 package ast.expression.nocond.atom;
 
-import org.antlr.v4.runtime.misc.NotNull;
 import ast.Visitor;
 
 /**
  * Created by Nik on 15-06-2015
  */
 public class None extends Atom {
-	public None(@NotNull Integer locInfo) {
+	public None( Integer locInfo) {
 		super(locInfo);
 	}
 

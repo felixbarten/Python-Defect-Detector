@@ -1,10 +1,9 @@
 package ast;
 
+import java.util.List;
+
 import ast.statement.Statement;
 import ast.statement.flow.Return;
-import org.antlr.v4.runtime.misc.NotNull;
-
-import java.util.List;
 
 /**
  * Created by Nik on 25-06-2015
@@ -13,7 +12,7 @@ public class Suite extends AstNode {
 
 	private final List<Statement> statements;
 
-	public Suite(@NotNull Integer locInfo, @NotNull List<Statement> statements) {
+	public Suite( Integer locInfo,  List<Statement> statements) {
 		super(locInfo);
 		this.statements = statements;
 	}

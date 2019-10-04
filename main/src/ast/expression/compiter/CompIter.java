@@ -1,7 +1,6 @@
 package ast.expression.compiter;
 
 import ast.expression.Expr;
-import org.antlr.v4.runtime.misc.NotNull;
 
 /**
  * Created by Nik on 17-06-2015
@@ -10,7 +9,7 @@ public abstract class CompIter extends Expr {
 
 	private final CompIter nextLink;
 
-	public CompIter(@NotNull Integer locInfo, CompIter nextLink) {
+	public CompIter( Integer locInfo, CompIter nextLink) {
 		super(locInfo);
 		this.nextLink = nextLink;
 	}

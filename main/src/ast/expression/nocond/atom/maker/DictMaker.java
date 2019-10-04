@@ -1,11 +1,10 @@
 package ast.expression.nocond.atom.maker;
 
+import java.util.List;
+
 import ast.Visitor;
 import ast.expression.Expr;
 import ast.expression.compiter.CompFor;
-import org.antlr.v4.runtime.misc.NotNull;
-
-import java.util.List;
 
 /**
  * Created by Nik on 15-06-2015
@@ -16,7 +15,7 @@ public class DictMaker extends Maker {
 	private final List<Expr> keys;
 	private final List<Expr> values;
 
-	public DictMaker(@NotNull Integer locInfo, CompFor comprehension, @NotNull List<Expr> keys, @NotNull List<Expr> values) {
+	public DictMaker( Integer locInfo, CompFor comprehension,  List<Expr> keys,  List<Expr> values) {
 		super(locInfo);
 
 		this.comprehension = comprehension;

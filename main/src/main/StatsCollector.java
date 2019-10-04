@@ -1,14 +1,14 @@
 package main;
 
-import util.FileHelper;
-import util.Settings;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Properties;
+
+import util.FileHelper;
+import util.Settings;
 
 /**
  * Created by Nik on 08-10-2015

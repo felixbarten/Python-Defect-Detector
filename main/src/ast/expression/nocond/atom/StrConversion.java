@@ -2,7 +2,6 @@ package ast.expression.nocond.atom;
 
 import ast.Visitor;
 import ast.expression.ExprList;
-import org.antlr.v4.runtime.misc.NotNull;
 
 /**
  * Created by Nik on 02-09-2015
@@ -11,7 +10,7 @@ public class StrConversion extends Atom {
 
 	private final ExprList exprList;
 
-	public StrConversion(@NotNull Integer locInfo, @NotNull ExprList exprList) {
+	public StrConversion( Integer locInfo,  ExprList exprList) {
 		super(locInfo);
 		this.exprList = exprList;
 	}

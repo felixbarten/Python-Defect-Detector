@@ -1,14 +1,19 @@
 package analysis;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import analysis.detector.Detector;
 import main.CsvCreator;
 import model.ContentContainer;
 import model.Project;
 import process.GitLocationProcessor;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.*;
 
 /**
  * This class keeps track of the smell detectors by registering them. 

@@ -1,14 +1,13 @@
 package ast.statement.flow;
 
-import ast.statement.Statement;
-import org.antlr.v4.runtime.misc.NotNull;
 import ast.Visitor;
+import ast.statement.Statement;
 
 /**
  * Created by Nik on 25-05-2015
  */
 public class Break extends Statement {
-	public Break(@NotNull Integer locInfo) {
+	public Break( Integer locInfo) {
 		super(locInfo);
 	}
 

@@ -1,10 +1,9 @@
 package ast.expression.nocond.trailer;
 
-import ast.expression.nocond.NonConditional;
-import org.antlr.v4.runtime.misc.NotNull;
-import ast.Visitor;
-
 import java.util.List;
+
+import ast.Visitor;
+import ast.expression.nocond.NonConditional;
 
 /**
  * Created by Nik on 08-07-2015
@@ -13,7 +12,7 @@ public class SubscriptSliceList extends NonConditional implements Trailer {
 
 	private final List<SubscriptSliceListElem> indexes;
 
-	public SubscriptSliceList(@NotNull Integer locInfo, List<SubscriptSliceListElem> indexes) {
+	public SubscriptSliceList( Integer locInfo, List<SubscriptSliceListElem> indexes) {
 		super(locInfo);
 		this.indexes = indexes;
 	}

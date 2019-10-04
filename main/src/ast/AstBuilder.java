@@ -1,6 +1,23 @@
 package ast;
 
-import ast.argument.*;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.RuleNode;
+import org.antlr.v4.runtime.tree.TerminalNode;
+
+import ast.argument.Arg;
+import ast.argument.Argument;
+import ast.argument.CondArgument;
+import ast.argument.DefValArgument;
+import ast.argument.Kwarg;
+import ast.argument.SimpleArgument;
 import ast.expression.Conditional;
 import ast.expression.Expr;
 import ast.expression.ExprList;
@@ -13,7 +30,13 @@ import ast.expression.nocond.NonConditional;
 import ast.expression.nocond.arithmetic.Nnary;
 import ast.expression.nocond.arithmetic.Power;
 import ast.expression.nocond.arithmetic.Unary;
-import ast.expression.nocond.atom.*;
+import ast.expression.nocond.atom.Atom;
+import ast.expression.nocond.atom.Bool;
+import ast.expression.nocond.atom.Ellipsis;
+import ast.expression.nocond.atom.Identifier;
+import ast.expression.nocond.atom.None;
+import ast.expression.nocond.atom.Str;
+import ast.expression.nocond.atom.StrConversion;
 import ast.expression.nocond.atom.comprehension.CondComprehension;
 import ast.expression.nocond.atom.comprehension.EnumComprehension;
 import ast.expression.nocond.atom.maker.DictMaker;
@@ -31,32 +54,53 @@ import ast.expression.nocond.bitwise.Xor;
 import ast.expression.nocond.logical.Binary;
 import ast.expression.nocond.logical.Comparison;
 import ast.expression.nocond.logical.Not;
-import ast.expression.nocond.trailer.*;
-import ast.param.*;
+import ast.expression.nocond.trailer.ArgList;
+import ast.expression.nocond.trailer.SliceBound;
+import ast.expression.nocond.trailer.SubscriptIndex;
+import ast.expression.nocond.trailer.SubscriptSliceList;
+import ast.expression.nocond.trailer.SubscriptSliceListElem;
+import ast.expression.nocond.trailer.Trailer;
+import ast.param.ListParam;
+import ast.param.Param;
+import ast.param.Params;
+import ast.param.TypedParam;
+import ast.param.UntypedParam;
 import ast.path.DottedPath;
 import ast.path.Path;
 import ast.path.SimplePath;
 import ast.statement.MethodCallStmt;
-import ast.statement.compound.*;
-import ast.statement.flow.*;
-import ast.statement.simple.*;
+import ast.statement.compound.ClassDef;
+import ast.statement.compound.Except;
+import ast.statement.compound.For;
+import ast.statement.compound.Function;
+import ast.statement.compound.If;
+import ast.statement.compound.Try;
+import ast.statement.compound.While;
+import ast.statement.compound.With;
+import ast.statement.compound.WithItem;
+import ast.statement.flow.Break;
+import ast.statement.flow.Continue;
+import ast.statement.flow.RaiseEx;
+import ast.statement.flow.RaiseFrom;
+import ast.statement.flow.Return;
+import ast.statement.simple.Assert;
+import ast.statement.simple.Assign;
+import ast.statement.simple.Delete;
+import ast.statement.simple.Exec;
+import ast.statement.simple.Global;
+import ast.statement.simple.ImportFrom;
+import ast.statement.simple.ImportPaths;
+import ast.statement.simple.Nonlocal;
+import ast.statement.simple.Pass;
+import ast.statement.simple.Print;
+import ast.statement.simple.SuperStmt;
 import gen.PythonParser;
 import gen.PythonParser.Chained_methodContext;
 import gen.PythonParser.Instance_method_callContext;
 import gen.PythonParser.Method_argsContext;
 import gen.PythonParser.Method_callContext;
 import gen.PythonVisitor;
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.misc.NotNull;
-import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.RuleNode;
-import org.antlr.v4.runtime.tree.TerminalNode;
 import util.StringHelper;
-
-import java.math.BigInteger;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Created by Nik on 19-05-2015
@@ -90,7 +134,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitSingle_input(@NotNull PythonParser.Single_inputContext ctx) {
+		public AstNode visitSingle_input(PythonParser.Single_inputContext ctx) {
 			//      NEWLINE | simple_stmt | compound_stmt NEWLINE
 			if (ctx.simple_stmt() != null) {
 				return ctx.simple_stmt().accept(this);
@@ -105,7 +149,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitFile_input(@NotNull PythonParser.File_inputContext ctx) {
+		public AstNode visitFile_input(PythonParser.File_inputContext ctx) {
 			//      ( NEWLINE | stmt )* EOF
 			List<ast.statement.Statement> children = new ArrayList<>();
 			if (ctx.stmt() != null) {
@@ -115,13 +159,13 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitEval_input(@NotNull PythonParser.Eval_inputContext ctx) {
+		public AstNode visitEval_input(PythonParser.Eval_inputContext ctx) {
 			//      NEWLINE* testlist NEWLINE* EOF
 			return ctx.testlist().accept(this);
 		}
 
 		@Override
-		public AstNode visitDecorator(@NotNull PythonParser.DecoratorContext ctx) {
+		public AstNode visitDecorator(PythonParser.DecoratorContext ctx) {
 			//      '@' dotted_name ( '(' arglist? ')' )? NEWLINE
 			DottedPath id = (DottedPath) ctx.dotted_name().accept(this);
 			ArgList argList = ctx.arglist() == null ? null : (ArgList) ctx.arglist().accept(this);
@@ -129,7 +173,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitDecorators(@NotNull PythonParser.DecoratorsContext ctx) {
+		public AstNode visitDecorators(PythonParser.DecoratorsContext ctx) {
 			//      decorator+
 			if (ctx.decorator() != null) {
 				List<Decorator> decorators = ctx.decorator()
@@ -142,7 +186,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitDecorated(@NotNull PythonParser.DecoratedContext ctx) {
+		public AstNode visitDecorated(PythonParser.DecoratedContext ctx) {
 			//      decorators ( classdef | funcdef | async_funcdef)
 			CollectionWrapper<Decorator> decorators = (CollectionWrapper<Decorator>) ctx.decorators().accept(this);
 			if (ctx.classdef() != null) {
@@ -179,7 +223,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitFuncdef(@NotNull PythonParser.FuncdefContext ctx) {
+		public AstNode visitFuncdef(PythonParser.FuncdefContext ctx) {
 			//      DEF name parameters ( '->' test )? ':' suite
 			Params params = (Params) ctx.parameters().accept(this);
 			Expr returnType = ctx.test() == null ? null : (Expr) ctx.test().accept(this);
@@ -189,7 +233,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitParameters(@NotNull PythonParser.ParametersContext ctx) {
+		public AstNode visitParameters(PythonParser.ParametersContext ctx) {
 			//      '(' typedargslist ')' | '(' varargslist? ')'
 			if (ctx.typedargslist() != null) {
 				return ctx.typedargslist().accept(this);
@@ -201,7 +245,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitTypedargslist(@NotNull PythonParser.TypedargslistContext ctx) {
+		public AstNode visitTypedargslist(PythonParser.TypedargslistContext ctx) {
 			//		tfpdef ( '=' test )? ( ',' tfpdef ( '=' test )? )* ( ',' ( '*' tfpdef? ( ',' tfpdef ( '=' test )? )* ( ',' '**' tfpdef )?
 			//		                                                         | '**' tfpdef
 			//		                                                         )?
@@ -224,7 +268,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitTfpdef(@NotNull PythonParser.TfpdefContext ctx) {
+		public AstNode visitTfpdef(PythonParser.TfpdefContext ctx) {
 			//      name ( ':' test )?
 			Identifier id = (Identifier) ctx.name().accept(this);
 			if (ctx.test() != null) {
@@ -235,7 +279,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitVarargslist(@NotNull PythonParser.VarargslistContext ctx) {
+		public AstNode visitVarargslist(PythonParser.VarargslistContext ctx) {
 			//		vfpdef ( '=' test )? ( ',' vfpdef ( '=' test )? )* ( ',' ( '*' vfpdef? ( ',' vfpdef ( '=' test )? )* ( ',' '**' vfpdef )?
 			//		                                                         | '**' vfpdef
 			//		                                                         )?
@@ -258,7 +302,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitVfpdef(@NotNull PythonParser.VfpdefContext ctx) {
+		public AstNode visitVfpdef(PythonParser.VfpdefContext ctx) {
 			//      name | '(' vfplist ')'
 			if (ctx.name() != null) {
 				Identifier id = (Identifier) ctx.name().accept(this);
@@ -280,7 +324,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitStmt(@NotNull PythonParser.StmtContext ctx) {
+		public AstNode visitStmt(PythonParser.StmtContext ctx) {
 			//      simple_stmt | compound_stmt
 			if (ctx.simple_stmt() != null) {
 				return ctx.simple_stmt().accept(this); //returns a Wrapper
@@ -294,7 +338,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitSimple_stmt(@NotNull PythonParser.Simple_stmtContext ctx) {
+		public AstNode visitSimple_stmt(PythonParser.Simple_stmtContext ctx) {
 			//      small_stmt ( ';' small_stmt )* ';'? NEWLINE
 			List<ast.statement.Statement> statements = ctx.small_stmt().stream()
 					.map(e -> (ast.statement.Statement) e.accept(this))
@@ -303,7 +347,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitSmall_stmt(@NotNull PythonParser.Small_stmtContext ctx) {
+		public AstNode visitSmall_stmt(PythonParser.Small_stmtContext ctx) {
 			//      expr_stmt | print_stmt | del_stmt | pass_stmt | flow_stmt | import_stmt
 			//		| global_stmt | nonlocal_stmt | exec_stmt | assert_stmt
 			if (ctx.expr_stmt() != null) {
@@ -343,7 +387,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitExpr_stmt(@NotNull PythonParser.Expr_stmtContext ctx) {
+		public AstNode visitExpr_stmt(PythonParser.Expr_stmtContext ctx) {
 			//      testlist_star_expr ( augassign ( yield_expr | testlist) | ( '=' ( yield_expr | testlist_star_expr ) )* )
 			String operator = "=";
 			if (ctx.augassign() != null) {
@@ -385,7 +429,7 @@ public class AstBuilder {
 
 
 		@Override
-		public AstNode visitTestlist_star_expr(@NotNull PythonParser.Testlist_star_exprContext ctx) {
+		public AstNode visitTestlist_star_expr(PythonParser.Testlist_star_exprContext ctx) {
 			//      ( test | star_expr ) ( ',' ( test |  star_expr ) )* ','?
 			List<Expr> children = new ArrayList<>();
 			if (ctx.test() != null) {
@@ -402,7 +446,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitAugassign(@NotNull PythonParser.AugassignContext ctx) {
+		public AstNode visitAugassign(PythonParser.AugassignContext ctx) {
 			//      '+=' | '-=' | '*=' | '@=' | '/=' | '%=' | '&=' | '|=' | '^=' | '<<=' | '>>=' | '**=' | '//='
 			return new Wrapper<>(this.getLocInfo(ctx), ctx.op.getText());
 		}
@@ -417,20 +461,20 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitDel_stmt(@NotNull PythonParser.Del_stmtContext ctx) {
+		public AstNode visitDel_stmt(PythonParser.Del_stmtContext ctx) {
 			//      DEL exprlist
 			ExprList expressions = (ExprList) ctx.exprlist().accept(this);
 			return new Delete(this.getLocInfo(ctx), expressions);
 		}
 
 		@Override
-		public AstNode visitPass_stmt(@NotNull PythonParser.Pass_stmtContext ctx) {
+		public AstNode visitPass_stmt(PythonParser.Pass_stmtContext ctx) {
 			//PASS
 			return new Pass(this.getLocInfo(ctx));
 		}
 
 		@Override
-		public AstNode visitFlow_stmt(@NotNull PythonParser.Flow_stmtContext ctx) {
+		public AstNode visitFlow_stmt(PythonParser.Flow_stmtContext ctx) {
 			//      break_stmt | continue_stmt | return_stmt | raise_stmt | yield_stmt
 			if (ctx.break_stmt() != null) {
 				return ctx.break_stmt().accept(this);
@@ -451,19 +495,19 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitBreak_stmt(@NotNull PythonParser.Break_stmtContext ctx) {
+		public AstNode visitBreak_stmt(PythonParser.Break_stmtContext ctx) {
 			//      BREAK
 			return new Break(this.getLocInfo(ctx));
 		}
 
 		@Override
-		public AstNode visitContinue_stmt(@NotNull PythonParser.Continue_stmtContext ctx) {
+		public AstNode visitContinue_stmt(PythonParser.Continue_stmtContext ctx) {
 			//      CONTINUE
 			return new Continue(this.getLocInfo(ctx));
 		}
 
 		@Override
-		public AstNode visitReturn_stmt(@NotNull PythonParser.Return_stmtContext ctx) {
+		public AstNode visitReturn_stmt(PythonParser.Return_stmtContext ctx) {
 			//      RETURN testlist?
 			if (ctx.testlist() != null) {
 				ExprList expressions = (ExprList) ctx.testlist().accept(this);
@@ -473,14 +517,14 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitYield_stmt(@NotNull PythonParser.Yield_stmtContext ctx) {
+		public AstNode visitYield_stmt(PythonParser.Yield_stmtContext ctx) {
 			//      yield_expr
 			Yield yield = (Yield) ctx.yield_expr().accept(this);
 			return new ast.statement.flow.Yield(this.getLocInfo(ctx), yield);
 		}
 
 		@Override
-		public AstNode visitRaise_stmt(@NotNull PythonParser.Raise_stmtContext ctx) {
+		public AstNode visitRaise_stmt(PythonParser.Raise_stmtContext ctx) {
 			//      RAISE ( test ( FROM test | ',' test (',' test)? )? )?
 			Expr type = ctx.type == null ? null : (Expr) ctx.type.accept(this);
 			if (ctx.source != null) {
@@ -495,7 +539,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitImport_stmt(@NotNull PythonParser.Import_stmtContext ctx) {
+		public AstNode visitImport_stmt(PythonParser.Import_stmtContext ctx) {
 			//      import_name | import_from
 			if (ctx.import_name() != null) {
 				return ctx.import_name().accept(this);
@@ -507,14 +551,14 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitImport_name(@NotNull PythonParser.Import_nameContext ctx) {
+		public AstNode visitImport_name(PythonParser.Import_nameContext ctx) {
 			//      IMPORT dotted_as_names
 			CollectionWrapper<Path> wrap = (CollectionWrapper<Path>) ctx.dotted_as_names().accept(this);
 			return new ImportPaths(this.getLocInfo(ctx), wrap.getItems());
 		}
 
 		@Override
-		public AstNode visitImport_from(@NotNull PythonParser.Import_fromContext ctx) {
+		public AstNode visitImport_from(PythonParser.Import_fromContext ctx) {
 			//		FROM ( ( '.' | '...' )* dotted_name
 			//			 | ('.' | '...')+
 			//		     )
@@ -545,7 +589,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitImport_as_name(@NotNull PythonParser.Import_as_nameContext ctx) {
+		public AstNode visitImport_as_name(PythonParser.Import_as_nameContext ctx) {
 			//      name ( AS name )?
 			SimplePath simplePath = new SimplePath(this.getLocInfo(ctx), ctx.name().get(0).getText());
 			if (ctx.name().size() == 2) {
@@ -556,7 +600,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitDotted_as_name(@NotNull PythonParser.Dotted_as_nameContext ctx) {
+		public AstNode visitDotted_as_name(PythonParser.Dotted_as_nameContext ctx) {
 			//      dotted_name ( AS name )?
 			DottedPath path = (DottedPath) ctx.dotted_name().accept(this);
 			if (ctx.name() != null) {
@@ -567,7 +611,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitImport_as_names(@NotNull PythonParser.Import_as_namesContext ctx) {
+		public AstNode visitImport_as_names(PythonParser.Import_as_namesContext ctx) {
 			//      import_as_name ( ',' import_as_name )* ','?
 			List<SimplePath> ids = ctx.import_as_name().stream()
 					.map(e -> (SimplePath) e.accept(this))
@@ -576,7 +620,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitDotted_as_names(@NotNull PythonParser.Dotted_as_namesContext ctx) {
+		public AstNode visitDotted_as_names(PythonParser.Dotted_as_namesContext ctx) {
 			//      dotted_as_name ( ',' dotted_as_name )*
 			List<DottedPath> dottedPaths = ctx.dotted_as_name().stream()
 					.map(e -> (DottedPath) e.accept(this))
@@ -585,13 +629,13 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitDotted_name(@NotNull PythonParser.Dotted_nameContext ctx) {
+		public AstNode visitDotted_name(PythonParser.Dotted_nameContext ctx) {
 			//      NAME ( '.' NAME )*
 			return new DottedPath(this.getLocInfo(ctx), ctx.names);
 		}
 
 		@Override
-		public AstNode visitGlobal_stmt(@NotNull PythonParser.Global_stmtContext ctx) {
+		public AstNode visitGlobal_stmt(PythonParser.Global_stmtContext ctx) {
 			//      GLOBAL NAME ( ',' NAME )*
 			List<Identifier> ids = ctx.names.stream()
 					.map(e -> new Identifier(this.getLocInfo(ctx), e))
@@ -600,7 +644,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitNonlocal_stmt(@NotNull PythonParser.Nonlocal_stmtContext ctx) {
+		public AstNode visitNonlocal_stmt(PythonParser.Nonlocal_stmtContext ctx) {
 			//      NONLOCAL NAME ( ',' NAME )*
 			List<Identifier> ids = ctx.names.stream()
 					.map(e -> new Identifier(this.getLocInfo(ctx), e))
@@ -648,7 +692,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitAssert_stmt(@NotNull PythonParser.Assert_stmtContext ctx) {
+		public AstNode visitAssert_stmt(PythonParser.Assert_stmtContext ctx) {
 			//      ASSERT test ( ',' test )?
 			Expr assertion = (Expr) ctx.assertion.accept(this);
 			if (ctx.assertionError != null) {
@@ -659,7 +703,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitCompound_stmt(@NotNull PythonParser.Compound_stmtContext ctx) {
+		public AstNode visitCompound_stmt(PythonParser.Compound_stmtContext ctx) {
 			//      if_stmt | while_stmt | for_stmt | try_stmt | with_stmt | funcdef | classdef | decorated | async_stmt
 			if (ctx.if_stmt() != null) {
 				return ctx.if_stmt().accept(this);
@@ -713,7 +757,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitIf_stmt(@NotNull PythonParser.If_stmtContext ctx) {
+		public AstNode visitIf_stmt(PythonParser.If_stmtContext ctx) {
 			//      IF test ':' suite ( ELIF test ':' suite )* ( ELSE ':' suite )?
 			List<Expr> conditions = new ArrayList<>();
 			List<Suite> bodies = new ArrayList<>();
@@ -728,7 +772,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitWhile_stmt(@NotNull PythonParser.While_stmtContext ctx) {
+		public AstNode visitWhile_stmt(PythonParser.While_stmtContext ctx) {
 			//      WHILE test ':' suite ( ELSE ':' suite )?
 			Expr condition = (Expr) ctx.test().accept(this);
 			Suite body = this.process(ctx.body);
@@ -738,7 +782,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitFor_stmt(@NotNull PythonParser.For_stmtContext ctx) {
+		public AstNode visitFor_stmt(PythonParser.For_stmtContext ctx) {
 			//      FOR exprlist IN testlist ':' suite ( ELSE ':' suite )?
 			ExprList iterator = (ExprList) ctx.exprlist().accept(this);
 			ExprList source = (ExprList) ctx.testlist().accept(this);
@@ -749,7 +793,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitTry_stmt(@NotNull PythonParser.Try_stmtContext ctx) {
+		public AstNode visitTry_stmt(PythonParser.Try_stmtContext ctx) {
 			//		TRY ':' suite ( ( except_clause ':' suite )+
 			//		                ( ELSE ':' suite )?
 			//		                ( FINALLY ':' suite )?
@@ -772,7 +816,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitWith_stmt(@NotNull PythonParser.With_stmtContext ctx) {
+		public AstNode visitWith_stmt(PythonParser.With_stmtContext ctx) {
 			//      WITH with_item ( ',' with_item )* ':' suite
 			List<WithItem> items = ctx.with_item().stream()
 					.map(e -> (WithItem) e.accept(this))
@@ -782,7 +826,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitWith_item(@NotNull PythonParser.With_itemContext ctx) {
+		public AstNode visitWith_item(PythonParser.With_itemContext ctx) {
 			//      test ( AS expr )?
 			Expr item = (Expr) ctx.test().accept(this);
 			Expr alias = ctx.expr() == null ? null : (Expr) ctx.expr().accept(this);
@@ -790,7 +834,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitExcept_clause(@NotNull PythonParser.Except_clauseContext ctx) {
+		public AstNode visitExcept_clause(PythonParser.Except_clauseContext ctx) {
 			//      EXCEPT ( test ( ( AS | ',' ) test )? )?
 			Expr exception = ctx.type == null ? null : (Expr) ctx.type.accept(this);
 			Expr alias = ctx.exName == null ? null : (Expr) ctx.exName.accept(this);
@@ -798,7 +842,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitSuite(@NotNull PythonParser.SuiteContext ctx) {
+		public AstNode visitSuite(PythonParser.SuiteContext ctx) {
 			//      simple_stmt | NEWLINE INDENT stmt+ DEDENT
 			if (ctx.simple_stmt() != null) {
 				CollectionWrapper<ast.statement.Statement> wrap = (CollectionWrapper<ast.statement.Statement>) ctx.simple_stmt().accept(this);
@@ -816,7 +860,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitTest(@NotNull PythonParser.TestContext ctx) {
+		public AstNode visitTest(PythonParser.TestContext ctx) {
 			//      value=or_test ( IF condition=or_test ELSE test )? | lambdef
 			if (ctx.lambdef() != null) {
 				return ctx.lambdef().accept(this);
@@ -833,7 +877,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitTest_nocond(@NotNull PythonParser.Test_nocondContext ctx) {
+		public AstNode visitTest_nocond(PythonParser.Test_nocondContext ctx) {
 			//      or_test | lambdef_nocond
 			if (ctx.or_test() != null) {
 				return ctx.or_test().accept(this);
@@ -845,7 +889,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitLambdef(@NotNull PythonParser.LambdefContext ctx) {
+		public AstNode visitLambdef(PythonParser.LambdefContext ctx) {
 			//      LAMBDA varargslist? ':' test
 			Params parameters = ctx.varargslist() == null ? null : (Params) ctx.varargslist().accept(this);
 			Expr expr = (Expr) ctx.test().accept(this);
@@ -853,7 +897,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitLambdef_nocond(@NotNull PythonParser.Lambdef_nocondContext ctx) {
+		public AstNode visitLambdef_nocond(PythonParser.Lambdef_nocondContext ctx) {
 			//      LAMBDA varargslist? ':' test_nocond
 			Params parameters = ctx.varargslist() == null ? null : (Params) ctx.varargslist().accept(this);
 			NonConditional expr = (NonConditional) ctx.test_nocond().accept(this);
@@ -861,7 +905,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitOr_test(@NotNull PythonParser.Or_testContext ctx) {
+		public AstNode visitOr_test(PythonParser.Or_testContext ctx) {
 			//      and_test ( OR and_test )*
 			List<Expr> children = ctx.and_test().stream()
 					.map(c -> (Expr) c.accept(this))
@@ -874,7 +918,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitAnd_test(@NotNull PythonParser.And_testContext ctx) {
+		public AstNode visitAnd_test(PythonParser.And_testContext ctx) {
 			//      not_test ( AND not_test )*
 			List<Expr> children = ctx.not_test().stream()
 					.map(c -> (Expr) c.accept(this))
@@ -887,7 +931,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitNot_test(@NotNull PythonParser.Not_testContext ctx) {
+		public AstNode visitNot_test(PythonParser.Not_testContext ctx) {
 			//      NOT not_test | comparison
 			if (ctx.not_test() != null) {
 				Expr expr = (Expr) ctx.not_test().accept(this);
@@ -900,7 +944,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitComparison(@NotNull PythonParser.ComparisonContext ctx) {
+		public AstNode visitComparison(PythonParser.ComparisonContext ctx) {
 			//      star_expr ( comp_op star_expr )*
 			List<Expr> operands = ctx.star_expr().stream()
 					.map(c -> (Expr) c.accept(this))
@@ -921,19 +965,19 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitComp_op(@NotNull PythonParser.Comp_opContext ctx) {
+		public AstNode visitComp_op(PythonParser.Comp_opContext ctx) {
 			//      '<' | '>' | '==' | '>=' | '<=' | '<>' | '!=' | IN | NOT IN | IS | IS NOT
 			return new Wrapper<>(this.getLocInfo(ctx), ctx.operator);
 		}
 
 		@Override
-		public AstNode visitStar_expr(@NotNull PythonParser.Star_exprContext ctx) {
+		public AstNode visitStar_expr(PythonParser.Star_exprContext ctx) {
 			//      '*'? expr
 			return ctx.expr().accept(this);
 		}
 
 		@Override
-		public AstNode visitExpr(@NotNull PythonParser.ExprContext ctx) {
+		public AstNode visitExpr(PythonParser.ExprContext ctx) {
 			//      xor_expr ( '|' xor_expr )*
 			List<Expr> operands = new ArrayList<>();
 			ctx.xor_expr().forEach(c -> operands.add((Expr) c.accept(this)));
@@ -944,7 +988,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitXor_expr(@NotNull PythonParser.Xor_exprContext ctx) {
+		public AstNode visitXor_expr(PythonParser.Xor_exprContext ctx) {
 			//      and_expr ( '^' and_expr )*
 			List<Expr> operands = ctx.and_expr().stream()
 					.map(c -> (Expr) c.accept(this))
@@ -956,7 +1000,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitAnd_expr(@NotNull PythonParser.And_exprContext ctx) {
+		public AstNode visitAnd_expr(PythonParser.And_exprContext ctx) {
 			//      shift_expr ( '&' shift_expr )*
 			List<Expr> operands = ctx.shift_expr().stream()
 					.map(c -> (Expr) c.accept(this))
@@ -968,7 +1012,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitShift_expr(@NotNull PythonParser.Shift_exprContext ctx) {
+		public AstNode visitShift_expr(PythonParser.Shift_exprContext ctx) {
 			//      arith_expr ( '<<' arith_expr | '>>' arith_expr )*
 			List<Expr> children = ctx.arith_expr().stream()
 					.map(c -> (Expr) c.accept(this))
@@ -980,7 +1024,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitArith_expr(@NotNull PythonParser.Arith_exprContext ctx) {
+		public AstNode visitArith_expr(PythonParser.Arith_exprContext ctx) {
 			//      term ( '+' term | '-' term )*
 			List<Expr> operands = ctx.term().stream()
 					.map(e -> (Expr) e.accept(this))
@@ -992,7 +1036,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitTerm(@NotNull PythonParser.TermContext ctx) {
+		public AstNode visitTerm(PythonParser.TermContext ctx) {
 			//      factor ( '*' factor | '/' factor | '%' factor | '//' factor | '@' factor )
 			List<Expr> operands = ctx.factor().stream()
 					.map(e -> (Expr) e.accept(this))
@@ -1005,7 +1049,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitFactor(@NotNull PythonParser.FactorContext ctx) {
+		public AstNode visitFactor(PythonParser.FactorContext ctx) {
 			//      '+' factor | '-' factor | '~' factor | power
 			if (ctx.factor() != null) {
 				Expr value = (Expr) ctx.factor().accept(this);
@@ -1018,7 +1062,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitPower(@NotNull PythonParser.PowerContext ctx) {
+		public AstNode visitPower(PythonParser.PowerContext ctx) {
 			//      atom trailer* ( '**' factor )?
 			Atom base = (Atom) ctx.atom().accept(this);
 			List<Trailer> trailers = ctx.trailer() == null ? Collections.emptyList() :
@@ -1037,7 +1081,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitAtom(@NotNull PythonParser.AtomContext ctx) {
+		public AstNode visitAtom(PythonParser.AtomContext ctx) {
 			//		'(' ( yield_expr | testlist_comp )? ')'
 			//		| '[' testlist_comp? ']'
 			//		| '{' dictorsetmaker? '}'
@@ -1092,7 +1136,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitTestlist_comp(@NotNull PythonParser.Testlist_compContext ctx) {
+		public AstNode visitTestlist_comp(PythonParser.Testlist_compContext ctx) {
 			//      (test | star_expr) ( comp_for | ( ',' (test | star_expr) )* ','? )
 
 			if (ctx.vals.size() > 0) {
@@ -1110,7 +1154,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitTrailer(@NotNull PythonParser.TrailerContext ctx) {
+		public AstNode visitTrailer(PythonParser.TrailerContext ctx) {
 			//      '(' arglist? ')' | '[' subscriptlist ']' | '.' (NAME | PRINT | EXEC)
 			if (ctx.callBracket != null) { //Args
 				if (ctx.arglist() != null) {
@@ -1128,7 +1172,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitSubscriptlist(@NotNull PythonParser.SubscriptlistContext ctx) {
+		public AstNode visitSubscriptlist(PythonParser.SubscriptlistContext ctx) {
 			//      subscript ( ',' subscript )* ','?
 			List<SubscriptSliceListElem> values = ctx.subscript().stream()
 					.map(e -> (SubscriptSliceListElem) e.accept(this))
@@ -1137,7 +1181,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitSubscript(@NotNull PythonParser.SubscriptContext ctx) {
+		public AstNode visitSubscript(PythonParser.SubscriptContext ctx) {
 			//      index=test | lowerBound=test? ':' upperBound=test? stride=sliceop?
 			if (ctx.index != null) {
 				Expr index = (Expr) ctx.index.accept(this);
@@ -1151,13 +1195,13 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitSliceop(@NotNull PythonParser.SliceopContext ctx) {
+		public AstNode visitSliceop(PythonParser.SliceopContext ctx) {
 			//      ':' test?
 			return ctx.test() == null ? null : (Expr) ctx.test().accept(this); //Expr
 		}
 
 		@Override
-		public AstNode visitExprlist(@NotNull PythonParser.ExprlistContext ctx) {
+		public AstNode visitExprlist(PythonParser.ExprlistContext ctx) {
 			//      star_expr ( ',' star_expr )* ','?
 			List<Expr> expressions = ctx.star_expr().stream()
 					.map(e -> (Expr) e.accept(this))
@@ -1166,7 +1210,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitTestlist(@NotNull PythonParser.TestlistContext ctx) {
+		public AstNode visitTestlist(PythonParser.TestlistContext ctx) {
 			//      test ( ',' test )* ','?
 			List<Expr> expressions = ctx.test().stream()
 					.map(e -> (Expr) e.accept(this))
@@ -1175,7 +1219,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitDictorsetmaker(@NotNull PythonParser.DictorsetmakerContext ctx) {
+		public AstNode visitDictorsetmaker(PythonParser.DictorsetmakerContext ctx) {
 			//		test ':' test ( comp_for | ( ',' test ':' test )* ','? )
 			//		| setVar=test ( comp_for | ( ',' setVal=test )* ','? )
 			if (ctx.setVar != null) {
@@ -1203,7 +1247,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitClassdef(@NotNull PythonParser.ClassdefContext ctx) {
+		public AstNode visitClassdef(PythonParser.ClassdefContext ctx) {
 			//      CLASS NAME ( '(' arglist? ')' )? ':' suite
 			Identifier id = (Identifier) ctx.name().accept(this);
 			Suite suite = (Suite) ctx.suite().accept(this);
@@ -1215,7 +1259,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitArglist(@NotNull PythonParser.ArglistContext ctx) {
+		public AstNode visitArglist(PythonParser.ArglistContext ctx) {
 			//      argument (',' argument)* ','?
 			List<Argument> arguments = ctx.argument().stream()
 					.map(e -> (Argument) e.accept(this))
@@ -1224,7 +1268,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitArgument(@NotNull PythonParser.ArgumentContext ctx) {
+		public AstNode visitArgument(PythonParser.ArgumentContext ctx) {
 			//      test comp_for? | test '=' test | '**' test | '*' test
 			if (ctx.argName != null) {
 				Expr value = (Expr) ctx.value.accept(this);
@@ -1251,7 +1295,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitComp_iter(@NotNull PythonParser.Comp_iterContext ctx) {
+		public AstNode visitComp_iter(PythonParser.Comp_iterContext ctx) {
 			//      comp_for | comp_if
 			if (ctx.comp_for() != null) {
 				return ctx.comp_for().accept(this);
@@ -1263,7 +1307,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitComp_for(@NotNull PythonParser.Comp_forContext ctx) {
+		public AstNode visitComp_for(PythonParser.Comp_forContext ctx) {
 			//      FOR exprlist IN test_nocond ( ( ',' test_nocond )+ ','? )? comp_iter?
 
 			ExprList targets = (ExprList) ctx.exprlist().accept(this);
@@ -1275,7 +1319,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitComp_if(@NotNull PythonParser.Comp_ifContext ctx) {
+		public AstNode visitComp_if(PythonParser.Comp_ifContext ctx) {
 			//      IF test_nocond comp_iter?
 			CompIter iter = ctx.comp_iter() == null ? null : (CompIter) ctx.comp_iter().accept(this);
 
@@ -1288,7 +1332,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitYield_expr(@NotNull PythonParser.Yield_exprContext ctx) {
+		public AstNode visitYield_expr(PythonParser.Yield_exprContext ctx) {
 			//      YIELD yield_arg?
 			if (ctx.yield_arg() != null) {
 				return ctx.yield_arg().accept(this);
@@ -1297,7 +1341,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitYield_arg(@NotNull PythonParser.Yield_argContext ctx) {
+		public AstNode visitYield_arg(PythonParser.Yield_argContext ctx) {
 			//      FROM test | testlist
 			if (ctx.test() != null) {
 				Expr from = (Expr) ctx.test().accept(this);
@@ -1311,7 +1355,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitString(@NotNull PythonParser.StringContext ctx) {
+		public AstNode visitString(PythonParser.StringContext ctx) {
 			//      STRING_LITERAL | BYTES_LITERAL
 			if (ctx.STRING_LITERAL() != null) {
 				return this.getStr(ctx.getStart().getLine(), ctx.STRING_LITERAL().getText());
@@ -1323,7 +1367,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitNumber(@NotNull PythonParser.NumberContext ctx) {
+		public AstNode visitNumber(PythonParser.NumberContext ctx) {
 			//      integer | FLOAT_NUMBER | IMAG_NUMBER | LONG
 			if (ctx.integer() != null) {
 				return ctx.integer().accept(this);
@@ -1345,7 +1389,7 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitInteger(@NotNull PythonParser.IntegerContext ctx) {
+		public AstNode visitInteger(PythonParser.IntegerContext ctx) {
 			//      DECIMAL_INTEGER | OCT_INTEGER | HEX_INTEGER | BIN_INTEGER
 			if (ctx.DECIMAL_INTEGER() != null) {
 				BigInteger bi = new BigInteger(ctx.DECIMAL_INTEGER().getText());
@@ -1373,22 +1417,22 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visit(@NotNull ParseTree parseTree) {
+		public AstNode visit(ParseTree parseTree) {
 			return null;
 		}
 
 		@Override
-		public AstNode visitChildren(@NotNull RuleNode ruleNode) {
+		public AstNode visitChildren(RuleNode ruleNode) {
 			return null;
 		}
 
 		@Override
-		public AstNode visitTerminal(@NotNull TerminalNode terminalNode) {
+		public AstNode visitTerminal(TerminalNode terminalNode) {
 			return null;
 		}
 
 		@Override
-		public AstNode visitErrorNode(@NotNull ErrorNode errorNode) {
+		public AstNode visitErrorNode(ErrorNode errorNode) {
 			return null;
 		}
 

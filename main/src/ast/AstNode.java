@@ -1,7 +1,5 @@
 package ast;
 
-import org.antlr.v4.runtime.misc.NotNull;
-
 /**
  * Created by Nik on 19-05-2015
  */
@@ -9,7 +7,7 @@ public abstract class AstNode {
 
     protected final Integer locInfo;
 
-    public AstNode(@NotNull Integer locInfo) {
+    public AstNode( Integer locInfo) {
         this.locInfo = locInfo;
     }
 

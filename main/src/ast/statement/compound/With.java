@@ -1,11 +1,10 @@
 package ast.statement.compound;
 
+import java.util.List;
+
 import ast.Suite;
 import ast.Visitor;
 import ast.statement.Statement;
-import org.antlr.v4.runtime.misc.NotNull;
-
-import java.util.List;
 
 /**
  * Created by Nik on 25-06-2015
@@ -16,7 +15,7 @@ public class With extends Statement {
 	private final Suite body;
 	private Boolean async;
 
-	public With(@NotNull Integer locInfo, @NotNull List<WithItem> items, @NotNull Suite body) {
+	public With( Integer locInfo,  List<WithItem> items,  Suite body) {
 		super(locInfo);
 		this.items = items;
 		this.body = body;

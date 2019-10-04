@@ -1,6 +1,5 @@
 package ast.expression.nocond.atom;
 
-import org.antlr.v4.runtime.misc.NotNull;
 import ast.Visitor;
 
 /**
@@ -10,7 +9,7 @@ public class Bool extends Atom {
 
 	private final Boolean value;
 
-	public Bool(@NotNull Integer locInfo, @NotNull Boolean value) {
+	public Bool(Integer locInfo, Boolean value) {
 		super(locInfo);
 		this.value = value;
 	}

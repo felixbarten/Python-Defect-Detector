@@ -1,14 +1,19 @@
 package mining;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-import util.FileHelper;
-import util.Settings;
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import util.FileHelper;
+import util.Settings;
 
 /**
  * Created by Nik on 29-07-2015

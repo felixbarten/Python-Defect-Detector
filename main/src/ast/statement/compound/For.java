@@ -3,7 +3,6 @@ package ast.statement.compound;
 import ast.Suite;
 import ast.Visitor;
 import ast.expression.ExprList;
-import org.antlr.v4.runtime.misc.NotNull;
 
 /**
  * Created by Nik on 17-06-2015
@@ -16,7 +15,7 @@ public class For extends ast.statement.Statement {
 	private final Suite elseBody;
 	private Boolean async;
 
-	public For(@NotNull Integer locInfo, @NotNull ExprList iterator, @NotNull ExprList source, @NotNull Suite body, Suite elseBody) {
+	public For( Integer locInfo,  ExprList iterator,  ExprList source,  Suite body, Suite elseBody) {
 		super(locInfo);
 		this.iterator = iterator;
 		this.source = source;

@@ -1,6 +1,5 @@
 package ast.expression.nocond.atom;
 
-import org.antlr.v4.runtime.misc.NotNull;
 import ast.Visitor;
 
 /**
@@ -10,7 +9,7 @@ public class Str extends Atom {
 
 	private final String value;
 
-	public Str(@NotNull Integer locInfo, @NotNull String value) {
+	public Str( Integer locInfo,  String value) {
 		super(locInfo);
 		this.value = value;
 	}

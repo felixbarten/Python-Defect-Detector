@@ -1,14 +1,13 @@
 package ast.statement.simple;
 
-import ast.statement.Statement;
-import org.antlr.v4.runtime.misc.NotNull;
 import ast.Visitor;
+import ast.statement.Statement;
 
 /**
  * Created by Nik on 25-05-2015
  */
 public class Pass extends Statement {
-	public Pass(@NotNull Integer locInfo) {
+	public Pass( Integer locInfo) {
 		super(locInfo);
 	}
 

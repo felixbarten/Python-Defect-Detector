@@ -1,7 +1,5 @@
 package ast.statement.simple;
 
-import org.antlr.v4.runtime.misc.NotNull;
-
 import ast.Visitor;
 import ast.expression.nocond.trailer.ArgList;
 import ast.statement.MethodCallStmt;
@@ -21,11 +19,11 @@ public class SuperStmt extends Statement {
 	private final ArgList superArgs;
 	private final MethodCallStmt methodCalled;
 	
-	public SuperStmt(@NotNull Integer locInfo, ArgList superArg) {
+	public SuperStmt( Integer locInfo, ArgList superArg) {
 		this(locInfo, superArg, null, null);
 	}
 	
-	public SuperStmt(@NotNull Integer locInfo, ArgList superArg, Function f, MethodCallStmt chain) {
+	public SuperStmt( Integer locInfo, ArgList superArg, Function f, MethodCallStmt chain) {
 		super(locInfo);
 		caller = f;
 		superArgs = superArg;

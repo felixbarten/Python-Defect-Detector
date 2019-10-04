@@ -1,6 +1,5 @@
 package ast.expression.nocond.atom.numeric;
 
-import org.antlr.v4.runtime.misc.NotNull;
 import ast.Visitor;
 
 /**
@@ -10,7 +9,7 @@ public class Float extends Numeric {
 
 	private final Double value;
 
-	public Float(@NotNull Integer locInfo, @NotNull Double value) {
+	public Float( Integer locInfo,  Double value) {
 		super(locInfo);
 		this.value = value;
 	}

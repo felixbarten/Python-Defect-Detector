@@ -1,9 +1,9 @@
 package analysis.detector;
 
+import java.io.IOException;
+
 import analysis.Metric;
 import analysis.storage.PrimitiveIntMap;
-
-import java.io.IOException;
 
 /**
  * Created by Nik on 01-12-2015

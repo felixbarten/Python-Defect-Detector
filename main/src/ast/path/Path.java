@@ -2,7 +2,6 @@ package ast.path;
 
 import ast.AstNode;
 import ast.expression.nocond.atom.Identifier;
-import org.antlr.v4.runtime.misc.NotNull;
 
 /**
  * Created by Nik on 23-06-2015
@@ -11,7 +10,7 @@ public abstract class Path extends AstNode {
 
 	private Identifier alias;
 
-	public Path(@NotNull Integer locInfo) {
+	public Path( Integer locInfo) {
 		super(locInfo);
 	}
 

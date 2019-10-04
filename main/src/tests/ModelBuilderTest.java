@@ -1,16 +1,15 @@
 package tests;
 
-import model.Class;
-import model.Subroutine;
-import model.Variable;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.junit.Test;
+
+import model.Class;
+import model.Subroutine;
+import model.Variable;
 
 /**
  * Created by Nik on 08-07-2015

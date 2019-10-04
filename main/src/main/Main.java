@@ -1,7 +1,31 @@
 package main;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.stream.Collectors;
+
 import analysis.Register;
-import analysis.detector.*;
+import analysis.detector.BlobDecorDetector;
+import analysis.detector.DataClassDecorDetector;
+import analysis.detector.DataClassDetector;
+import analysis.detector.FeatureEnvyLiShatnawiDetector;
+import analysis.detector.FunctionalDecompositionDecorDetector;
+import analysis.detector.LargeClassDecorDetector;
+import analysis.detector.LargeClassDetector;
+import analysis.detector.LongMethodDetector;
+import analysis.detector.LongParamListDetector;
+import analysis.detector.RefusedBequestDetector;
+import analysis.detector.SpaghettiCodeDecorDetector;
+import analysis.detector.SwissArmyKnifeDecorDetector;
 import ast.Module;
 import model.ModelBuilder;
 import model.Project;
@@ -9,13 +33,6 @@ import process.File2Tree;
 import process.GitLocationProcessor;
 import util.FileHelper;
 import util.Settings;
-
-import java.io.*;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.stream.Collectors;
 
 public class Main {
 

@@ -1,12 +1,11 @@
 package ast.param;
 
-import ast.AstNode;
-import ast.Visitor;
-import org.antlr.v4.runtime.misc.NotNull;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import ast.AstNode;
+import ast.Visitor;
 
 /**
  * Created by Nik on 23-06-2015
@@ -17,11 +16,11 @@ public class Params extends AstNode {
 	private final Param positional;
 	private final Param keyword;
 
-	public Params(@NotNull Integer locInfo) {
+	public Params( Integer locInfo) {
 		this(locInfo, Collections.emptyList(), null, null);
 	}
 
-	public Params(@NotNull Integer locInfo, @NotNull List<Param> regular, Param positional, Param keyword) {
+	public Params( Integer locInfo,  List<Param> regular, Param positional, Param keyword) {
 		super(locInfo);
 		this.regular = regular;
 		this.positional = positional;

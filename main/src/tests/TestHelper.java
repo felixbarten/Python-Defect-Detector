@@ -1,17 +1,17 @@
 package tests;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import model.Class;
 import model.ModelBuilder;
 import model.Project;
 import model.SuperCall;
 import process.File2Tree;
 import util.FileHelper;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 
 /**

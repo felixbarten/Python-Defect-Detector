@@ -4,7 +4,6 @@ import ast.Visitor;
 import ast.expression.Expr;
 import ast.expression.nocond.NonConditional;
 import ast.expression.nocond.atom.Atom;
-import org.antlr.v4.runtime.misc.NotNull;
 
 /**
  * Created by Nik on 17-06-2015
@@ -14,7 +13,7 @@ public class Power extends NonConditional {
 	private final Atom base;
 	private final Expr exponent;
 
-	public Power(Integer locInfo, @NotNull Atom base, @NotNull Expr exponent) {
+	public Power(Integer locInfo,  Atom base,  Expr exponent) {
 		super(locInfo);
 		this.base = base;
 		this.exponent = exponent;

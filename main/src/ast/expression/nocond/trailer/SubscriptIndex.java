@@ -1,8 +1,7 @@
 package ast.expression.nocond.trailer;
 
-import ast.expression.Expr;
-import org.antlr.v4.runtime.misc.NotNull;
 import ast.Visitor;
+import ast.expression.Expr;
 
 /**
  * Created by Nik on 17-06-2015
@@ -11,7 +10,7 @@ public class SubscriptIndex extends SubscriptSliceListElem {
 
 	private final Expr index;
 
-	public SubscriptIndex(@NotNull Integer locInfo, @NotNull Expr index) {
+	public SubscriptIndex( Integer locInfo,  Expr index) {
 		super(locInfo);
 		this.index = index;
 	}

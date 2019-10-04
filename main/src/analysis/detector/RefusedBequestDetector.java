@@ -1,11 +1,9 @@
 package analysis.detector;
 
-import analysis.Metric;
-import analysis.storage.PrimitiveIntMap;
-import model.Subroutine;
-import model.Class;
-
 import java.io.IOException;
+
+import analysis.storage.PrimitiveIntMap;
+import model.Class;
 
 /**
  * Detector for Refused Bequest

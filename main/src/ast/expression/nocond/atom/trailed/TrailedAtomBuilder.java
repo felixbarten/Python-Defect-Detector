@@ -1,13 +1,13 @@
 package ast.expression.nocond.atom.trailed;
 
+import java.util.List;
+
 import ast.expression.nocond.atom.Atom;
 import ast.expression.nocond.atom.Identifier;
 import ast.expression.nocond.trailer.ArgList;
 import ast.expression.nocond.trailer.SubscriptSliceList;
 import ast.expression.nocond.trailer.Trailer;
 import ast.expression.nocond.trailer.TrailerVisitor;
-
-import java.util.List;
 
 /**
  * Created by Nik on 07-07-2015

@@ -3,7 +3,6 @@ package ast.statement.compound;
 import ast.Visitor;
 import ast.expression.Expr;
 import ast.statement.Statement;
-import org.antlr.v4.runtime.misc.NotNull;
 
 /**
  * Created by Nik on 25-06-2015
@@ -13,7 +12,7 @@ public class WithItem extends Statement {
 	private final Expr item;
 	private final Expr alias;
 
-	public WithItem(@NotNull Integer locInfo, @NotNull Expr item, Expr alias) {
+	public WithItem( Integer locInfo,  Expr item, Expr alias) {
 		super(locInfo);
 		this.item = item;
 		this.alias = alias;

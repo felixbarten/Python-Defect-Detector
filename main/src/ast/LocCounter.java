@@ -1,10 +1,10 @@
 package ast;
 
-import util.FileOpener;
-
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import util.FileOpener;
 
 /**
  * Created by Nik on 23-07-2015

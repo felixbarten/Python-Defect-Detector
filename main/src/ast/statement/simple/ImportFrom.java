@@ -1,10 +1,9 @@
 package ast.statement.simple;
 
+import java.util.List;
+
 import ast.Visitor;
 import ast.path.Path;
-import org.antlr.v4.runtime.misc.NotNull;
-
-import java.util.List;
 
 /**
  * Created by Nik on 25-05-15
@@ -13,7 +12,7 @@ public class ImportFrom extends Import {
 
 	private final Path module;
 
-	public ImportFrom(@NotNull Integer locInfo, @NotNull List<Path> paths, @NotNull Path module) {
+	public ImportFrom( Integer locInfo,  List<Path> paths,  Path module) {
 		super(locInfo, paths);
 		this.module = module;
 	}

@@ -1,10 +1,10 @@
 package analysis.detector;
 
+import java.io.IOException;
+
 import analysis.Metric;
 import analysis.storage.PrimitiveIntMap;
 import model.Class;
-
-import java.io.IOException;
 
 /**
  * Created by Nik on 10-11-2015

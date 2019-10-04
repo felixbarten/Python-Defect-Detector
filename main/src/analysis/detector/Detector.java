@@ -1,5 +1,12 @@
 package analysis.detector;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
 import analysis.Metric;
 import analysis.Metrics;
 import analysis.storage.ListMap;
@@ -8,13 +15,13 @@ import analysis.storage.SetIntMap;
 import analysis.storage.SetStrMap;
 import main.CsvCreator;
 import model.Class;
-import model.*;
+import model.ContentContainer;
+import model.ContentContainerVisitor;
+import model.Project;
+import model.Subroutine;
 import process.GitLocationProcessor;
 import util.FileHelper;
 import util.Settings;
-
-import java.io.IOException;
-import java.util.*;
 
 /**
  * Created by Nik on 04-11-2015
@@ -168,7 +175,7 @@ public abstract class Detector {
 	}
 
 	//override these where necessary
-	protected Boolean isPreliminarilyDefective(Module module) {
+	protected Boolean isPreliminarilyDefective(model.Module module) {
 		return false;
 	}
 
@@ -191,7 +198,7 @@ public abstract class Detector {
 		}
 
 		@Override
-		public Boolean visit(Module m) {
+		public Boolean visit(model.Module m) {
 			return isPreliminarilyDefective(m);
 		}
 

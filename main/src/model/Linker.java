@@ -1,11 +1,11 @@
 package model;
 
-import util.FileHelper;
-import util.StringHelper;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import util.FileHelper;
+import util.StringHelper;
 
 /**
  * Created by Nik on 11-07-2015

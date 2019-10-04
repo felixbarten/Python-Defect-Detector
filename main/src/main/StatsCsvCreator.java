@@ -1,12 +1,5 @@
 package main;
 
-import ast.Module;
-import model.Class;
-import model.*;
-import process.File2Tree;
-import process.GitLocationProcessor;
-import util.FileHelper;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -16,6 +9,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
+
+import ast.Module;
+import model.Class;
+import model.ModelBuilder;
+import model.Project;
+import model.Subroutine;
+import model.VarType;
+import model.Variable;
+import process.File2Tree;
+import process.GitLocationProcessor;
+import util.FileHelper;
 
 /**
  * Created by Nik on 24-11-2015

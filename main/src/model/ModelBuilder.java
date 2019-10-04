@@ -1,8 +1,21 @@
 package model;
 
+import java.io.File;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.stream.Collectors;
+
 import ast.CCVisitor;
 import ast.DefaultVisitor;
-import ast.argument.*;
+import ast.argument.Arg;
+import ast.argument.ArgumentVisitor;
+import ast.argument.CondArgument;
+import ast.argument.DefValArgument;
+import ast.argument.Kwarg;
+import ast.argument.SimpleArgument;
 import ast.expression.ExprList;
 import ast.expression.nocond.atom.Identifier;
 import ast.expression.nocond.atom.trailed.AttributeRef;
@@ -19,10 +32,6 @@ import ast.statement.simple.ImportPaths;
 import ast.statement.simple.SuperStmt;
 import util.LexicalHelper;
 import util.StringHelper;
-
-import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Created by Nik on 17-05-2015

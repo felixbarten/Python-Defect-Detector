@@ -1,15 +1,20 @@
 package mining;
 
-import org.json.JSONObject;
-import util.StringHelper;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.json.JSONObject;
+
+import util.StringHelper;
 
 /**
  * Created by Nik on 29-07-2015

@@ -1,10 +1,9 @@
 package ast.expression.nocond.bitwise;
 
+import java.util.List;
+
 import ast.Visitor;
 import ast.expression.Expr;
-import org.antlr.v4.runtime.misc.NotNull;
-
-import java.util.List;
 
 /**
  * Created by Nik on 10-06-2015
@@ -13,7 +12,7 @@ public class Shift extends Bitwise {
 
 	private final List<String> operators;
 
-	public Shift(@NotNull Integer locInfo, @NotNull List<Expr> operands, @NotNull List<String> operators) {
+	public Shift( Integer locInfo,  List<Expr> operands,  List<String> operators) {
 		super(locInfo, operands);
 		this.operators = operators;
 	}

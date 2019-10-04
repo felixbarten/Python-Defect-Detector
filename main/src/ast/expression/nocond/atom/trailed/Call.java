@@ -3,7 +3,6 @@ package ast.expression.nocond.atom.trailed;
 import ast.Visitor;
 import ast.expression.nocond.atom.Atom;
 import ast.expression.nocond.trailer.ArgList;
-import org.antlr.v4.runtime.misc.NotNull;
 
 /**
  * Created by Nik on 07-07-2015
@@ -12,7 +11,7 @@ public class Call extends TrailedAtom {
 
 	private final ArgList args;
 
-	public Call(@NotNull Integer locInfo, @NotNull Atom base, @NotNull ArgList args) {
+	public Call(Integer locInfo, Atom base, ArgList args) {
 		super(locInfo, base);
 		this.args = args;
 	}

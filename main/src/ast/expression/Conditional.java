@@ -1,6 +1,5 @@
 package ast.expression;
 
-import org.antlr.v4.runtime.misc.NotNull;
 import ast.Visitor;
 
 /**
@@ -12,8 +11,8 @@ public class Conditional extends Expr {
 	private final Expr condition;
 	private final Expr falseValue;
 
-	public Conditional(@NotNull Integer locInfo, @NotNull Expr value, @NotNull Expr condition,
-	                   @NotNull Expr falseValue) {
+	public Conditional( Integer locInfo,  Expr value,  Expr condition,
+	                    Expr falseValue) {
 		super(locInfo);
 		this.value = value;
 		this.condition = condition;

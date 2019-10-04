@@ -1,15 +1,15 @@
 package analysis.detector;
 
+import java.io.IOException;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import analysis.Metric;
 import analysis.storage.PrimitiveIntMap;
 import analysis.storage.SetIntMap;
 import model.Class;
 import model.Subroutine;
 import util.LexicalHelper;
-
-import java.io.IOException;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Created by Nik on 05-11-2015

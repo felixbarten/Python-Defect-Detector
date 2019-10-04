@@ -2,14 +2,13 @@ package ast.argument;
 
 import ast.Visitor;
 import ast.expression.Expr;
-import org.antlr.v4.runtime.misc.NotNull;
 
 /**
  * Created by Nik on 09-10-2015
  */
 public class Kwarg extends Argument {
 
-	public Kwarg(Integer locInfo, @NotNull Expr value) {
+	public Kwarg(Integer locInfo,  Expr value) {
 		super(locInfo, value);
 	}
 

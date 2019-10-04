@@ -1,8 +1,7 @@
 package ast.expression.nocond.atom.yield;
 
-import ast.expression.Expr;
-import org.antlr.v4.runtime.misc.NotNull;
 import ast.Visitor;
+import ast.expression.Expr;
 
 /**
  * Created by Nik on 09-06-2015
@@ -11,7 +10,7 @@ public class YieldFrom extends Yield {
 
 	private final Expr from;
 
-	public YieldFrom(@NotNull Integer locInfo, @NotNull Expr from) {
+	public YieldFrom( Integer locInfo,  Expr from) {
 		super(locInfo);
 		this.from = from;
 	}

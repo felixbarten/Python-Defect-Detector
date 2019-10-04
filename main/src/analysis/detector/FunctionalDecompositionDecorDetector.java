@@ -1,14 +1,14 @@
 package analysis.detector;
 
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+
 import analysis.Metric;
 import analysis.storage.SetIntMap;
 import model.Class;
 import model.Variable;
 import util.LexicalHelper;
-
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Created by Nik on 07-11-2015

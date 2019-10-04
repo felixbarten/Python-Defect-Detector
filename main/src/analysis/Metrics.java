@@ -1,6 +1,5 @@
 package analysis;
 
-import model.*;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -9,6 +8,11 @@ import java.util.Set;
 
 import analysis.detector.DataStore;
 import analysis.storage.PrimitiveIntMap;
+import model.ContentContainer;
+import model.ContentContainerVisitor;
+import model.Project;
+import model.Subroutine;
+import model.Variable;
 
 /**
  * Created by Nik on 04-11-2015
@@ -148,7 +152,7 @@ public class Metrics {
 		}
 		
 		@Override
-		public Void visit(Module m) {
+		public Void visit(model.Module m) {
 			projectLOC += m.getLoc();
 			currentCls = null;
 			return null;

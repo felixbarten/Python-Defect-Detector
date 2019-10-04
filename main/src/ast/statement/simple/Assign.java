@@ -1,11 +1,10 @@
 package ast.statement.simple;
 
+import java.util.List;
+
 import ast.Visitor;
 import ast.expression.ExprList;
 import ast.expression.nocond.atom.yield.Yield;
-import org.antlr.v4.runtime.misc.NotNull;
-
-import java.util.List;
 
 /**
  * Created by Nik on 17-06-2015
@@ -16,7 +15,7 @@ public class Assign extends ast.statement.Statement {
 	private final String operator;
 	private final List<ExprList> exprElements;
 
-	public Assign(@NotNull Integer locInfo, @NotNull String operator, @NotNull List<ExprList> exprElements, @NotNull List<Yield> yieldElements) {
+	public Assign( Integer locInfo,  String operator,  List<ExprList> exprElements,  List<Yield> yieldElements) {
 		super(locInfo);
 		this.operator = operator;
 		this.exprElements = exprElements;

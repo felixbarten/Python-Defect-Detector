@@ -1,9 +1,8 @@
 package ast.statement.simple;
 
+import ast.Visitor;
 import ast.expression.Expr;
 import ast.statement.Statement;
-import org.antlr.v4.runtime.misc.NotNull;
-import ast.Visitor;
 
 /**
  * Created by Nik on 17-06-2015
@@ -13,11 +12,11 @@ public class Assert extends Statement {
 	private final Expr assertion;
 	private final Expr assertionError;
 
-	public Assert(@NotNull Integer locInfo, @NotNull Expr assertion) {
+	public Assert( Integer locInfo,  Expr assertion) {
 		this(locInfo, assertion, null);
 	}
 
-	public Assert(@NotNull Integer locInfo, @NotNull Expr assertion, Expr assertionError) {
+	public Assert( Integer locInfo,  Expr assertion, Expr assertionError) {
 		super(locInfo);
 		this.assertion = assertion;
 		this.assertionError = assertionError;

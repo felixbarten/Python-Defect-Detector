@@ -2,11 +2,6 @@ package model;
 
 import java.util.List;
 
-import ast.expression.nocond.atom.Identifier;
-import ast.expression.nocond.trailer.ArgList;
-import ast.statement.MethodCallStmt;
-import ast.statement.compound.Function;
-
 public class MethodCall implements Unlinkable {
 
 	private final Variable instance; 

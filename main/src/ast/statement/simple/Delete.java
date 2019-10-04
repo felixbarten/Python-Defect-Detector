@@ -1,8 +1,7 @@
 package ast.statement.simple;
 
-import ast.expression.ExprList;
-import org.antlr.v4.runtime.misc.NotNull;
 import ast.Visitor;
+import ast.expression.ExprList;
 
 /**
  * Created by Nik on 17-06-2015
@@ -11,7 +10,7 @@ public class Delete extends ast.statement.Statement {
 
 	private final ExprList items;
 
-	public Delete(@NotNull Integer locInfo, @NotNull ExprList items) {
+	public Delete( Integer locInfo,  ExprList items) {
 		super(locInfo);
 		this.items = items;
 	}
