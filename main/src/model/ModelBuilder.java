@@ -202,11 +202,13 @@ public class ModelBuilder {
 		@Override
 		public Void visit(ClassDef n) {
 			Integer locInfo = n.getLocInfo();
-
+			// gather class arguments
 			ClassArgumentCollector argCollector = new ClassArgumentCollector();
+			// gather superclasses.
 			List<String> superclassNames = n.getInheritance().stream()
 					.map(p -> p.accept(argCollector))
 					.collect(Collectors.toList());
+			
 
 			Class c = new Class(n.getName().getValue(), locInfo, this.getCurrentContainer(), superclassNames, project);
 			this.getCurrentContainer().addClassDefinition(c);
@@ -235,6 +237,7 @@ public class ModelBuilder {
 			Subroutine subroutine = new Subroutine(n.getNameString(), n.getLocInfo(), cc.getComplexity(), this.getCurrentContainer(), type, paramNames, n.isAccessor(), current);
 			this.getCurrentContainer().addSubroutineDefinition(subroutine);
 
+			// process children 
 			this.subroutines.push(subroutine);
 			this.contentContainers.push(subroutine);
 			this.visitChildren(n);
@@ -318,6 +321,10 @@ public class ModelBuilder {
 			return varName.startsWith(LexicalHelper.SELF_KEYWORD + ".");
 		}
 
+		/**
+		 * Process variable to see if it's contained inside a class or an instance. 
+		 * @param fullName
+		 */
 		private void addVarDef(String fullName) {
 			List<String> nameParts = StringHelper.explode(fullName, ".");
 			if (this.inClass()) {
@@ -339,6 +346,11 @@ public class ModelBuilder {
 			}
 		}
 
+		/**
+		 * Add variable to parent after type has been determined.
+		 * @param name varname
+		 * @param varType instance or class variable
+		 */
 		private void addVarDef(String name, VarType varType) {
 			ContentContainer parent = varType == VarType.CLASS || varType == VarType.INSTANCE ? this.getCurrentClass() : this.getCurrentContainer();
 			Variable var = new Variable(name, parent, varType);

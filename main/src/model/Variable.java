@@ -8,11 +8,13 @@ public class Variable implements Unlinkable {
 	private ContentContainer parent;
 	private final String name;
 	private final VarType varType;
+	private final String modifier;
 
 	public Variable(String name, ContentContainer parent, VarType varType) {
 		this.name = name;
 		this.parent = parent;
 		this.varType = varType;
+		this.modifier = determineModifier(name);
 	}
 
 	public String getName() {
@@ -34,7 +36,7 @@ public class Variable implements Unlinkable {
 	public boolean isPublic() {
 		return !this.isPrivate() && !this.isProtected();
 	}
-
+	
 	public boolean definedInParentOf(ContentContainer container) {
 		return container.isInParentLine(this.parent);
 	}
@@ -43,6 +45,22 @@ public class Variable implements Unlinkable {
 		this.parent = null;
 	}
 
+	/**
+	 * Python name convention dictates that __ is protecfted 
+	 * _ is private
+	 * no prefix is public. 
+	 * @param name Name of var. 
+	 * @return modifier
+	 */
+	private String determineModifier(String name) {
+		if(name.startsWith("__")) {
+			return "protected";
+		} else if (name.startsWith("_")) {
+			return "private";
+		}
+		return "public";
+	}
+	
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {

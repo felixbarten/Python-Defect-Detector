@@ -1,10 +1,16 @@
 package ast.statement;
 
 import ast.Visitor;
+
 import ast.expression.nocond.atom.Identifier;
 import ast.expression.nocond.trailer.ArgList;
 import ast.statement.compound.Function;
 
+/**
+ * 
+ * @author felixb
+ *
+ */
 public class MethodCallStmt extends Statement {
 
 	private final Identifier name;

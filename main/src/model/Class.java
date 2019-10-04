@@ -20,6 +20,8 @@ public class Class extends ContentContainer {
 	
 	private final VarDefinitions inheritedVars;
 	private Integer complexity;
+	private float WMC;
+	private float AMW;
 	
 	/**
 	 * Class model constructor. 
@@ -209,7 +211,21 @@ public class Class extends ContentContainer {
 		
 		return privVars;
 	}
-
+	
+	/**
+	 * Returns list of protected members; 
+	 * @return VarDefinitions protected members.
+	 */
+	public VarDefinitions getProtectedVars() {
+		VarDefinitions protVars = new VarDefinitions();
+		
+		for( Variable v : definedVars.getAsSet()) {
+			if (v.isProtected()) protVars.add(v);
+		}
+		
+		return protVars;
+	}
+	
 	public Project getProject() {
 		return project;
 	}
@@ -220,14 +236,22 @@ public class Class extends ContentContainer {
 	 * @return Cyclomatic Complexity
 	 */
 	public Integer getCC() {
-		/*
 		if (complexity == null) {
 			complexity = calculateCC();
 		}
-		
 		return complexity;
-		*/
-		return calculateCC();
+	}
+	
+	public float getAMW() {
+		float AMW = 0;
+		if(subroutines.size() > 0) {
+			AMW  =  getWMC() / subroutines.size();
+		}
+		return AMW;
+	}
+	
+	public float getWMC() {
+		return getCC();
 	}
 
 	private Integer calculateCC() {

@@ -75,6 +75,7 @@ public class Main {
 		CsvCreator csvCreator = new CsvCreator(config.getProperty("locations.data.results"));
 		csvCreator.createStream(CSV_NAME, "Project", "Url", "Location", "Defect");
 		register.finish(gitLocs, csvCreator);
+		err.close();
 	}
 
 	/**

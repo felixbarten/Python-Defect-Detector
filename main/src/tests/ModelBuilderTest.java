@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import model.Class;
 import model.Subroutine;
+import model.VarDefinitions;
 import model.Variable;
 
 /**
@@ -45,7 +46,29 @@ public class ModelBuilderTest {
 		Set<String> twoVars = two.getDefinedVariablesSet().stream().map(Variable::getName).collect(Collectors.toSet());
 		assert (twoVars.size() == 3); //self.varr, self.co & self.co2
 	}
+	
+	@Test 
+	public void protectedMemberTest() {
+		Map<String, Class> classes = TestHelper.getClasses("main/src/tests/samples/parents");
 
+		Class parent = classes.get("BaseCls");
+		Class cls = classes.get("SubBaseCls");
+		
+		Set<Variable> vd = parent.getProtectedVars().getAsSet();
+		displayVars(vd, parent.getName());
+		displayVars(cls.getProtectedVars().getAsSet(), cls.getName());
+		// double scoping increases the protected member count too much
+		assert(vd.size() == 6);
+		assert(cls.getProtectedVars().getAsSet().size() == 2);
+	}
+	
+	private void displayVars(Set<Variable> vd, String name) {
+		System.out.println("Variables for class name: " + name);
+		for(Variable v : vd) {
+			System.out.println("Prot var: " + v.getName() + " " + v.getVarType().toString());
+		}
+	}
+	
 	@Test
 	public void collectMethods() {
 		Map<String, Class> classes = TestHelper.getClasses("main/src/tests/samples/collect_methods/collect_methods.py");
@@ -161,7 +184,8 @@ public class ModelBuilderTest {
 	@Test
 	public void checkSuperCalls() {
 		Map<String, Class> classes = TestHelper.getClasses("main/src/tests/samples/super_statements");
-		
+	
+		//TODO
 		Class cls = classes.get("A");
 		Class cls2 = classes.get("B");
 		
@@ -172,7 +196,7 @@ public class ModelBuilderTest {
 	@Test
 	public void checkSuperCall() {
 		Map<String, Class> classes = TestHelper.getClasses("main/src/tests/samples/super_statements");
-		
+		// TODO 
 		Class test = classes.get("MetaTestCase");
 		
 	
@@ -188,7 +212,7 @@ public class ModelBuilderTest {
 		
 		int complexity = 0;
 		for (Subroutine s : funcs) {
-			System.out.println(s.getName() + " CC: " + s.getCC());
+			//System.out.println(s.getName() + " CC: " + s.getCC());
 			if (s.getName().equals("switchStmt")) {
 				assert (s.getCC() == 7);
 			} else if (s.getName().equals("advLoops")) {
