@@ -313,6 +313,7 @@ small_stmt
  | super_stmt
  ;
 
+
 /// expr_stmt: testlist_star_expr (augassign (yield_expr|testlist) |
 ///                      ('=' (yield_expr|testlist_star_expr))*)
 expr_stmt returns [List<ParserRuleContext> chainedAssign]
@@ -320,7 +321,7 @@ expr_stmt returns [List<ParserRuleContext> chainedAssign]
     $chainedAssign = new ArrayList<>();
 }
  : target=testlist_star_expr ( augassign ( assignYield=yield_expr | assignTest=testlist)
-                             | ( '=' ( ayi=yield_expr | atsl=testlist_star_expr ) )*
+                             | ( '=' ( ayi=yield_expr | atsl=testlist_star_expr | sup=super_stmt ) )*
                              )
  ;
 
@@ -390,7 +391,7 @@ continue_stmt
 /// return_stmt: 'return' [testlist]
 return_stmt
  : RETURN testlist?
- | RETURN super_stmt
+ | RETURN super_stmt testlist?
  ;
 
 /// yield_stmt: yield_expr
@@ -402,19 +403,28 @@ yield_stmt
  /// super_stmt: 'super()' in Python 3
  ///  super(<subclass>, instance).<method_call> in Python 2
 super_stmt
- : SUPER '(' superArgs=method_args? ')' chained_method?
+ : SUPER '(' superArgs=fieldlist? ')' chained_method?
+ | SUPER '(' ')' chained_method?
  ; 
  
 
 instance_method_call
  : name '.' method_call
- ;  
+ ;    
+ 
+fieldlist
+ : x=field_access list=(',' field_access)*
+ ; 
+ 
+field_access
+ : member=argument trailer*
+ ;
  
 method_call
- : name '(' args=method_args* ')' (chained_method)?
+ : name '(' args=method_args* ')' chained_method?
  ;
 
-method_args 
+method_args  
  : argument (',' argument)*
  ;
 

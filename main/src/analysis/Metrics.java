@@ -236,10 +236,6 @@ public class Metrics {
 		
 		String path = project.getPath();
 
-		//getCounter(Metric.PROJECT_LOC).add(this.collector.projectLOC);
-		//getCounter(Metric.PROJECT_CC).add(this.collector.projectCC);
-		
-		//projectStore.put(project, this.collector.projectCC); 
 		try {
 			globalDataStore.getPrimitiveMapStore(Metric.PROJECT_LOC.toString()).add(path, this.collector.projectLOC);
 			globalDataStore.getPrimitiveMapStore(Metric.PROJECT_CC.toString()).add(path, this.collector.projectCC);
@@ -250,42 +246,15 @@ public class Metrics {
 			
 			globalDataStore.getPrimitiveMapStore(Metric.PROJECT_AVG_LOC.toString()).add(path, this.collector.projectLOC / checkIfZero(this.collector.moduleCount));
 			globalDataStore.getPrimitiveFloatMapStore(Metric.PROJECT_AVG_AMW.toString()).add(path, avgProjectAMW);
-			
-			PrimitiveIntMap map = globalDataStore.getPrimitiveMapStore("CLASS_AVG_CC");
-			
+						
 		} catch (NullPointerException e) {
 			System.err.println("Metric not initialized.");
 			e.printStackTrace();
 
 		} catch (Exception e) {
+			System.err.println("Unknown error: ");
 			e.printStackTrace();
 		}
-		/*
-		System.err.println(globalDataStore != null);
-		System.err.println(globalDataStore.getPrimitiveMapStore("CLASS_AVG_CC"));
-		System.err.println(map == globalDataStore.getPrimitiveMapStore("CLASS_AVG_CC"));
-		
-		try {
-			System.err.println(globalDataStore.getPrimitiveMapStore("CLASS_LOC").getNextKey());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		//project.getModules().stream()
-
-		
-		//System.err.println(map.getNextKey());
-
-		//map.get(path);
-		/*
-		try {
-			System.in.read();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		*/
 				
 		this.collector.reset();
 		System.out.println("Project data aggregation: " + count); 

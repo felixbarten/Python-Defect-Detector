@@ -44,6 +44,8 @@ import ast.expression.nocond.logical.Binary;
 import ast.expression.nocond.logical.Comparison;
 import ast.expression.nocond.logical.Not;
 import ast.expression.nocond.trailer.ArgList;
+import ast.expression.nocond.trailer.FieldAccess;
+import ast.expression.nocond.trailer.FieldAccessList;
 import ast.expression.nocond.trailer.SliceBound;
 import ast.expression.nocond.trailer.SubscriptIndex;
 import ast.expression.nocond.trailer.SubscriptSliceList;
@@ -928,7 +930,10 @@ public class DefaultVisitor<T> implements Visitor<T> {
 	public void visitChildren(ArgList n) {
 		n.getArguments().forEach(p -> p.accept(this));
 	}
-
+	
+	public void visitChildren(FieldAccessList n) {
+		n.getFields().forEach(p -> p.accept(this));
+	}
 	public void visitChildren(SubscriptIndex n) {
 		n.getIndex().accept(this);
 	}
@@ -970,6 +975,19 @@ public class DefaultVisitor<T> implements Visitor<T> {
 
 		}
 		
+	}
+
+	@Override
+	public T visit(FieldAccess n) {
+		n.getMember().accept(this);
+		//n.getTrailers().forEach(accept(this));
+		return null;
+	}
+
+	@Override
+	public T visit(FieldAccessList n) {
+		visitChildren(n);
+		return null;
 	}
 
 }

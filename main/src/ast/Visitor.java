@@ -42,6 +42,8 @@ import ast.expression.nocond.logical.Binary;
 import ast.expression.nocond.logical.Comparison;
 import ast.expression.nocond.logical.Not;
 import ast.expression.nocond.trailer.ArgList;
+import ast.expression.nocond.trailer.FieldAccess;
+import ast.expression.nocond.trailer.FieldAccessList;
 import ast.expression.nocond.trailer.SliceBound;
 import ast.expression.nocond.trailer.SubscriptIndex;
 import ast.expression.nocond.trailer.SubscriptSliceList;
@@ -217,4 +219,6 @@ public interface Visitor<T> {
 	T visit(SliceBound n);
 	T visit(SubscriptIndex n);
 	T visit(SubscriptSliceList n);
+	T visit(FieldAccess fieldAccess);
+	T visit(FieldAccessList fieldAccessList);
 }

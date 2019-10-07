@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.RuleNode;
@@ -55,6 +56,8 @@ import ast.expression.nocond.logical.Binary;
 import ast.expression.nocond.logical.Comparison;
 import ast.expression.nocond.logical.Not;
 import ast.expression.nocond.trailer.ArgList;
+import ast.expression.nocond.trailer.FieldAccess;
+import ast.expression.nocond.trailer.FieldAccessList;
 import ast.expression.nocond.trailer.SliceBound;
 import ast.expression.nocond.trailer.SubscriptIndex;
 import ast.expression.nocond.trailer.SubscriptSliceList;
@@ -96,6 +99,8 @@ import ast.statement.simple.Print;
 import ast.statement.simple.SuperStmt;
 import gen.PythonParser;
 import gen.PythonParser.Chained_methodContext;
+import gen.PythonParser.Field_accessContext;
+import gen.PythonParser.FieldlistContext;
 import gen.PythonParser.Instance_method_callContext;
 import gen.PythonParser.Method_argsContext;
 import gen.PythonParser.Method_callContext;
@@ -663,6 +668,8 @@ public class AstBuilder {
 		
 		@Override 
 		public AstNode visitSuper_stmt(PythonParser.Super_stmtContext ctx) {
+			// need to find a way to bind these somehow
+			// if you go back during visitation you will not get the right resutlts 
 			
 			ArgList superArgs = null;
 			if (ctx.superArgs != null) {
@@ -670,14 +677,14 @@ public class AstBuilder {
 			}
 					
 			ParserRuleContext traversal = ctx;
-			Function parent = null;
+			RuleContext parent = null;
 			
 			/*
-			 * infinite loop
+			 * if you process it here you will get an infinite loop. 
 			int i = 0;
 			while (true) {
-				if (traversal.getParent() instanceof PythonParser.FuncdefContext) {
-					parent = (Function) traversal.getParent().accept(this);
+				if (traversal.getParent() instanceof PythonParser.FuncdefContext || traversal.getParent() instanceof PythonParser.Async_funcdefContext) {
+					parent =  traversal.getParent().getPayload();
 					break;
 				} 
 				i++;
@@ -686,9 +693,14 @@ public class AstBuilder {
 				if (i == 30) break;
 			}
 			*/
-			MethodCallStmt chain = (MethodCallStmt) ctx.chained_method().accept(this);
+			
+			MethodCallStmt chain = null;
+			if(ctx.chained_method() != null) {
+				chain = (MethodCallStmt) ctx.chained_method().accept(this);
+			}
+			
 			//System.out.println("let me break here");
-			return new SuperStmt(this.getLocInfo(ctx), superArgs, parent, chain);	
+			return new SuperStmt(this.getLocInfo(ctx), superArgs, null, chain);	
 		}
 
 		@Override
@@ -1533,7 +1545,7 @@ public class AstBuilder {
 
 		@Override
 		public AstNode visitMethod_args(Method_argsContext ctx) {
-
+			// why call rule here??
 			ctx.argument();
 			//System.out.println("Method args here");
 			//      argument (',' argument)* ','?
@@ -1542,6 +1554,33 @@ public class AstBuilder {
 					.collect(Collectors.toList());
 			return new ArgList(this.getLocInfo(ctx), arguments);
 			
+		}
+
+		@Override
+		public AstNode visitFieldlist(FieldlistContext ctx) {
+			ctx.field_access();
+			List<FieldAccess> arguments = ctx.field_access() == null ? Collections.emptyList() :
+				ctx.field_access().stream()
+				.map(e -> (FieldAccess) e.accept(this))
+				.collect(Collectors.toList());
+
+			return new FieldAccessList(this.getLocInfo(ctx), arguments);
+		}
+
+		@Override
+		public AstNode visitField_access(Field_accessContext ctx) {
+			
+			SimpleArgument caller = (SimpleArgument) ctx.member.accept(this);
+			List<Trailer> trailers = ctx.trailer() == null ? Collections.emptyList() :
+				ctx.trailer().stream()
+						.map(e -> (Trailer) e.accept(this))
+						.collect(Collectors.toList());
+
+			// TODO 
+			// these might even be removed 
+			
+			
+			return new FieldAccess(this.getLocInfo(ctx), caller, trailers);
 		}
 	}
 }

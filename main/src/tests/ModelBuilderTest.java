@@ -192,6 +192,9 @@ public class ModelBuilderTest {
 		return sorted;
 	}
 	
+	/**
+	 * Check if hard super cases can be adequately parsed by the grammar. 
+	 */
 	@Test
 	public void checkSuperCalls() {
 		Map<String, Class> classes = TestHelper.getClasses("main/src/tests/samples/super_statements");
@@ -199,9 +202,10 @@ public class ModelBuilderTest {
 		//TODO
 		Class cls = classes.get("A");
 		Class cls2 = classes.get("B");
+		Class cls3 = classes.get("C");
+		Class cls4 = classes.get("D");
 		
-		
-		
+		assert(false);
 	}
 	
 	@Test
