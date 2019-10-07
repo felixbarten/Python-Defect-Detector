@@ -9,9 +9,6 @@ public class MethodCall implements Unlinkable {
 	private final List<Variable> callerArgs;
 	private final MethodCall chain;
 	
-	
-	
-
 	public MethodCall(Variable obj, List<Variable> vars, ContentContainer parent, MethodCall chain) {
 		this.instance = obj;
 		this.parent = parent;

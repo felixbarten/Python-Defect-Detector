@@ -24,6 +24,7 @@ public class Metrics {
 	private boolean finishedCollecting;
 
 	private final Map<Metric, IntMetricVals> intMetrics;
+	private final Map<Metric, FloatMetricVals> floatMetrics;
 	private DataStore globalDataStore;
 	
 	private Map<Project, Integer> projectStore;
@@ -40,6 +41,7 @@ public class Metrics {
 		this.globalDataStore = DataStore.getInstance();
 		
 		this.intMetrics = new HashMap<>();
+		this.floatMetrics = new HashMap<>();
 		this.intMetrics.put(Metric.CLASS_LOC, new IntMetricVals(Metric.CLASS_LOC.toString()));
 		this.intMetrics.put(Metric.CLASS_SUPERCLASSES, new IntMetricVals(Metric.CLASS_SUPERCLASSES.toString()));
 		this.intMetrics.put(Metric.CLASS_METHODS, new IntMetricVals(Metric.CLASS_METHODS.toString()));
@@ -53,11 +55,14 @@ public class Metrics {
 		this.intMetrics.put(Metric.SUBROUTINE_PARAMS, new IntMetricVals(Metric.SUBROUTINE_PARAMS.toString()));
 		this.intMetrics.put(Metric.SUBROUTINE_AID, new IntMetricVals(Metric.SUBROUTINE_AID.toString()));
 		
-		this.intMetrics.put(Metric.CLASS_CC, new IntMetricVals(Metric.CLASS_CC.toString()));
+		this.intMetrics.put(Metric.CLASS_WMC, new IntMetricVals(Metric.CLASS_CC.toString()));
+		this.floatMetrics.put(Metric.CLASS_AMW, new FloatMetricVals(Metric.CLASS_AMW.toString())); // just need to store some floats.
 		this.intMetrics.put(Metric.SUBROUTINE_CC, new IntMetricVals(Metric.SUBROUTINE_CC.toString()));
 		this.intMetrics.put(Metric.PROJECT_CC, new IntMetricVals(Metric.PROJECT_CC.toString()));
 		this.intMetrics.put(Metric.PROJECT_LOC, new IntMetricVals(Metric.PROJECT_LOC.toString()));
 		this.intMetrics.put(Metric.PROJECT_GLOBAL_CC, new IntMetricVals(Metric.PROJECT_GLOBAL_CC.toString()));
+		this.floatMetrics.put(Metric.PROJECT_AVG_AMW, new FloatMetricVals(Metric.PROJECT_AVG_AMW.toString()));
+		this.intMetrics.put(Metric.PROJECT_AVG_LOC, new IntMetricVals(Metric.PROJECT_AVG_LOC.toString()));
 		this.intMetrics.put(Metric.AVG_CLASS_CC, new IntMetricVals(Metric.AVG_CLASS_CC.toString()));
 		this.intMetrics.put(Metric.AVG_SUBROUTINE_CC, new IntMetricVals(Metric.AVG_SUBROUTINE_CC.toString()));		
 
@@ -75,6 +80,11 @@ public class Metrics {
 		this.finishedCollecting = true;
 		for (Metric metric : this.intMetrics.keySet()) {
 			IntMetricVals counter = this.intMetrics.get(metric);
+			counter.sortAndCalculateStats(requiredMetricPercentages.containsKey(metric) ? requiredMetricPercentages.get(metric) : Collections.emptySet());
+		}
+		
+		for (Metric metric : this.floatMetrics.keySet()) {
+			FloatMetricVals counter = this.floatMetrics.get(metric);
 			counter.sortAndCalculateStats(requiredMetricPercentages.containsKey(metric) ? requiredMetricPercentages.get(metric) : Collections.emptySet());
 		}
 	}
@@ -100,6 +110,10 @@ public class Metrics {
 		return this.intMetrics.get(metric);
 	}
 	
+	private FloatMetricVals getFloatCounter(Metric metric) {
+		return this.floatMetrics.get(metric);
+	}
+	
 	public Collector getCollector() {
 		return collector;
 	}
@@ -113,12 +127,14 @@ public class Metrics {
 		public int projectLOC = 0;
 		public int projectCC = 0;
 		public int classLOC = 0;
+		public float projectAMW = 0.0f;
 		// sub cc is used for subroutines outside of classes(imperative style files). 
 		public int projectSubCC = 0;
 		
 		private int classCount = 0;
 		private int subroutineCount = 0;
 		private int classCC = 0;
+		private int moduleCount = 0; 
 		private model.Class currentCls = null;
 		
 		
@@ -126,12 +142,13 @@ public class Metrics {
 		private void reset() {
 			projectLOC 		= 0;
 			projectCC 		= 0;
-
+			projectAMW  	= 0.0f;
 			classCC 		= 0;
 			classLOC 		= 0;
 			
 			subroutineCount	= 0;
 			classCount 		= 0;
+			moduleCount 	= 0;
 		}
 		/**
 		 * This Method is ran at the end of the data collection process not on each project. 
@@ -154,6 +171,7 @@ public class Metrics {
 		@Override
 		public Void visit(model.Module m) {
 			projectLOC += m.getLoc();
+			moduleCount++;
 			currentCls = null;
 			return null;
 		}
@@ -171,11 +189,14 @@ public class Metrics {
 			getCounter(Metric.CLASS_PUBLIC_FIELDS).add(publicFields.intValue());
 			Long privateFields = m.getDefinedVarsInclParentsVars().getAsSet().stream().filter(Variable::isPrivate).count();
 			getCounter(Metric.CLASS_PRIVATE_FIELDS).add(privateFields.intValue());
-			getCounter(Metric.CLASS_CC).add(m.getCC());
+			getCounter(Metric.CLASS_WMC).add((int) m.getWMC());
+			float amw = m.getWMC() / m.getNOM();
+			getFloatCounter(Metric.CLASS_AMW).add(amw);
 			projectCC += m.getCC();
 			classLOC += m.getLoc();
 			classCC +=m.getCC();
 			currentCls = m;
+			projectAMW += amw;
 			
 			classStore.put(m, m.getLoc());
 			globalDataStore.getPrimitiveMapStore("CLASS_LOC").add(m.getFullPath(), m.getLoc());
@@ -203,8 +224,10 @@ public class Metrics {
 		}
 	}
 	private int count = 1;
-	/*
-	 * Called upon when the modules of a project have all been checked. 
+
+	/**
+	 * Called when rest of the project has been processed 
+	 * @param project
 	 */
 	public void getProjectData(Project project) {
 		
@@ -221,8 +244,12 @@ public class Metrics {
 		globalDataStore.getPrimitiveMapStore("PROJECT_AVG_SUBROUTINE_CC").add(path, getSubRoutineCCAVG());
 		globalDataStore.getPrimitiveMapStore("GLOBAL_AVG_NOM").add(path, getNOM());
 		
-		getCounter(Metric.AVG_CLASS_CC).add(getClassCCAVG());
-		getCounter(Metric.AVG_SUBROUTINE_CC).add(getSubRoutineCCAVG());
+		Float avgProjectAMW = (float)this.collector.projectAMW / this.collector.classCount; 
+		globalDataStore.getPrimitiveMapStore("AVG_CLASS_CC").add(path, getClassCCAVG());
+		globalDataStore.getPrimitiveMapStore("AVG_SUBROUTINE_CC").add(path, getSubRoutineCCAVG());
+		globalDataStore.getPrimitiveMapStore("PROJECT_AVG_LOC").add(path, this.collector.projectLOC / this.collector.moduleCount);
+		globalDataStore.getPrimitiveFloatMapStore("PROJECT_AVG_AMW").add(path, avgProjectAMW);
+
 		
 		PrimitiveIntMap map = globalDataStore.getPrimitiveMapStore("CLASS_AVG_CC");
 		

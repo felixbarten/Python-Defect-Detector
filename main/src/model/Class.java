@@ -1,6 +1,8 @@
 package model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -202,6 +204,10 @@ public class Class extends ContentContainer {
 		return result;
 	}
 	
+	/**
+	 * Returns a set of private modifier variables from parent
+	 * @return
+	 */
 	public VarDefinitions getPrivateParentVars() {
 		VarDefinitions privVars = new VarDefinitions();
 		
@@ -210,6 +216,20 @@ public class Class extends ContentContainer {
 		}
 		
 		return privVars;
+	}
+	
+	/**
+	 * Returns a set of protected modifier variables from parent
+	 * @return
+	 */
+	public VarDefinitions getProtectedParentVars() {
+		VarDefinitions protVars = new VarDefinitions();
+		
+		for( Variable v : inheritedVars.getAsSet()) {
+			if (v.isProtected()) protVars.add(v);
+		}
+		
+		return protVars;
 	}
 	
 	/**
@@ -224,6 +244,20 @@ public class Class extends ContentContainer {
 		}
 		
 		return protVars;
+	}
+	
+	/**
+	 * Returns list of private members; 
+	 * @return VarDefinitions protected members.
+	 */
+	public VarDefinitions getPrivateVars() {
+		VarDefinitions privVars = new VarDefinitions();
+		
+		for( Variable v : definedVars.getAsSet()) {
+			if (v.isPrivate()) privVars.add(v);
+		}
+		
+		return privVars;
 	}
 	
 	public Project getProject() {
@@ -243,7 +277,6 @@ public class Class extends ContentContainer {
 	}
 	
 	public float getAMW() {
-		float AMW = 0;
 		if(subroutines.size() > 0) {
 			AMW  =  getWMC() / subroutines.size();
 		}
@@ -252,6 +285,14 @@ public class Class extends ContentContainer {
 	
 	public float getWMC() {
 		return getCC();
+	}
+	
+	public Set<String> getSubroutineNames() {
+		Set<String> names = new HashSet<String>();
+		for (Subroutine s : subroutines) {
+			names.add(s.getName());
+		}
+		return names; 
 	}
 
 	private Integer calculateCC() {
@@ -270,11 +311,12 @@ public class Class extends ContentContainer {
 	}
 	
 	/**
-	 * Returns the NOM metric (number of metrics per class) 
+	 * Returns the NOM metric (number of methods per class) 
 	 * @return int NOM
 	 */
 	public Integer getNOM() {
 		return this.subroutines.size();
 	}
+
 	
 }

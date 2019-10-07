@@ -46,6 +46,10 @@ public abstract class Map<T> {
 	public void add(String key, Integer element) {
 		this.add(key, element.toString());
 	}
+	
+	public void add(String key, Float value) {
+		this.add(key, value.toString());
+	}
 
 	public void add(String key, String element) {
 		if (!this.existing) {

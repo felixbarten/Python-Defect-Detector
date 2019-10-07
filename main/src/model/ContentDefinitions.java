@@ -73,5 +73,7 @@ public abstract class ContentDefinitions implements Unlinkable {
 		this.definedClasses.values().forEach(Class::unlink);
 		this.definedSubroutines.values().forEach(Subroutine::unlink);
 		this.definedVars.unlink();
+		// run garbage disposal.
+		System.gc();
 	}
 }

@@ -13,7 +13,11 @@ class BaseCls(object):
         
         return __privMember + num
 
-class SubBaseCls(BaseCls):
+class BaseCls2(object): 
+    def do_other_stuff(self):
+        pass 
+
+class SubCls(BaseCls):
     __privVar1 = "String"
     __privVar2 = 0
     __privVar = 5
@@ -27,3 +31,16 @@ class SubBaseCls(BaseCls):
     
     def illegalAccess(self):
         return __privVar
+    
+    
+class SubCls2(SubBaseCls): 
+    # override 
+    __privVar = "ksksks" 
+    _protVar = 0 
+    
+    def do_stuff(self): 
+        pass
+    
+class SubCls3(BaseCls, BaseCls2, list):
+    def original_method(self):
+        pass 

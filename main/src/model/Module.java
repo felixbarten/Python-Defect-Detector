@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Model for Python modules
  * Created by Nik on 21-07-2015
  */
 public class Module extends ContentContainer {

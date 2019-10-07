@@ -17,6 +17,8 @@ public class SuperCall implements Unlinkable {
 	@Override
 	public void unlink() {
 		this.parent = null;
+		this.parameters = null;
+		this.callerParams = null;
 	}
 	
 	private Class getParentClass() {

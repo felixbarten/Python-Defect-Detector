@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
+ * Model for project contains modules. 
  * Created by Nik on 03-08-2015
  */
 public class Project implements Unlinkable {

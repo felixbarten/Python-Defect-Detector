@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import analysis.storage.ListMap;
+import analysis.storage.PrimitiveFloatMap;
 import analysis.storage.PrimitiveIntMap;
 import analysis.storage.SetIntMap;
 
@@ -40,6 +41,10 @@ public class DataStore {
 	 */
 	public PrimitiveIntMap getPrimitiveMapStore(String name) {
 		return (PrimitiveIntMap) this.dataStores.get(name);
+	}
+	
+	public PrimitiveFloatMap getPrimitiveFloatMapStore(String name) {
+		return (PrimitiveFloatMap) this.dataStores.get(name);
 	}
 
 	/**
