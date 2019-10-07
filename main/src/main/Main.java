@@ -44,7 +44,7 @@ public class Main {
 		Properties config = Settings.getConfig();
 		createLocations(config);
 
-		boolean filterEnabled = config.containsKey("locations.data.input.filter");;
+		boolean filterEnabled = config.containsKey("locations.data.input.filter");
 		
 		PrintStream out = new PrintStream(new FileOutputStream(FileHelper.stampedFileName(config.getProperty("locations.log.out"), "out", "log")));
 		PrintStream err = new PrintStream(new FileOutputStream(FileHelper.stampedFileName(config.getProperty("locations.log.error"), "err", "log")));
@@ -52,25 +52,31 @@ public class Main {
 		
 		// Don't redirect error stream for development
 		//System.setErr(err);
+		System.out.println("Registering detectors...");
 
 		Register register = new Register();
 		registerDetectors(register);
-
+		System.out.println("Registered detectors.");
+		
 		System.out.println("Reading Git Location data");
 		gitLocs = new GitLocationProcessor(config.getProperty("locations.data.input.disklocations"));
 		gitLocs.readData();
 		System.out.println("Finished reading Git Location data");
 
 		
+		System.out.println("Fetching projects...");
 		// Only projects in the filtered list are processed. If filtered list exists.
 		List<String> projects = fetchFilteredProjects(config, filterEnabled);
-
+		System.out.println("Fetched projects.");
+		System.out.println("Processing projects...");
 		File projectsFolder = new File(config.getProperty("locations.data.input"));
 		for (File file : projectsFolder.listFiles()) {
 			if (file.isDirectory() && (!filterEnabled || projects.contains(file.getAbsolutePath()))) {
 				processProject(register, file);
+				System.out.println("Processed project: " + file.toString());
 			}
 		}
+		System.out.println("Finished processing projects.");
 
 		CsvCreator csvCreator = new CsvCreator(config.getProperty("locations.data.results"));
 		csvCreator.createStream(CSV_NAME, "Project", "Url", "Location", "Defect");

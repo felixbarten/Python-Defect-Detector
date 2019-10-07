@@ -16,7 +16,8 @@ public class Settings {
 	private final Properties mapsConfig;
 	private final Properties metricsConfig;
 	private final Properties suspectConfig;
-
+	private static String configName = "config3";
+	
 	private static Settings getInstance() throws IOException {
 		if (instance == null) {
 			instance = new Settings();
@@ -24,15 +25,22 @@ public class Settings {
 		return instance;
 	}
 
+	private static Settings getInstance(String config) throws IOException {
+		if (instance == null) {
+			configName = config;
+			instance = new Settings();
+		}
+		return instance;
+	}
+	
 	private Settings() throws IOException {
-		String configName = "large_dataset";
 		System.out.println("Starting detector with config file: " + configName);
 		this.config = this.load("config\\" + configName + ".properties");
 		this.mapsConfig = this.loadOptional("config\\maps.properties");
 		this.metricsConfig = this.loadOptional("config\\metrics.properties");
 		this.suspectConfig = this.loadOptional("config\\suspects.properties");
 	}
-
+	
 	public static Properties getConfig() throws IOException {
 		Settings settings = Settings.getInstance();
 		return settings.config;

@@ -44,7 +44,7 @@ public class RefusedBequestDetector extends Detector {
 	private final static String PROJECT_AVG_SUBROUTINE_CC = "PROJECT_AVG_SUBROUTINE_CC"; // average cyclomatic per subroutine in project
 	private final static String PROJECT_AVG_AMW = "PROJECT_AVG_AMW";
 	private final static String PROJECT_AVG_LOC = "PROJECT_AVG_LOC";
-
+	private final static String SUBROUTINE_AVG_CC = "SUBROUTINE_AVG_CC";
 	// stores the NOM (number of methods) per project. 
 	private final static String GLOBAL_AVG_NOM = "GLOBAL_AVG_NOM";
 	
@@ -76,7 +76,9 @@ public class RefusedBequestDetector extends Detector {
 		global.addDataStore(CLASS_LOC, new PrimitiveIntMap(this.getDataStoreFilePath(CLASS_LOC)));
 		global.addDataStore(CLASS_AVG_CC, new PrimitiveIntMap(this.getDataStoreFilePath(CLASS_AVG_CC)));
 		global.addDataStore(PROJECT_AVG_LOC, new PrimitiveIntMap(this.getDataStoreFilePath(PROJECT_AVG_LOC)));
-
+		global.addDataStore(SUBROUTINE_AVG_CC, new PrimitiveIntMap(this.getDataStoreFilePath(SUBROUTINE_AVG_CC)));
+		
+		
 		global.addDataStore(PROJECT_AVG_AMW, new PrimitiveFloatMap(this.getDataStoreFilePath(PROJECT_AVG_AMW)));
 		global.addDataStore(PROJECT_AVG_SUBROUTINE_CC, new PrimitiveIntMap(this.getDataStoreFilePath(PROJECT_AVG_SUBROUTINE_CC)));
 		global.addDataStore(GLOBAL_AVG_NOM, new PrimitiveIntMap(this.getDataStoreFilePath(GLOBAL_AVG_NOM)));

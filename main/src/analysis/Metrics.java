@@ -54,17 +54,20 @@ public class Metrics {
 		this.intMetrics.put(Metric.SUBROUTINE_LOC, new IntMetricVals(Metric.SUBROUTINE_LOC.toString()));
 		this.intMetrics.put(Metric.SUBROUTINE_PARAMS, new IntMetricVals(Metric.SUBROUTINE_PARAMS.toString()));
 		this.intMetrics.put(Metric.SUBROUTINE_AID, new IntMetricVals(Metric.SUBROUTINE_AID.toString()));
-		
+		this.intMetrics.put(Metric.SUBROUTINE_AVG_CC, new IntMetricVals(Metric.SUBROUTINE_AVG_CC.toString()));		
+
 		this.intMetrics.put(Metric.CLASS_WMC, new IntMetricVals(Metric.CLASS_CC.toString()));
 		this.floatMetrics.put(Metric.CLASS_AMW, new FloatMetricVals(Metric.CLASS_AMW.toString())); // just need to store some floats.
+		this.intMetrics.put(Metric.CLASS_AVG_CC, new IntMetricVals(Metric.CLASS_AVG_CC.toString()));
+
+		
 		this.intMetrics.put(Metric.SUBROUTINE_CC, new IntMetricVals(Metric.SUBROUTINE_CC.toString()));
 		this.intMetrics.put(Metric.PROJECT_CC, new IntMetricVals(Metric.PROJECT_CC.toString()));
+		
 		this.intMetrics.put(Metric.PROJECT_LOC, new IntMetricVals(Metric.PROJECT_LOC.toString()));
 		this.intMetrics.put(Metric.PROJECT_GLOBAL_CC, new IntMetricVals(Metric.PROJECT_GLOBAL_CC.toString()));
 		this.floatMetrics.put(Metric.PROJECT_AVG_AMW, new FloatMetricVals(Metric.PROJECT_AVG_AMW.toString()));
 		this.intMetrics.put(Metric.PROJECT_AVG_LOC, new IntMetricVals(Metric.PROJECT_AVG_LOC.toString()));
-		this.intMetrics.put(Metric.AVG_CLASS_CC, new IntMetricVals(Metric.AVG_CLASS_CC.toString()));
-		this.intMetrics.put(Metric.AVG_SUBROUTINE_CC, new IntMetricVals(Metric.AVG_SUBROUTINE_CC.toString()));		
 
 	}
 
@@ -190,7 +193,7 @@ public class Metrics {
 			Long privateFields = m.getDefinedVarsInclParentsVars().getAsSet().stream().filter(Variable::isPrivate).count();
 			getCounter(Metric.CLASS_PRIVATE_FIELDS).add(privateFields.intValue());
 			getCounter(Metric.CLASS_WMC).add((int) m.getWMC());
-			float amw = m.getWMC() / m.getNOM();
+			float amw = m.getWMC() / checkIfZero(m.getNOM());
 			getFloatCounter(Metric.CLASS_AMW).add(amw);
 			projectCC += m.getCC();
 			classLOC += m.getLoc();
@@ -237,23 +240,26 @@ public class Metrics {
 		//getCounter(Metric.PROJECT_CC).add(this.collector.projectCC);
 		
 		//projectStore.put(project, this.collector.projectCC); 
-		
-		globalDataStore.getPrimitiveMapStore("PROJECT_LOC").add(path, this.collector.projectLOC);
-		globalDataStore.getPrimitiveMapStore("PROJECT_CC").add(path, this.collector.projectCC);
-		globalDataStore.getPrimitiveMapStore("CLASS_AVG_CC").add(path, getClassCCAVG());
-		globalDataStore.getPrimitiveMapStore("PROJECT_AVG_SUBROUTINE_CC").add(path, getSubRoutineCCAVG());
-		globalDataStore.getPrimitiveMapStore("GLOBAL_AVG_NOM").add(path, getNOM());
-		
-		Float avgProjectAMW = (float)this.collector.projectAMW / this.collector.classCount; 
-		globalDataStore.getPrimitiveMapStore("AVG_CLASS_CC").add(path, getClassCCAVG());
-		globalDataStore.getPrimitiveMapStore("AVG_SUBROUTINE_CC").add(path, getSubRoutineCCAVG());
-		globalDataStore.getPrimitiveMapStore("PROJECT_AVG_LOC").add(path, this.collector.projectLOC / this.collector.moduleCount);
-		globalDataStore.getPrimitiveFloatMapStore("PROJECT_AVG_AMW").add(path, avgProjectAMW);
+		try {
+			globalDataStore.getPrimitiveMapStore(Metric.PROJECT_LOC.toString()).add(path, this.collector.projectLOC);
+			globalDataStore.getPrimitiveMapStore(Metric.PROJECT_CC.toString()).add(path, this.collector.projectCC);
+			globalDataStore.getPrimitiveMapStore(Metric.CLASS_AVG_CC.toString()).add(path, getClassCCAVG());
+			
+			Float avgProjectAMW = (float)this.collector.projectAMW / this.collector.classCount; 
+			globalDataStore.getPrimitiveMapStore(Metric.SUBROUTINE_AVG_CC.toString()).add(path, getSubRoutineCCAVG());
+			
+			globalDataStore.getPrimitiveMapStore(Metric.PROJECT_AVG_LOC.toString()).add(path, this.collector.projectLOC / checkIfZero(this.collector.moduleCount));
+			globalDataStore.getPrimitiveFloatMapStore(Metric.PROJECT_AVG_AMW.toString()).add(path, avgProjectAMW);
+			
+			PrimitiveIntMap map = globalDataStore.getPrimitiveMapStore("CLASS_AVG_CC");
+			
+		} catch (NullPointerException e) {
+			System.err.println("Metric not initialized.");
+			e.printStackTrace();
 
-		
-		PrimitiveIntMap map = globalDataStore.getPrimitiveMapStore("CLASS_AVG_CC");
-		
-		
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		/*
 		System.err.println(globalDataStore != null);
 		System.err.println(globalDataStore.getPrimitiveMapStore("CLASS_AVG_CC"));
