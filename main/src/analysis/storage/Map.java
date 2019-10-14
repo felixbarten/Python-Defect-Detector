@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -61,11 +62,36 @@ public abstract class Map<T> {
 		}
 	}
 
+	public void add(String key, Set<String> elements) {
+		if (!this.existing) {
+			if (this.stream == null) {
+				throw new IllegalStateException("The stream has not been initialized");
+			}
+			for( String elem : elements) {
+				String line = key + DELIMITER + elem;
+				this.stream.println(line);
+			}
+		}
+	}
+	
+	public void add(String key, List<String> elements) {
+		if (!this.existing) {
+			if (this.stream == null) {
+				throw new IllegalStateException("The stream has not been initialized");
+			}
+			Set<String> elementsSet = new HashSet<String>(elements);
+			this.add(key, elementsSet);
+		}
+	}
+	
+	
 	public Set<String> keySet() {
 		return this.map.keySet();
 	}
 
 	public T get(String key) {
+		if (map == null) 
+			return null;
 		return this.map.get(key);
 	}
 

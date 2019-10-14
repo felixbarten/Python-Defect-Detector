@@ -29,7 +29,7 @@ public class LongMethodDetector extends Detector {
 	}
 
 	@Override
-	protected Boolean confirmDefect(String fullPath) {
+	protected Boolean confirmDefect(String fullPath, String projectPath) {
 		return this.metrics.isExtremeOutlier(Metric.SUBROUTINE_LOC, this.getPrimitiveMapStore(LOC).get(fullPath));
 	}
 

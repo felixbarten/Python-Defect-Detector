@@ -44,7 +44,7 @@ public class FeatureEnvyLiShatnawiDetector extends Detector {
 	}
 
 	@Override
-	protected Boolean confirmDefect(String fullPath) {
+	protected Boolean confirmDefect(String fullPath, String projectPath) {
 		return this.metrics.isInTop(Metric.SUBROUTINE_AID, 10, this.getPrimitiveMapStore(AIDS).get(fullPath));
 	}
 

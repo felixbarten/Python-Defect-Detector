@@ -33,7 +33,7 @@ public class SwissArmyKnifeDecorDetector extends Detector {
 	}
 
 	@Override
-	protected Boolean confirmDefect(String fullPath) {
+	protected Boolean confirmDefect(String fullPath, String projectPath) {
 		return this.hasTooManyParents(fullPath);
 	}
 

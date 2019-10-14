@@ -36,7 +36,7 @@ public class LargeClassDecorDetector extends Detector {
 	}
 
 	@Override
-	protected Boolean confirmDefect(String fullPath) {
+	protected Boolean confirmDefect(String fullPath, String projectPath) {
 		return this.metrics.isExtremeOutlier(Metric.CLASS_METHODS_AND_VARS, this.getPrimitiveMapStore(METVARS).get(fullPath));
 	}
 

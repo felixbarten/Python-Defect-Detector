@@ -3,6 +3,7 @@ package analysis;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -60,7 +61,6 @@ public class Metrics {
 		this.intMetrics.put(Metric.SUBROUTINE_AVG_CC, new IntMetricVals(Metric.SUBROUTINE_AVG_CC.toString()));		
 
 		this.intMetrics.put(Metric.CLASS_WMC, new IntMetricVals(Metric.CLASS_WMC.toString()));
-		this.floatMetrics.put(Metric.CLASS_AMW, new FloatMetricVals(Metric.CLASS_AMW.toString())); // just need to store some floats.
 		this.intMetrics.put(Metric.CLASS_AVG_CC, new IntMetricVals(Metric.CLASS_AVG_CC.toString()));
 
 		
@@ -69,9 +69,21 @@ public class Metrics {
 		
 		this.intMetrics.put(Metric.PROJECT_LOC, new IntMetricVals(Metric.PROJECT_LOC.toString()));
 		this.intMetrics.put(Metric.PROJECT_GLOBAL_CC, new IntMetricVals(Metric.PROJECT_GLOBAL_CC.toString()));
-		this.floatMetrics.put(Metric.PROJECT_AVG_AMW, new FloatMetricVals(Metric.PROJECT_AVG_AMW.toString()));
 		this.intMetrics.put(Metric.PROJECT_AVG_LOC, new IntMetricVals(Metric.PROJECT_AVG_LOC.toString()));
 
+		this.floatMetrics.put(Metric.CLASS_AMW, new FloatMetricVals(Metric.CLASS_AMW.toString())); // just need to store some floats.
+		this.floatMetrics.put(Metric.PROJECT_AVG_AMW, new FloatMetricVals(Metric.PROJECT_AVG_AMW.toString()));
+
+		
+		/*
+		this.strMetrics.put(Metric.CLASS_PARENTS, new SetStrMap(Metric.CLASS_PARENTS.toString()));
+		this.strMetrics.put(Metric.CLASS_DEF_METHODS, new SetStrMap(Metric.CLASS_DEF_METHODS.toString()));
+		this.strMetrics.put(Metric.CLASS_REF_METHODS, new SetStrMap(Metric.CLASS_REF_METHODS.toString()));
+		this.intMetrics.put(Metric.CLASS_REF_CLS_COUNT, new IntMetricVals(Metric.CLASS_REF_CLS_COUNT.toString()));
+		this.intMetrics.put(Metric.CLASS_REF_VAR_COUNT, new IntMetricVals(Metric.CLASS_REF_VAR_COUNT.toString()));
+		this.intMetrics.put(Metric.CLASS_PROTECTED_MEMBERS, new IntMetricVals(Metric.CLASS_PROTECTED_MEMBERS.toString()));
+		*/
+		
 	}
 
 	public void register(ContentContainer contentContainer) {
@@ -92,6 +104,11 @@ public class Metrics {
 		for (Metric metric : this.floatMetrics.keySet()) {
 			FloatMetricVals counter = this.floatMetrics.get(metric);
 			counter.sortAndCalculateStats(requiredMetricPercentages.containsKey(metric) ? requiredMetricPercentages.get(metric) : Collections.emptySet());
+		}
+		
+		for (Metric metric: this.strMetrics.keySet()) {
+			SetStrMap stringSets = this.strMetrics.get(metric);
+			stringSets.loadValues(metric.toString());
 		}
 	}
 
@@ -118,6 +135,10 @@ public class Metrics {
 	
 	private FloatMetricVals getFloatCounter(Metric metric) {
 		return this.floatMetrics.get(metric);
+	}
+
+	private SetStrMap getStringCounter(Metric metric) {
+		return this.strMetrics.get(metric);
 	}
 	
 	public Collector getCollector() {
@@ -194,10 +215,35 @@ public class Metrics {
 			Long publicFields = m.getDefinedVarsInclParentsVars().getAsSet().stream().filter(Variable::isPublic).count();
 			getCounter(Metric.CLASS_PUBLIC_FIELDS).add(publicFields.intValue());
 			Long privateFields = m.getDefinedVarsInclParentsVars().getAsSet().stream().filter(Variable::isPrivate).count();
+
 			getCounter(Metric.CLASS_PRIVATE_FIELDS).add(privateFields.intValue());
 			getCounter(Metric.CLASS_WMC).add((int) m.getWMC());
-			float amw = m.getWMC() / checkIfZero(m.getNOM());
+			float amw = (float)m.getWMC() / checkIfZero(m.getNOM());
 			getFloatCounter(Metric.CLASS_AMW).add(amw);
+			Set<String> superclassPaths = new HashSet<>();
+			
+			for(model.Class c : m.getSuperclasses().values()) {
+				superclassPaths.add(c.getFullPath());
+			}
+			
+			globalDataStore.getStrSetMap(Metric.CLASS_PARENTS.toString()).add(m.getFullPath(), superclassPaths);
+			globalDataStore.getStrSetMap(Metric.CLASS_DEF_METHODS.toString()).add(m.getFullPath(), m.getSubroutineNames());
+			//getStringCounter(Metric.CLASS_REF_METHODS).add(m.getFullPath(), m.getR);
+			
+			
+			globalDataStore.getPrimitiveMapStore(Metric.CLASS_REF_CLS_COUNT.toString()).add(m.getFullPath(), m.getReferencedClassesCount().size());
+			globalDataStore.getPrimitiveMapStore(Metric.CLASS_REF_VAR_COUNT.toString()).add(m.getFullPath(), m.getReferencedVariableCount().size());
+			globalDataStore.getPrimitiveMapStore(Metric.CLASS_PROTECTED_MEMBERS.toString()).add(m.getFullPath(), m.getProtectedVars().getAsSet().size());
+
+			globalDataStore.getPrimitiveMapStore(Metric.CLASS_WMC.toString()).add(m.getFullPath(), m.getWMC());
+			globalDataStore.getPrimitiveFloatMapStore(Metric.CLASS_AMW.toString()).add(m.getFullPath(), amw);
+			globalDataStore.getPrimitiveMapStore(Metric.CLASS_LOC.toString()).add(m.getFullPath(), m.getLoc());
+			globalDataStore.getPrimitiveMapStore(Metric.CLASS_METHODS.toString()).add(m.getFullPath(), m.getNOM());
+			
+			//globalDataStore.getPrimitiveMapStore(Metric.CLASS_AMW.toString()).add(m.getFullPath(), m.getAMW());
+			//globalDataStore.getPrimitiveMapStore(Metric.CLASS_AMW.toString()).add(m.getFullPath(), m.getAMW());
+
+	
 			projectCC += m.getCC();
 			classLOC += m.getLoc();
 			classCC +=m.getCC();
@@ -205,7 +251,6 @@ public class Metrics {
 			projectAMW += amw;
 			
 			classStore.put(m, m.getLoc());
-			//globalDataStore.getPrimitiveMapStore("CLASS_LOC").add(m.getFullPath(), m.getLoc());
 			classCount++;
 			return null;
 		}
@@ -236,27 +281,30 @@ public class Metrics {
 	 * @param project
 	 */
 	public void getProjectData(Project project) {
-		
-		String path = project.getPath();
+
+		String projectPath = project.getPath();
 
 		//	globalDataStore.getPrimitiveMapStore(Metric.PROJECT_LOC.toString()).add(path, this.collector.projectLOC);
-			//globalDataStore.getPrimitiveMapStore(Metric.PROJECT_CC.toString()).add(path, this.collector.projectCC);
+		//globalDataStore.getPrimitiveMapStore(Metric.PROJECT_CC.toString()).add(path, this.collector.projectCC);
 		//	globalDataStore.getPrimitiveMapStore(Metric.CLASS_AVG_CC.toString()).add(path, getClassCCAVG());
-			
-			Float avgProjectAMW = (float)this.collector.projectAMW / this.collector.classCount; 
-			//globalDataStore.getPrimitiveMapStore(Metric.SUBROUTINE_AVG_CC.toString()).add(path, getSubRoutineCCAVG());
-			//globalDataStore.getPrimitiveMapStore(Metric.PROJECT_AVG_LOC.toString()).add(path, this.collector.projectLOC / checkIfZero(this.collector.moduleCount));
-			//globalDataStore.getPrimitiveFloatMapStore(Metric.PROJECT_AVG_AMW.toString()).add(path, avgProjectAMW);
-			
-			getCounter(Metric.PROJECT_LOC).add(this.collector.projectLOC);
-			getCounter(Metric.PROJECT_CC).add(this.collector.projectCC);
-			getCounter(Metric.CLASS_AVG_CC).add(getClassCCAVG());
-			getCounter(Metric.SUBROUTINE_AVG_CC).add(getSubRoutineCCAVG());
-			getCounter(Metric.PROJECT_AVG_LOC).add(this.collector.projectLOC / checkIfZero(this.collector.moduleCount));
-			if (!avgProjectAMW.isNaN()) 
-				getFloatCounter(Metric.PROJECT_AVG_AMW).add(avgProjectAMW);
 
-		
+		Float avgProjectAMW = (float)this.collector.projectAMW / this.collector.classCount; 
+		//globalDataStore.getPrimitiveMapStore(Metric.SUBROUTINE_AVG_CC.toString()).add(path, getSubRoutineCCAVG());
+		//globalDataStore.getPrimitiveFloatMapStore(Metric.PROJECT_AVG_AMW.toString()).add(path, avgProjectAMW);
+
+		getCounter(Metric.PROJECT_LOC).add(this.collector.projectLOC);
+		globalDataStore.getPrimitiveMapStore(Metric.PROJECT_AVG_LOC.toString()).add(projectPath, this.collector.projectLOC / checkIfZero(this.collector.moduleCount));
+
+		getCounter(Metric.PROJECT_CC).add(this.collector.projectCC);
+		globalDataStore.getPrimitiveFloatMapStore(Metric.CLASS_AVG_CC.toString()).add(projectPath, getClassCCAVG());
+
+		getCounter(Metric.SUBROUTINE_AVG_CC).add(getSubRoutineCCAVG());
+		getCounter(Metric.PROJECT_AVG_LOC).add(this.collector.projectLOC / checkIfZero(this.collector.moduleCount));
+		if (!avgProjectAMW.isNaN()) {
+			getFloatCounter(Metric.PROJECT_AVG_AMW).add(avgProjectAMW);
+			globalDataStore.getPrimitiveFloatMapStore(Metric.PROJECT_AVG_AMW.toString()).add(projectPath, avgProjectAMW);
+		}
+
 		this.collector.reset();
 		System.out.println("Project data aggregation: " + count); 
 		count++;

@@ -283,7 +283,7 @@ public class Class extends ContentContainer {
 	}
 	
 	public float getAMW() {
-		if(subroutines.size() > 0) {
+		if(definedSubroutines.size() > 0) {
 			AMW  =  getWMC() / subroutines.size();
 		}
 		return AMW;
@@ -295,7 +295,7 @@ public class Class extends ContentContainer {
 	
 	public Set<String> getSubroutineNames() {
 		Set<String> names = new HashSet<String>();
-		for (Subroutine s : subroutines) {
+		for (Subroutine s : definedSubroutines.values()) {
 			names.add(s.getName());
 		}
 		return names; 
@@ -321,7 +321,7 @@ public class Class extends ContentContainer {
 	 * @return int NOM
 	 */
 	public Integer getNOM() {
-		return this.subroutines.size();
+		return this.definedSubroutines.size();
 	}
 
 	public String getShortName() {

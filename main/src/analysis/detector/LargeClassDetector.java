@@ -29,7 +29,7 @@ public class LargeClassDetector extends Detector {
 	}
 
 	@Override
-	protected Boolean confirmDefect(String fullPath) {
+	protected Boolean confirmDefect(String fullPath, String projectPath) {
 		return this.metrics.isExtremeOutlier(Metric.CLASS_LOC, this.getPrimitiveMapStore(LOC).get(fullPath));
 	}
 

@@ -151,7 +151,7 @@ public class Main {
 		Project project = createProject(file);
 		register.check(project);
 		System.gc();
-		printMain("Memory usage: " + memory + " -> " + ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024) + "\t\t" + file.getAbsolutePath());
+		//printMain("Memory usage: " + memory + " -> " + ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024) + "\t\t" + file.getAbsolutePath());
 	}
 
 	

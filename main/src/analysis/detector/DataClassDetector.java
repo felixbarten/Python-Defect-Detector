@@ -40,7 +40,7 @@ public class DataClassDetector extends Detector {
 	}
 
 	@Override
-	protected Boolean confirmDefect(String fullPath) {
+	protected Boolean confirmDefect(String fullPath, String projectPath) {
 		return this.metrics.isExtremeOutlier(Metric.CLASS_ACCESSORS, this.getPrimitiveMapStore(ACCESS).get(fullPath))
 				|| this.metrics.isExtremeOutlier(Metric.CLASS_PUBLIC_FIELDS, this.getPrimitiveMapStore(PUBF).get(fullPath));
 	}

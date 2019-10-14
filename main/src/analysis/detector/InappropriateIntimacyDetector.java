@@ -29,7 +29,7 @@ public class InappropriateIntimacyDetector extends Detector {
 	}
 
 	@Override
-	protected Boolean confirmDefect(String fullPath) {
+	protected Boolean confirmDefect(String fullPath, String projectPath) {
 		return this.metrics.isExtremeOutlier(Metric.SUBROUTINE_PARAMS, this.getPrimitiveMapStore(PARAMS).get(fullPath));
 	}
 

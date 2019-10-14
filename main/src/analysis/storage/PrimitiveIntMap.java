@@ -23,7 +23,7 @@ public class PrimitiveIntMap extends Map<Integer> {
 		String line = dataReader.readLine();
 		while (line != null) {
 			List<String> parts = StringHelper.explode(line, DELIMITER);
-			this.map.put(parts.get(0), Integer.valueOf(parts.get(1)));
+			this.map.put(parts.get(0), Math.round(Float.parseFloat(parts.get(1))));
 			line = dataReader.readLine();
 		}
 	}

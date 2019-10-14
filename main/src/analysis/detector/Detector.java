@@ -85,7 +85,7 @@ public abstract class Detector {
 		String projectPath = this.defects.getNextKey();
 		while (projectPath != null) {
 			String fullPath = this.defects.getNextVal();
-			if (this.confirmDefect(fullPath)) {
+			if (this.confirmDefect(fullPath, projectPath)) {
 				String projectUrl = gitLocs != null ? gitLocs.getLink(projectPath) : "";
 				csvCreator.addLine(csvName, projectPath, projectUrl, fullPath, this.getName());
 			}
@@ -198,7 +198,7 @@ public abstract class Detector {
 		return false;
 	}
 
-	protected abstract Boolean confirmDefect(String fullPath);
+	protected abstract Boolean confirmDefect(String fullPath, String projectPath);
 
 	protected abstract String getName();
 

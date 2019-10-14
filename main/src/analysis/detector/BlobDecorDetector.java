@@ -57,7 +57,7 @@ public class BlobDecorDetector extends Detector {
 	}
 
 	@Override
-	protected Boolean confirmDefect(String clsFullPath) {
+	protected Boolean confirmDefect(String clsFullPath, String projectPath) {
 		return (this.isLargeClass(clsFullPath) || this.hasLowCohesion(clsFullPath)) && this.relatedDataClassesCount(clsFullPath) >= RAC_COUNT;
 	}
 

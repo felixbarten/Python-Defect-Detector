@@ -8,9 +8,10 @@ import analysis.storage.ListMap;
 import analysis.storage.PrimitiveFloatMap;
 import analysis.storage.PrimitiveIntMap;
 import analysis.storage.SetIntMap;
+import analysis.storage.SetStrMap;
 
 /**
- * Wrapper class for storing detection data. 
+ * Wrapper class for storing detection data. Local detectors can have datastore attached to them but if you want data from the Metrics visitor you need to save it somewhere. 
  * @author felixb
  *
  */
@@ -39,21 +40,35 @@ public class DataStore {
 	 * @param name
 	 * @return
 	 */
-	public PrimitiveIntMap getPrimitiveMapStore(String name) {
+	public analysis.storage.Map getPrimitiveMapStore(String name) {
 		return (PrimitiveIntMap) this.dataStores.get(name);
 	}
 	
+	/**
+	 * Returns primitiveFloatMap 
+	 * @param name
+	 * @return
+	 */
 	public PrimitiveFloatMap getPrimitiveFloatMapStore(String name) {
-		return (PrimitiveFloatMap) this.dataStores.get(name);
-	}
+			return (PrimitiveFloatMap) this.dataStores.get(name);
+		}
 
 	/**
 	 * Returns a SetIntMap
 	 * @param name of SetIntMap
 	 * @return SetIntMap
 	 */
-	public SetIntMap getSetMapStore(String name) {
+	public SetIntMap getIntSetMap(String name) {
 		return (SetIntMap) this.dataStores.get(name);
+	}
+	
+	/**
+	 * Returns a SetStrMap
+	 * @param name of SetStrMap
+	 * @return SetStrMap
+	 */
+	public SetStrMap getStrSetMap(String name) {
+		return (SetStrMap) this.dataStores.get(name);
 	}
 
 	/**

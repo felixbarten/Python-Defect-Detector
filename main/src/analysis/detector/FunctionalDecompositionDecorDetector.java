@@ -48,7 +48,7 @@ public class FunctionalDecompositionDecorDetector extends Detector {
 	}
 
 	@Override
-	protected Boolean confirmDefect(String fullPath) {
+	protected Boolean confirmDefect(String fullPath, String projectPath) {
 		return this.relatedClassesWithOneMethodAndLotOfPrivateFields(fullPath) >= RCPF_LIMIT;
 	}
 
