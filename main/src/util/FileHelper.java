@@ -83,6 +83,22 @@ public class FileHelper {
 		return directory + "/" + date + "/" + time + "_" + fileName + "." + extension;
 	}
 	
+	/**
+	 * Creates time stamped filenames in a date subdirectory.
+	 * @param directory Path to directory
+	 * @param fileName Name of file
+	 * @param extension File extension
+	 * @return Path to timestamped file
+	 */
+	public static String stampedTempFileName(String directory, String fileName, String extension) {
+		Date now = new Date();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		String date = dateFormat.format(now);
+		String dir = directory + "/" + date + "/";
+		createDateDir(dir);
+		return dir + fileName + "." + extension;
+	}
+	
 	private static void createDateDir(String path) {
 		File file = new File(path);
 		if(!file.exists() && file.isDirectory()) {

@@ -7,10 +7,12 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.sql.Time;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import analysis.Register;
@@ -31,6 +33,7 @@ import model.ModelBuilder;
 import model.Project;
 import process.File2Tree;
 import process.GitLocationProcessor;
+import util.Debugging;
 import util.FileHelper;
 import util.Settings;
 
@@ -39,9 +42,21 @@ public class Main {
 	private static GitLocationProcessor gitLocs;
 
 	private static final String CSV_NAME = "RESULTS";
+	private static final String PREFIX = "[MAIN] ";
+	private static boolean debugging = true;
+	private static PrintStream console;
 
 	public static void main(String[] args) throws IOException {
-		Properties config = Settings.getConfig();
+		long startTime = System.currentTimeMillis();
+		printMain("Starting program...");
+		console = System.out;
+		Properties config = null;
+		if(args[0] != null) {
+			config = Settings.getConfig(args[0]);
+		} else {
+			config = Settings.getConfig();
+		}
+		Debugging.getInstance();
 		createLocations(config);
 
 		boolean filterEnabled = config.containsKey("locations.data.input.filter");
@@ -50,40 +65,62 @@ public class Main {
 		PrintStream err = new PrintStream(new FileOutputStream(FileHelper.stampedFileName(config.getProperty("locations.log.error"), "err", "log")));
 		System.setOut(out);
 		
+		printMain("Starting detection.");
 		// Don't redirect error stream for development
 		//System.setErr(err);
-		System.out.println("Registering detectors...");
+		printMain("Registering detectors...");
 
 		Register register = new Register();
 		registerDetectors(register);
-		System.out.println("Registered detectors.");
+		printMain("Registered detectors.");
 		
-		System.out.println("Reading Git Location data");
+		printMain("Reading Git Location data");
 		gitLocs = new GitLocationProcessor(config.getProperty("locations.data.input.disklocations"));
 		gitLocs.readData();
-		System.out.println("Finished reading Git Location data");
+		printMain("Finished reading Git Location data");
 
 		
-		System.out.println("Fetching projects...");
+		printMain("Fetching projects...");
 		// Only projects in the filtered list are processed. If filtered list exists.
 		List<String> projects = fetchFilteredProjects(config, filterEnabled);
-		System.out.println("Fetched projects.");
-		System.out.println("Processing projects...");
+		printMain("Fetched projects.");
+		printMain("Processing projects...");
 		File projectsFolder = new File(config.getProperty("locations.data.input"));
 		for (File file : projectsFolder.listFiles()) {
 			if (file.isDirectory() && (!filterEnabled || projects.contains(file.getAbsolutePath()))) {
+				long startProject = System.currentTimeMillis();
 				processProject(register, file);
-				System.out.println("Processed project: " + file.toString());
+				printMain("Processed project: " + file.toString() + " in " + printExecutionTime(startProject));
 			}
 		}
-		System.out.println("Finished processing projects.");
+		printMain("Finished processing projects.");
 
 		CsvCreator csvCreator = new CsvCreator(config.getProperty("locations.data.results"));
 		csvCreator.createStream(CSV_NAME, "Project", "Url", "Location", "Defect");
 		register.finish(gitLocs, csvCreator);
 		err.close();
+		String endTime = printExecutionTime(startTime);
+		console.println(PREFIX + " Finished program in : " + endTime);
 	}
 
+	private static void printMain(String msg) {
+		System.out.println(PREFIX + msg);
+		if(debugging && console != null) {
+			console.println(PREFIX + msg);
+		}
+	}
+
+	private static String printExecutionTime(long start) { 
+		long duration = System.currentTimeMillis() - start;
+		return (String.format("%d days, %d hours, %d min, %d sec", 
+				TimeUnit.MILLISECONDS.toDays(duration),
+				TimeUnit.MILLISECONDS.toHours(duration),
+			    TimeUnit.MILLISECONDS.toMinutes(duration),
+			    TimeUnit.MILLISECONDS.toSeconds(duration) - 
+			    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
+			));
+	}
+	
 	/**
 	 * Replaces the projects list with a new List of projects if filtering is enabled. 
 	 * @param config
@@ -110,11 +147,11 @@ public class Main {
 	 * @throws FileNotFoundException
 	 */
 	private static void processProject(Register register, File file) throws FileNotFoundException {
-		System.out.print(((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024));
+		String memory = Long.toString(((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024));
 		Project project = createProject(file);
 		register.check(project);
 		System.gc();
-		System.out.println(" -> " + ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024) + "\t\t" + file.getAbsolutePath());
+		printMain("Memory usage: " + memory + " -> " + ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024) + "\t\t" + file.getAbsolutePath());
 	}
 
 	
@@ -124,6 +161,7 @@ public class Main {
 	 * @throws IOException
 	 */
 	private static void registerDetectors(Register register) throws IOException {
+		/*
 		register.add(new LongMethodDetector());
 		register.add(new LongParamListDetector());
 		register.add(new LargeClassDetector());
@@ -136,6 +174,7 @@ public class Main {
 		register.add(new LargeClassDecorDetector());
 		register.add(new DataClassDecorDetector());
 		register.add(new DataClassDetector());
+		*/
 		register.add(new RefusedBequestDetector());
 	}
 
@@ -159,7 +198,7 @@ public class Main {
 	 * @return Project object after processing the files.
 	 */
 	private static Project createProject(File projectFolder) {
-		//System.out.println("Project: " + projectFolder.getAbsolutePath());
+		//printMain("Project: " + projectFolder.getAbsolutePath());
 		List<String> allFiles = FileHelper.getPythonFilePaths(projectFolder);
 		Map<String, Module> trees = File2Tree.getAsts(allFiles);
 		ModelBuilder mb = new ModelBuilder(projectFolder, trees.values());

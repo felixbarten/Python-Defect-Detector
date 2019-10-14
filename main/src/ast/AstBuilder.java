@@ -56,8 +56,6 @@ import ast.expression.nocond.logical.Binary;
 import ast.expression.nocond.logical.Comparison;
 import ast.expression.nocond.logical.Not;
 import ast.expression.nocond.trailer.ArgList;
-import ast.expression.nocond.trailer.FieldAccess;
-import ast.expression.nocond.trailer.FieldAccessList;
 import ast.expression.nocond.trailer.SliceBound;
 import ast.expression.nocond.trailer.SubscriptIndex;
 import ast.expression.nocond.trailer.SubscriptSliceList;
@@ -71,7 +69,6 @@ import ast.param.UntypedParam;
 import ast.path.DottedPath;
 import ast.path.Path;
 import ast.path.SimplePath;
-import ast.statement.MethodCallStmt;
 import ast.statement.compound.ClassDef;
 import ast.statement.compound.Except;
 import ast.statement.compound.For;
@@ -98,12 +95,7 @@ import ast.statement.simple.Pass;
 import ast.statement.simple.Print;
 import ast.statement.simple.SuperStmt;
 import gen.PythonParser;
-import gen.PythonParser.Chained_methodContext;
-import gen.PythonParser.Field_accessContext;
-import gen.PythonParser.FieldlistContext;
-import gen.PythonParser.Instance_method_callContext;
-import gen.PythonParser.Method_argsContext;
-import gen.PythonParser.Method_callContext;
+import gen.PythonParser.Super_exprContext;
 import gen.PythonVisitor;
 import util.StringHelper;
 
@@ -416,6 +408,15 @@ public class AstBuilder {
 				exprElements.add((ExprList) ctx.assignTest.accept(this));
 				return new Assign(this.getLocInfo(ctx), operator, exprElements, Collections.emptyList());
 			}
+			if(ctx.assignSuper != null) {
+				// what to put here.
+				System.out.println("What now?");
+				return ctx.assignSuper.accept(this);
+			}
+			
+			if(ctx.sup != null) {
+				return ctx.sup.accept(this);
+			}
 
 			//no assign
 			if (ctx.chainedAssign.size() == 1) {
@@ -668,39 +669,7 @@ public class AstBuilder {
 		
 		@Override 
 		public AstNode visitSuper_stmt(PythonParser.Super_stmtContext ctx) {
-			// need to find a way to bind these somehow
-			// if you go back during visitation you will not get the right resutlts 
-			
-			ArgList superArgs = null;
-			if (ctx.superArgs != null) {
-				superArgs = (ArgList) ctx.superArgs.accept(this);
-			}
-					
-			ParserRuleContext traversal = ctx;
-			RuleContext parent = null;
-			
-			/*
-			 * if you process it here you will get an infinite loop. 
-			int i = 0;
-			while (true) {
-				if (traversal.getParent() instanceof PythonParser.FuncdefContext || traversal.getParent() instanceof PythonParser.Async_funcdefContext) {
-					parent =  traversal.getParent().getPayload();
-					break;
-				} 
-				i++;
-				traversal = traversal.getParent();
-				// failsafe to break out of parent getting loop
-				if (i == 30) break;
-			}
-			*/
-			
-			MethodCallStmt chain = null;
-			if(ctx.chained_method() != null) {
-				chain = (MethodCallStmt) ctx.chained_method().accept(this);
-			}
-			
-			//System.out.println("let me break here");
-			return new SuperStmt(this.getLocInfo(ctx), superArgs, null, chain);	
+			return ctx.super_expr().accept(this);
 		}
 
 		@Override
@@ -1519,68 +1488,32 @@ public class AstBuilder {
 		}
 
 		@Override
-		public AstNode visitInstance_method_call(Instance_method_callContext ctx) {
-			
-			//ctx.name().accept(this);
-			//ctx.method_call().accept(this);
-			return 	ctx.method_call().accept(this);
-
-		}
-
-		@Override
-		public AstNode visitMethod_call(Method_callContext ctx) {
-			Identifier name = (Identifier) ctx.name().accept(this);
-
-			ArgList argList = ctx.args == null ? null : (ArgList) ctx.args.accept(this);
-			MethodCallStmt chain = ctx.chained_method() == null ? null : (MethodCallStmt) ctx.chained_method().accept(this);
-			
-			return new MethodCallStmt(this.getLocInfo(ctx), name, argList, null, chain);
-		}
-
-		@Override
-		public AstNode visitChained_method(Chained_methodContext ctx) {
-		
-			return ctx.method_call().accept(this);
-		}
-
-		@Override
-		public AstNode visitMethod_args(Method_argsContext ctx) {
-			// why call rule here??
-			ctx.argument();
-			//System.out.println("Method args here");
-			//      argument (',' argument)* ','?
-			List<Argument> arguments = ctx.argument().stream()
-					.map(e -> (Argument) e.accept(this))
+		public AstNode visitSuper_expr(Super_exprContext ctx) {
+			// need to find a way to bind these somehow
+			// if you go back during visitation you will not get the right resutlts 
+			Trailer trailer = (Trailer) ctx.trailer().accept(this);
+			List<Expr> exprs = ctx.expr().stream()
+					.map(e -> (Expr) e.accept(this))
 					.collect(Collectors.toList());
-			return new ArgList(this.getLocInfo(ctx), arguments);
+			ParserRuleContext traversal = ctx;
+			RuleContext parent = null;
 			
-		}
-
-		@Override
-		public AstNode visitFieldlist(FieldlistContext ctx) {
-			ctx.field_access();
-			List<FieldAccess> arguments = ctx.field_access() == null ? Collections.emptyList() :
-				ctx.field_access().stream()
-				.map(e -> (FieldAccess) e.accept(this))
-				.collect(Collectors.toList());
-
-			return new FieldAccessList(this.getLocInfo(ctx), arguments);
-		}
-
-		@Override
-		public AstNode visitField_access(Field_accessContext ctx) {
+			/*
+			 * if you process it here you will get an infinite loop. 
+			int i = 0;
+			while (true) {
+				if (traversal.getParent() instanceof PythonParser.FuncdefContext || traversal.getParent() instanceof PythonParser.Async_funcdefContext) {
+					parent =  traversal.getParent().getPayload();
+					break;
+				} 
+				i++;
+				traversal = traversal.getParent();
+				// failsafe to break out of parent getting loop
+				if (i == 30) break;
+			}
+			*/
 			
-			SimpleArgument caller = (SimpleArgument) ctx.member.accept(this);
-			List<Trailer> trailers = ctx.trailer() == null ? Collections.emptyList() :
-				ctx.trailer().stream()
-						.map(e -> (Trailer) e.accept(this))
-						.collect(Collectors.toList());
-
-			// TODO 
-			// these might even be removed 
-			
-			
-			return new FieldAccess(this.getLocInfo(ctx), caller, trailers);
+			return new SuperStmt(this.getLocInfo(ctx), trailer, exprs);
 		}
 	}
 }

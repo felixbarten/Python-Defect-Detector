@@ -99,6 +99,10 @@ public class VarDefinitions implements Unlinkable {
 		this.vars.values().forEach(defVars::addAll);
 		return defVars;
 	}
+	
+	public Map<String, Set<Variable>> getVars() {
+		return vars;
+	}
 
 	/**
 	 * Returns a filtered set of Type varType

@@ -47,7 +47,7 @@ public class Register {
 	}
 
 	/**
-	 * Perform checking on a project by iterating through modules. Don't allow more detectors to be added at this step. 
+	 * Perform checking on a project by iterating through python modules. Don't allow more detectors to be added at this step. 
 	 * @param project
 	 * @throws FileNotFoundException
 	 */
@@ -82,7 +82,7 @@ public class Register {
 	}
 
 	/**
-	 * Finish method after all checking has been performed. BLocks additional checking from taking place. Iterates through detectors to save data to disk. 
+	 * Finish method after all checking has been performed. Blocks additional checking from taking place. Iterates through detectors to save data to disk. 
 	 * 
 	 * *important* Deserialize has to be called before anything else. If deserialize is called late the data gathered during the running of the detector 
 	 * will only exist on disk and will not be loaded into memory.

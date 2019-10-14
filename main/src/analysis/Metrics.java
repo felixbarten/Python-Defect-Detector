@@ -8,6 +8,7 @@ import java.util.Set;
 
 import analysis.detector.DataStore;
 import analysis.storage.PrimitiveIntMap;
+import analysis.storage.SetStrMap;
 import model.ContentContainer;
 import model.ContentContainerVisitor;
 import model.Project;
@@ -25,6 +26,7 @@ public class Metrics {
 
 	private final Map<Metric, IntMetricVals> intMetrics;
 	private final Map<Metric, FloatMetricVals> floatMetrics;
+	private final Map<Metric, SetStrMap> strMetrics;
 	private DataStore globalDataStore;
 	
 	private Map<Project, Integer> projectStore;
@@ -42,6 +44,7 @@ public class Metrics {
 		
 		this.intMetrics = new HashMap<>();
 		this.floatMetrics = new HashMap<>();
+		this.strMetrics = new HashMap<>();
 		this.intMetrics.put(Metric.CLASS_LOC, new IntMetricVals(Metric.CLASS_LOC.toString()));
 		this.intMetrics.put(Metric.CLASS_SUPERCLASSES, new IntMetricVals(Metric.CLASS_SUPERCLASSES.toString()));
 		this.intMetrics.put(Metric.CLASS_METHODS, new IntMetricVals(Metric.CLASS_METHODS.toString()));
@@ -56,7 +59,7 @@ public class Metrics {
 		this.intMetrics.put(Metric.SUBROUTINE_AID, new IntMetricVals(Metric.SUBROUTINE_AID.toString()));
 		this.intMetrics.put(Metric.SUBROUTINE_AVG_CC, new IntMetricVals(Metric.SUBROUTINE_AVG_CC.toString()));		
 
-		this.intMetrics.put(Metric.CLASS_WMC, new IntMetricVals(Metric.CLASS_CC.toString()));
+		this.intMetrics.put(Metric.CLASS_WMC, new IntMetricVals(Metric.CLASS_WMC.toString()));
 		this.floatMetrics.put(Metric.CLASS_AMW, new FloatMetricVals(Metric.CLASS_AMW.toString())); // just need to store some floats.
 		this.intMetrics.put(Metric.CLASS_AVG_CC, new IntMetricVals(Metric.CLASS_AVG_CC.toString()));
 
@@ -202,7 +205,7 @@ public class Metrics {
 			projectAMW += amw;
 			
 			classStore.put(m, m.getLoc());
-			globalDataStore.getPrimitiveMapStore("CLASS_LOC").add(m.getFullPath(), m.getLoc());
+			//globalDataStore.getPrimitiveMapStore("CLASS_LOC").add(m.getFullPath(), m.getLoc());
 			classCount++;
 			return null;
 		}
@@ -236,26 +239,24 @@ public class Metrics {
 		
 		String path = project.getPath();
 
-		try {
-			globalDataStore.getPrimitiveMapStore(Metric.PROJECT_LOC.toString()).add(path, this.collector.projectLOC);
-			globalDataStore.getPrimitiveMapStore(Metric.PROJECT_CC.toString()).add(path, this.collector.projectCC);
-			globalDataStore.getPrimitiveMapStore(Metric.CLASS_AVG_CC.toString()).add(path, getClassCCAVG());
+		//	globalDataStore.getPrimitiveMapStore(Metric.PROJECT_LOC.toString()).add(path, this.collector.projectLOC);
+			//globalDataStore.getPrimitiveMapStore(Metric.PROJECT_CC.toString()).add(path, this.collector.projectCC);
+		//	globalDataStore.getPrimitiveMapStore(Metric.CLASS_AVG_CC.toString()).add(path, getClassCCAVG());
 			
 			Float avgProjectAMW = (float)this.collector.projectAMW / this.collector.classCount; 
-			globalDataStore.getPrimitiveMapStore(Metric.SUBROUTINE_AVG_CC.toString()).add(path, getSubRoutineCCAVG());
+			//globalDataStore.getPrimitiveMapStore(Metric.SUBROUTINE_AVG_CC.toString()).add(path, getSubRoutineCCAVG());
+			//globalDataStore.getPrimitiveMapStore(Metric.PROJECT_AVG_LOC.toString()).add(path, this.collector.projectLOC / checkIfZero(this.collector.moduleCount));
+			//globalDataStore.getPrimitiveFloatMapStore(Metric.PROJECT_AVG_AMW.toString()).add(path, avgProjectAMW);
 			
-			globalDataStore.getPrimitiveMapStore(Metric.PROJECT_AVG_LOC.toString()).add(path, this.collector.projectLOC / checkIfZero(this.collector.moduleCount));
-			globalDataStore.getPrimitiveFloatMapStore(Metric.PROJECT_AVG_AMW.toString()).add(path, avgProjectAMW);
-						
-		} catch (NullPointerException e) {
-			System.err.println("Metric not initialized.");
-			e.printStackTrace();
+			getCounter(Metric.PROJECT_LOC).add(this.collector.projectLOC);
+			getCounter(Metric.PROJECT_CC).add(this.collector.projectCC);
+			getCounter(Metric.CLASS_AVG_CC).add(getClassCCAVG());
+			getCounter(Metric.SUBROUTINE_AVG_CC).add(getSubRoutineCCAVG());
+			getCounter(Metric.PROJECT_AVG_LOC).add(this.collector.projectLOC / checkIfZero(this.collector.moduleCount));
+			if (!avgProjectAMW.isNaN()) 
+				getFloatCounter(Metric.PROJECT_AVG_AMW).add(avgProjectAMW);
 
-		} catch (Exception e) {
-			System.err.println("Unknown error: ");
-			e.printStackTrace();
-		}
-				
+		
 		this.collector.reset();
 		System.out.println("Project data aggregation: " + count); 
 		count++;

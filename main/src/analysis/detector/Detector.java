@@ -10,6 +10,7 @@ import java.util.Set;
 import analysis.Metric;
 import analysis.Metrics;
 import analysis.storage.ListMap;
+import analysis.storage.PrimitiveFloatMap;
 import analysis.storage.PrimitiveIntMap;
 import analysis.storage.SetIntMap;
 import analysis.storage.SetStrMap;
@@ -41,7 +42,9 @@ public abstract class Detector {
 	private boolean finished;
 
 	public Detector() throws IOException {
+		// get suspect filename from suspect.properties. Points to file with existing data. 
 		String fileName = this.getSuspectFilePath();
+		// create map with existing filename if it exists. 
 		this.defects = new SetStrMap(fileName);
 		this.dataStores = new HashMap<>();
 		this.requiredPercentages = new HashMap<>();
@@ -78,6 +81,7 @@ public abstract class Detector {
 	 */
 	public void finish(GitLocationProcessor gitLocs, CsvCreator csvCreator, String csvName) throws IOException {
 		this.defects.deserialize(false);
+		// get key from possible defects
 		String projectPath = this.defects.getNextKey();
 		while (projectPath != null) {
 			String fullPath = this.defects.getNextVal();
@@ -112,6 +116,14 @@ public abstract class Detector {
 	protected PrimitiveIntMap getPrimitiveMapStore(String name) {
 		return (PrimitiveIntMap) this.dataStores.get(name);
 	}
+	
+	protected PrimitiveFloatMap getPrimitiveFloatMapStore(String name) {
+		return (PrimitiveFloatMap) this.dataStores.get(name);
+	}
+	
+	protected SetStrMap getPrimitiveStringMapStore(String name) {
+		return (SetStrMap) this.dataStores.get(name);
+	}
 
 	protected SetIntMap getSetMapStore(String name) {
 		return (SetIntMap) this.dataStores.get(name);
@@ -127,7 +139,7 @@ public abstract class Detector {
 	}
 
 	/**
-	 * Loops through the Storage maps in DataStores and writes them to file.
+	 * Loops through the Storage maps in DataStores and reads/writes them to file
 	 * @throws IOException
 	 */
 	public void deserializeData() throws IOException {
@@ -147,21 +159,20 @@ public abstract class Detector {
 	 * @throws IOException
 	 */
 	protected String getSuspectFilePath() throws IOException {
+		// fetch suspect properties (which are stored names of suspected defects.)
 		Properties suspectConfig = Settings.getSuspectConfig();
+		// does key exist in properties?
 		boolean exists = suspectConfig.containsKey(this.getName());
+		// fetch folder name
 		String folder = Settings.getConfig().getProperty("locations.data.output");
-		return exists ? suspectConfig.getProperty(this.getName()) : FileHelper.stampedFileName(folder, this.getName(), DATA_STORES_EXTENSION);
+		// if it does exist fetch fro suspects. if it does not. create new stampedFileName with Detector name.  
+		return exists ? suspectConfig.getProperty(this.getName()) : FileHelper.stampedTempFileName(folder, this.getName(), DATA_STORES_EXTENSION);
 	}
 
 	
 	/**
-	 * What does this do? 
-	 * 
-	 * I think it does: checks the maps.properties to see if there is a property like.... LCOM and then if there is retrieve those values?
-	 * 
-	 * If there is no property a new filename is created and data is stored there.
-	 * 
-	 * 
+	 * This method checks if maps.properties has defined mappings for detectors to point to data already processed.
+	 * Problem is this data is never read just added to. If the mapping already has keys data is discarded. 
 	 * @param type
 	 * @return
 	 * @throws IOException
@@ -171,7 +182,7 @@ public abstract class Detector {
 		String fullName = this.getName() + "_" + type;
 		boolean exists = mapsConfig.containsKey(fullName);
 		String folder = Settings.getConfig().getProperty("locations.data.output");
-		return exists ? mapsConfig.getProperty(fullName) : FileHelper.stampedFileName(folder, type, DATA_STORES_EXTENSION);
+		return exists ? mapsConfig.getProperty(fullName) : FileHelper.stampedTempFileName(folder, type, DATA_STORES_EXTENSION);
 	}
 
 	//override these where necessary
@@ -191,6 +202,10 @@ public abstract class Detector {
 
 	protected abstract String getName();
 
+	/**
+	 * Visitor for visiting modules,classes, subroutines and projects. Check each if there are possible signs of the to be detected defect. If so add to list 
+	 *
+	 */
 	private class PreliminaryVisitor implements ContentContainerVisitor<Boolean> {
 
 		public Boolean checkForDefect(ContentContainer contentContainer) {

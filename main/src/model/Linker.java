@@ -23,6 +23,7 @@ public class Linker {
 	}
 
 	public void link() {
+		// for all modules resolve inheritance. 
 		this.project.getModules().forEach(model.Module::resolveInheritance);
 		this.project.getModules().forEach(model.Module::resolveInheritedItems);
 		this.project.getModules().forEach(model.Module::resolveDependencies);

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 /**
+ * The Settings class is a singleton responsible for fetching properties files from disk. 
  * Created by Nik on 29-11-2015
  */
 public class Settings {
@@ -16,7 +17,7 @@ public class Settings {
 	private final Properties mapsConfig;
 	private final Properties metricsConfig;
 	private final Properties suspectConfig;
-	private static String configName = "config3";
+	private static String configName = "test_config";
 	
 	private static Settings getInstance() throws IOException {
 		if (instance == null) {
@@ -43,6 +44,11 @@ public class Settings {
 	
 	public static Properties getConfig() throws IOException {
 		Settings settings = Settings.getInstance();
+		return settings.config;
+	}
+	
+	public static Properties getConfig(String config_name) throws IOException {
+		Settings settings = Settings.getInstance(config_name);
 		return settings.config;
 	}
 

@@ -18,7 +18,8 @@ public abstract class ContentContainer extends ContentDefinitions {
 
 	protected final Set<String> referencedVarNames;
 	protected final VarDefinitions referencedVars;
-
+	protected final List<String> referencedVarNamesList;
+	
 	protected final Map<String, Class> referencedClasses;
 
 	protected final List<Assign> assigns;
@@ -32,6 +33,7 @@ public abstract class ContentContainer extends ContentDefinitions {
 
 		this.referencedVars = new VarDefinitions();
 		this.referencedVarNames = new HashSet<>();
+		this.referencedVarNamesList = new ArrayList<String>();
 
 		this.calledSubroutines = new HashMap<>();
 		this.calledSubroutineNames = new HashSet<>();
@@ -57,6 +59,35 @@ public abstract class ContentContainer extends ContentDefinitions {
 		return refVars;
 	}
 
+/*
+	public Map<Variable, Integer> getReferencedVariableCount() {
+		Map<String, Set<Variable>>  classrefs = this.referencedVars.getVars();
+		
+		Map<Variable, Integer> refCount = new HashMap<>();
+		
+		for(Variable key: classrefs) {
+			if (refCount.containsKey(key)) {
+				refCount.computeIfPresent(key, (k, v) -> v + 1);
+			} else {
+				refCount.putIfAbsent(key, 1);
+			}
+		}
+		return refCount;
+	}*/
+	
+	public Map<String, Integer> getReferencedVariableCount() {
+		Map<String, Integer> varRefs = new HashMap<>();
+				
+		for(String key: this.referencedVarNamesList) {
+			if (varRefs.containsKey(key)) {
+				varRefs.computeIfPresent(key, (k, v) -> v + 1);
+			} else {
+				varRefs.putIfAbsent(key, 1);
+			}
+		}
+		return varRefs;		
+	}
+	
 	public Set<Variable> getReferencedGlobalsSet() {
 		return this.getReferencedVariablesSet().stream()
 				.filter(v -> v.getVarType() == VarType.GLOBAL || (v.getVarType() == VarType.LOCAL && !v.definedInParentOf(this)))
@@ -67,6 +98,19 @@ public abstract class ContentContainer extends ContentDefinitions {
 		Set<Class> classes = this.referencedClasses.values().stream().collect(Collectors.toSet());
 		this.getChildren().forEach(c -> classes.addAll(c.getReferencedClassesSet()));
 		return classes;
+	}
+	
+	public Map<Class, Integer> getReferencedClassesCount() {
+		List<Class> classrefs = this.referencedClasses.values().parallelStream().collect(Collectors.toList());
+		Map<Class, Integer> refCount = new HashMap<>();
+		for(Class key: classrefs) {
+			if (refCount.containsKey(key)) {
+				refCount.computeIfPresent(key, (k, v) -> v + 1);
+			} else {
+				refCount.putIfAbsent(key, 1);
+			}
+		}
+		return refCount;
 	}
 
 	public Integer subroutinesWithNoParamsCount() {
@@ -81,6 +125,7 @@ public abstract class ContentContainer extends ContentDefinitions {
 	//-----------------------------------------------------------------------------------------------------\\
 	public void addVariableReference(String varName) {
 		this.referencedVarNames.add(varName);
+		this.referencedVarNamesList.add(varName);
 	}
 
 	public void addSubroutineDefinition(Subroutine subroutine) {

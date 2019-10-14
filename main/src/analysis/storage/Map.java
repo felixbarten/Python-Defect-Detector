@@ -69,25 +69,30 @@ public abstract class Map<T> {
 		return this.map.get(key);
 	}
 
+	/**
+	 * Deserialize is a weird name as data is stored in cleartext. 
+	 * @throws IOException
+	 */
 	public void deserialize() throws IOException {
+		// read all data
 		this.deserialize(true);
 	}
 
 	/**
 	 * This method closes the printstream if it doesn't exist. 
-	 * Opens a new reader for the filepath and if the argument is true deserializes the data to the reader's file. 
+	 * Opens a new reader for the filepath and if the argument is true reads all data into the map. 
 	 * If it's false only the reader is initiated.
 	 * 
-	 * @param Boolean all
+	 * @param Boolean readData. If true reads all data from storage map. 
 	 * @throws IOException
 	 */
-	public void deserialize(Boolean all) throws IOException {
+	public void deserialize(Boolean readData) throws IOException {
 		if (!this.existing) {
 			this.stream.close();
 		}
 
 		this.reader = new BufferedReader(new FileReader(this.filePath));
-		if (all) {
+		if (readData) {
 			this.deserialize(reader);
 			reader.close();
 		}

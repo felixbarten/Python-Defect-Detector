@@ -73,6 +73,7 @@ public class FloatMetricVals {
 			}
 			if (this.valueStream != null) {
 				this.valueStream.println(item);
+				this.values.add(item);
 			}
 			else {
 				this.values.add(item);

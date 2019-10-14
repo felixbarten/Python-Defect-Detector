@@ -102,10 +102,16 @@ public class Class extends ContentContainer {
 	@Override
 	public void resolveInheritance(Scope scope) {
 		super.resolveInheritance(scope);
+		// loop through superclassnames
 		for (String clsName : this.superclassNames) {
+			// if superclsname is defined in the scope (how large is the scope?) 
+			
 			if (scope.definedClasses.containsKey(clsName)) {
+				//retrieve cls. object
 				Class parentCls = scope.definedClasses.get(clsName);
+				// check if parent cls is in inheritance line. 
 				if (!parentCls.isInInheritanceLine(this)) {
+					// add to maps. 
 					this.superclasses.put(clsName, parentCls);
 					this.referencedClasses.put(clsName, parentCls);
 				}
@@ -316,6 +322,12 @@ public class Class extends ContentContainer {
 	 */
 	public Integer getNOM() {
 		return this.subroutines.size();
+	}
+
+	public String getShortName() {
+		String longName = this.name;
+		String[] explode = longName.split(">");
+		return explode.length > 1 ? explode[1]: longName;
 	}
 
 	

@@ -320,8 +320,8 @@ expr_stmt returns [List<ParserRuleContext> chainedAssign]
 @init {
     $chainedAssign = new ArrayList<>();
 }
- : target=testlist_star_expr ( augassign ( assignYield=yield_expr | assignTest=testlist)
-                             | ( '=' ( ayi=yield_expr | atsl=testlist_star_expr | sup=super_stmt ) )*
+ : target=testlist_star_expr ( augassign ( assignYield=yield_expr | assignTest=testlist | assignSuper=super_expr)
+                             | ( '=' ( ayi=yield_expr | atsl=testlist_star_expr | sup=super_expr ) )*
                              )
  ;
 
@@ -399,38 +399,15 @@ yield_stmt
  : yield_expr
  ;
 
+super_stmt
+ : super_expr
+ ;
  /// TODO
  /// super_stmt: 'super()' in Python 3
  ///  super(<subclass>, instance).<method_call> in Python 2
-super_stmt
- : SUPER '(' superArgs=fieldlist? ')' chained_method?
- | SUPER '(' ')' chained_method?
+super_expr
+ : SUPER trailer ('.' expr)*
  ; 
- 
-
-instance_method_call
- : name '.' method_call
- ;    
- 
-fieldlist
- : x=field_access list=(',' field_access)*
- ; 
- 
-field_access
- : member=argument trailer*
- ;
- 
-method_call
- : name '(' args=method_args* ')' chained_method?
- ;
-
-method_args  
- : argument (',' argument)*
- ;
-
-chained_method
- : '.' method_call
- ;
 
 /// raise_stmt: 'raise' [test ['from' test]]
 // 2.6: raise_stmt: 'raise' [test [',' test [',' test]]]

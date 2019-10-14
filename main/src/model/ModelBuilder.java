@@ -451,6 +451,11 @@ public class ModelBuilder {
 		}
 	}
 
+	/**
+	 * Gathers arguments only if it's a defValArgument || simpleargument
+	 * 
+	 *
+	 */
 	public class ClassArgumentCollector implements ArgumentVisitor<String> {
 
 		@Override
