@@ -1,6 +1,10 @@
 
 class A:
     
+    id = 25
+    name = "skdgkg" 
+    _namee = "hiddden" 
+    
     
     def __init__(self):
         pass

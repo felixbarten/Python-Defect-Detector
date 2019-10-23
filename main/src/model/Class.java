@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -99,13 +100,16 @@ public class Class extends ContentContainer {
 		return a.hasVariableIntersection(b) ? -1 : 1;
 	}
 
+	/**
+	 * Resolve inheritance by looping through superclass names and see if they can be found in the scope. If not they are discarded. 
+	 */
 	@Override
 	public void resolveInheritance(Scope scope) {
 		super.resolveInheritance(scope);
 		// loop through superclassnames
 		for (String clsName : this.superclassNames) {
 			// if superclsname is defined in the scope (how large is the scope?) 
-			
+			// Why does the scope not contain the right files? 
 			if (scope.definedClasses.containsKey(clsName)) {
 				//retrieve cls. object
 				Class parentCls = scope.definedClasses.get(clsName);
@@ -122,6 +126,7 @@ public class Class extends ContentContainer {
 	@Override
 	public void copyParentVars() {
 		super.copyParentVars();
+		// loop through parents 
 		for (Class parent : this.superclasses.values()) {
 			VarDefinitions parentVars = parent.getParentVars();
 
@@ -147,6 +152,12 @@ public class Class extends ContentContainer {
 		return vars;
 	}
 
+	/**
+	 * If the container matches this container it's in the same inheritance line. Else loop through superclasses and see if any of the superclasses match the container.
+	 * If that fails it's not in the inheritance line. 
+	 * @param container
+	 * @return
+	 */
 	private boolean isInInheritanceLine(ContentContainer container) {
 		if (this.equals(container)) {
 			return true;
@@ -284,7 +295,7 @@ public class Class extends ContentContainer {
 	
 	public float getAMW() {
 		if(definedSubroutines.size() > 0) {
-			AMW  =  getWMC() / subroutines.size();
+			AMW  =  getWMC() / definedSubroutines.size();
 		}
 		return AMW;
 	}
@@ -299,6 +310,10 @@ public class Class extends ContentContainer {
 			names.add(s.getName());
 		}
 		return names; 
+	}
+	
+	public Set<String> getVariableNames() {
+		return definedVars.getNames();
 	}
 
 	private Integer calculateCC() {
@@ -330,5 +345,34 @@ public class Class extends ContentContainer {
 		return explode.length > 1 ? explode[1]: longName;
 	}
 
+	public Set<String> getReferencedVariableNames() {
+		Set<String> paths = new HashSet<>();
+		getReferencedVariablesSet().stream().forEach((m) -> paths.add(m.getName()));
+		return paths;
+	}
+		
+	public Set<String> getReferencedClassPaths() {
+		Set<String> paths = new HashSet<>();
+		getReferencedClassesSet().stream().forEach((m) -> paths.add(m.getFullPath()));
+		return paths;
+	}
+	
+	public Set<String> getReferencedClassNames() {
+		Set<String> paths = new HashSet<>();
+		getReferencedClassesSet().stream().forEach((m) -> paths.add(m.getName()));
+		return paths;
+	}
+	
+	public Set<String> getReferencedMethodsNames() {
+		return getCalledSubroutineNames();
+	}
+
+	public Set<String> getInheritedVarNames() {
+		Set<String> inheritedVarNames = new HashSet<>();
+		for (Variable v : inheritedVars.getAsSet()) {
+			inheritedVarNames.add(v.getName());
+		}
+		return inheritedVarNames;
+	}
 	
 }

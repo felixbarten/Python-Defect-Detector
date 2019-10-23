@@ -22,6 +22,9 @@ public class Linker {
 
 	}
 
+	/**
+	 * Link all data together. 
+	 */
 	public void link() {
 		// for all modules resolve inheritance. 
 		this.project.getModules().forEach(model.Module::resolveInheritance);

@@ -160,6 +160,7 @@ public class ModelBuilder {
 
 		@Override
 		public void visitChildren(ast.Module n) {
+			
 			String filePath = n.getFilePath();
 			model.Module module = new model.Module(n.getName(), n.getLocInfo(), filePath, StringHelper.implode(n.getErrors(), "\n"));
 

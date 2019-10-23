@@ -39,3 +39,10 @@ class B(A):
         
     def hardParse3(self): 
         sup = super(_SubParsersAction._ChoicesPseudoAction, self)
+
+
+    def abc(self): 
+        return super().name;
+    
+    def bcd(self): 
+        return A.name;

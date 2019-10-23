@@ -11,3 +11,9 @@ class D(C):
     # override
     def substitution(self, a, b):
         return (a - b) + 1
+    
+    def addition(self, a,b):
+        add(a,b)
+    
+    def add (self, a, b): 
+        return a + b

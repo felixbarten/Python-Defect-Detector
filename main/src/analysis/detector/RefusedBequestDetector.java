@@ -59,7 +59,11 @@ public class RefusedBequestDetector extends Detector {
 	
 	private static final String CLASS_DEF_METHODS = "CLASS_DEF_METHODS";		
 	private static final String CLASS_METHODS = "CLASS_METHODS";	
-	private static final String CLASS_PROTECTED_MEMBERS = "CLASS_PROTECTED_MEMBERS";	
+	private static final String CLASS_PROTECTED_FIELDS = "CLASS_PROTECTED_FIELDS";	
+	private static final String CLASS_FIELDNAMES = "CLASS_FIELDNAMES";
+	private static final String CLASS_REF_METHOD_NAMES = "CLASS_REF_METHOD_NAMES";
+	private static final String CLASS_REF_CLS_NAMES = "CLASS_REF_CLS_NAMES";
+	private static final String CLASS_REF_VAR_NAMES = "CLASS_REF_VAR_NAMES";
 
 	private Debugging debug;
 	private DataStore global;
@@ -86,44 +90,25 @@ public class RefusedBequestDetector extends Detector {
 	public void addDataStores() throws IOException {
 		//prevents initialization issues
 		global = DataStore.getInstance();
-		/*
-		this.addDataStore(CLOC, new PrimitiveIntMap(this.getDataStoreFilePath(CLOC)));
-		this.addDataStore(OVERRIDES, new PrimitiveIntMap(this.getDataStoreFilePath(OVERRIDES)));
-		this.addDataStore(CLASS_WMC, new PrimitiveIntMap(this.getDataStoreFilePath(CLASS_WMC)));
-		this.addDataStore(CLASS_AMW, new PrimitiveFloatMap(this.getDataStoreFilePath(CLASS_AMW)));
-		this.addDataStore(PROJECT_LOC, new PrimitiveIntMap(this.getDataStoreFilePath(PROJECT_LOC)));
-		this.addDataStore(PROJECT_CC,  new PrimitiveIntMap(this.getDataStoreFilePath(PROJECT_CC)));
-		this.addDataStore(CLASS_LOC, new PrimitiveIntMap(this.getDataStoreFilePath(CLASS_LOC)));
-		this.addDataStore(CLASS_AVG_CC, new PrimitiveIntMap(this.getDataStoreFilePath(CLASS_AVG_CC)));
-		this.addDataStore(PROJECT_AVG_LOC, new PrimitiveIntMap(this.getDataStoreFilePath(PROJECT_AVG_LOC)));
-		this.addDataStore(SUBROUTINE_AVG_CC, new PrimitiveIntMap(this.getDataStoreFilePath(SUBROUTINE_AVG_CC)));
-		
-		
-		this.addDataStore(PROJECT_AVG_AMW, new PrimitiveFloatMap(this.getDataStoreFilePath(PROJECT_AVG_AMW)));
-		this.addDataStore(PROJECT_AVG_SUBROUTINE_CC, new PrimitiveIntMap(this.getDataStoreFilePath(PROJECT_AVG_SUBROUTINE_CC)));
-		this.addDataStore(GLOBAL_AVG_NOM, new PrimitiveIntMap(this.getDataStoreFilePath(GLOBAL_AVG_NOM)));
-		this.addDataStore(CLASS_METHODS, new PrimitiveIntMap(this.getDataStoreFilePath(CLASS_METHODS)));
-	*/
-
 		global.addDataStore(PROJECT_AVG_AMW, new PrimitiveFloatMap(this.getDataStoreFilePath(PROJECT_AVG_AMW)));
-		global.addDataStore(PROJECT_AVG_LOC, new PrimitiveIntMap(this.getDataStoreFilePath(PROJECT_AVG_LOC)));
-
-		//global.addDataStore(CLASS_METHODS, new PrimitiveIntMap(this.getDataStoreFilePath(CLASS_METHODS)));
-		
+		global.addDataStore(PROJECT_AVG_LOC, new PrimitiveIntMap(this.getDataStoreFilePath(PROJECT_AVG_LOC)));		
+		global.addDataStore(CLASS_AVG_LOC, new PrimitiveIntMap(this.getDataStoreFilePath(CLASS_AVG_LOC)));		
 		global.addDataStore(CLASS_DEF_METHODS, new SetStrMap(this.getDataStoreFilePath(CLASS_DEF_METHODS)));
 		global.addDataStore(CLASS_REF_METHODS, new SetStrMap(this.getDataStoreFilePath(CLASS_REF_METHODS)));
 		global.addDataStore(CLASS_REF_CLS_COUNT, new PrimitiveIntMap(this.getDataStoreFilePath(CLASS_REF_CLS_COUNT)));
 		global.addDataStore(CLASS_REF_VAR_COUNT, new PrimitiveIntMap(this.getDataStoreFilePath(CLASS_REF_VAR_COUNT)));
 		global.addDataStore(CLASS_PARENTS, new SetStrMap(this.getDataStoreFilePath(CLASS_PARENTS)));
-		global.addDataStore(CLASS_PROTECTED_MEMBERS, new PrimitiveIntMap(this.getDataStoreFilePath(CLASS_PROTECTED_MEMBERS)));
+		global.addDataStore(CLASS_PROTECTED_FIELDS, new PrimitiveIntMap(this.getDataStoreFilePath(CLASS_PROTECTED_FIELDS)));
 		global.addDataStore(CLASS_AVG_CC, new PrimitiveFloatMap(this.getDataStoreFilePath(CLASS_AVG_CC)));
 		global.addDataStore(CLASS_AMW, new PrimitiveFloatMap(this.getDataStoreFilePath(CLASS_AMW)));
 		global.addDataStore(CLASS_WMC, new PrimitiveIntMap(this.getDataStoreFilePath(CLASS_WMC)));
 		global.addDataStore(CLASS_LOC, new PrimitiveIntMap(this.getDataStoreFilePath(CLASS_LOC)));
 		global.addDataStore(CLASS_METHODS, new PrimitiveIntMap(this.getDataStoreFilePath((CLASS_METHODS))));
-
 		
-
+		global.addDataStore(CLASS_FIELDNAMES, new SetStrMap(this.getDataStoreFilePath((CLASS_FIELDNAMES))));
+		global.addDataStore(CLASS_REF_VAR_NAMES, new SetStrMap(this.getDataStoreFilePath((CLASS_REF_VAR_NAMES))));
+		global.addDataStore(CLASS_REF_METHOD_NAMES, new SetStrMap(this.getDataStoreFilePath((CLASS_REF_METHOD_NAMES))));
+		global.addDataStore(CLASS_REF_CLS_NAMES, new SetStrMap(this.getDataStoreFilePath((CLASS_REF_CLS_NAMES))));
 	}
 
 	@Override
@@ -137,8 +122,11 @@ public class RefusedBequestDetector extends Detector {
 		// libraries don't get added to the superclass set so precondition is met as the classes can't be iterated if they're not in the Set. 		
 		
 		boolean hasParent = hasParent(cls);
+		if(hasParent) {
+			debug.debug(cls);
+		}
+		debug.debug("Class: " +  cls.getShortName() + " is preliminary defective: " + hasParent);
 		return hasParent; 
-		//return hasParent(cls) && fewProtectedMembers(cls);
 	}
 
 	@Override
@@ -148,7 +136,12 @@ public class RefusedBequestDetector extends Detector {
 		// debugging 
 		boolean bequest = cls_ignores_bequest(fullPath);
 		boolean complex = clsComplex(fullPath, projectPath);
+		debug.debug("Class with path: " + fullPath + " has refused bequest? " + bequest);
+		debug.debug("Class with path: " + fullPath + " is complex? " + complex);		
 		
+		if (bequest && complex) {
+			debug.debug("Class with path: " + fullPath + " has refused bequest.");
+		}
 		
 		return complex && bequest;
 	}
@@ -180,7 +173,7 @@ public class RefusedBequestDetector extends Detector {
 		//Integer memberCount = cls.getProtectedParentVars().getAsSet().size();
 		Integer parentMember = 0;
 		for (String parent : global.getStrSetMap(CLASS_PARENTS).get(path)) {
-			parentMember += (Integer) global.getPrimitiveMapStore(CLASS_PROTECTED_MEMBERS).get(parent);
+			parentMember += (Integer) global.getPrimitiveMapStore(CLASS_PROTECTED_FIELDS).get(parent);
 		}
 		boolean condition = parentMember > memberThreshold;
 		
@@ -198,39 +191,57 @@ public class RefusedBequestDetector extends Detector {
 		// roadblock. Needs additional information from the AST about method calls. which is not currently available. 
 		// collect call data 
 		// check if parent data is called. 
-		int parentMembers = 0;
-		int usage = 0; 
+		int parentMemberCount = 0;
 		
-	/*&Map<Class, Integer> classRefs = cls.getReferencedClassesCount();
-	/Map<String, Integer> varRefs = cls.getReferencedVariableCount();
-		
-		//Set<Class> parents = cls.getParentsSet();
-		// if parents don't exist why did we even come here because the precond should have failed. 
-		if(parents.size() > 0 ) 
-			debug.debug("We have " + parents.size() + " parents");
-				
-		for (Class c : parents) { 
-			classRefs.computeIfPresent(c, (k,v) -> parentMembers + v);
-		}
-		debug.debug("clsRefs: " + classRefs);
-
-		debug.debug("Parent members: " + parentMembers);
-		
-		debug.debug("varRefs: " + varRefs);
-		
-		for (String s : varRefs.keySet()) { 
-			varRefs.computeIfPresent(s, (k,v) -> parentMembers + v);
-		}
-		*/
+		int count = 0; 
+		int methodsCount = 0;
+		float ratio = 0.33f;
 		
 		Integer classRefs = (Integer) global.getPrimitiveMapStore(CLASS_REF_CLS_COUNT).get(path);
 		Integer varRefs = (Integer) global.getPrimitiveMapStore(CLASS_REF_VAR_COUNT).get(path);
+		
 		Set<String> parents = global.getStrSetMap(CLASS_PARENTS).get(path);
+		List<String> parentVars = new ArrayList<>();
+		Set<String> parentMethods = new HashSet<>();
+		for (String parent : parents) {
+			Set<String> fieldnames =  global.getStrSetMap(CLASS_FIELDNAMES).get(parent);
+			if (fieldnames != null) {
+				parentVars.addAll(fieldnames);
+			}
+			Set<String> definedMethods = global.getStrSetMap(CLASS_DEF_METHODS).get(parent);
+			if (definedMethods != null) {
+				parentMethods.addAll(definedMethods);
+			}
+		}
 		
+		Set<String> calledMethods = global.getStrSetMap(CLASS_REF_METHOD_NAMES).get(path);
+		Set<String> referencedVars = global.getStrSetMap(CLASS_REF_VAR_NAMES).get(path);
 		
-		//debug.debug("Parent members: " + parentMembers);
+		// methodsCount is never incremented. In the rascal version it was possible to track method invocations of the parent.
+		if (calledMethods != null) {
+			for(String method : calledMethods) {
+				if (parentMethods.contains(method)) {
+					methodsCount++;
+				}
+			}
+		}
 		
-		return false;
+		if(referencedVars != null) {
+			for(String var : referencedVars) {
+				if (parentVars.contains(var)) {
+					count++;
+				}
+			}
+		}
+		parentMemberCount = parentVars.size() + parentMethods.size();
+		
+		boolean condition = ((count + methodsCount) / checkIfZero(parentMemberCount)) < ratio;
+				
+		return condition;
+	}
+	
+	private int checkIfZero(int n) {
+		return n == 0 ? 1 : n;
 	}
 
 	
@@ -260,14 +271,14 @@ public class RefusedBequestDetector extends Detector {
 				parentSubRoutines.addAll(subroutines);
 		}
 		
-		debug.debug(parentSubRoutines);
+		//debug.debug(parentSubRoutines);
 		Set<String> defMethods = global.getStrSetMap(CLASS_DEF_METHODS).get(path);
 		Set<String> intersection = new HashSet<String>();	
 		if(defMethods != null) {
 			intersection = new HashSet<>(defMethods);
+			debug.debug("Intersection is: " + intersection);
 		}
 		//debug
-		debug.debug("Intersection is: " + intersection);
 		intersection.retainAll(parentSubRoutines);
 		
 		return intersection.size() > overrideThreshold;
@@ -296,7 +307,9 @@ public class RefusedBequestDetector extends Detector {
 	 */
 	private boolean clsSizeAboveAvg(String path, String projectPath) {
 		Integer LOC = (Integer) global.getPrimitiveMapStore(CLASS_LOC).get(path);
-		boolean sizeAboveAvg =  LOC >= (Integer) global.getPrimitiveMapStore(PROJECT_AVG_LOC).get(projectPath);
+		Integer avgLOC = (Integer) global.getPrimitiveMapStore(PROJECT_AVG_LOC).get(projectPath);
+		Integer clsLOC = (Integer) global.getPrimitiveMapStore(CLASS_AVG_LOC).get(projectPath);
+		boolean sizeAboveAvg =  LOC >= clsLOC;
 		
 		return sizeAboveAvg;
 	}
@@ -310,16 +323,17 @@ public class RefusedBequestDetector extends Detector {
 	 */
 	private boolean funcComplexityAboveAvg(String path, String projectPath) {
 		// get functional CC for project				
-				
-		Float amw = 0.0f;
-		Integer nom = (Integer) global.getPrimitiveMapStore(CLASS_METHODS).get(path);
+		Float projectAvg =  global.getPrimitiveFloatMapStore(PROJECT_AVG_AMW).get(projectPath);
+		Float AMW = 0.0f;
+		Integer NOM = (Integer) global.getPrimitiveMapStore(CLASS_METHODS).get(path);
 		Integer WMC = (Integer) global.getPrimitiveMapStore(CLASS_WMC).get(path);
 		// Check if class contains methods 
-		if (nom > 0) {
-			amw = (float)WMC / nom;
-		}
+
+		AMW = (float)WMC / checkIfZero(NOM);
 		
-		return amw > global.getPrimitiveFloatMapStore(PROJECT_AVG_AMW).get(projectPath);
+		boolean condition = AMW > projectAvg;
+		
+		return condition;
 	}
 
 
@@ -336,7 +350,8 @@ public class RefusedBequestDetector extends Detector {
 		Float avgWMC = (Float) global.getPrimitiveFloatMapStore(CLASS_AVG_CC).get(projectPath);
 		Integer WMC = (Integer) global.getPrimitiveMapStore(CLASS_WMC).get(path);
 		//debug.debug(cls.getShortName() + " has CC above avg: " + cls.getWMC() + " > " + avgWMC);
-		return WMC > avgWMC;
+		boolean condition = WMC > avgWMC;
+		return condition;
 	}
 	
 	/**

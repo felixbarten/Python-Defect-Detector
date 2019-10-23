@@ -205,6 +205,8 @@ public class ModelBuilderTest {
 		Class cls3 = classes.get("C");
 		Class cls4 = classes.get("D");
 		
+		System.out.println(cls4.getProtectedParentVars().getVars());
+		
 		assert(false);
 	}
 	
@@ -215,6 +217,7 @@ public class ModelBuilderTest {
 		Class test = classes.get("MetaTestCase");
 		
 	
+		assert(false);
 	}
 	
 	@Test

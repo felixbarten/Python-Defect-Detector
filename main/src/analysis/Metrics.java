@@ -15,6 +15,7 @@ import model.ContentContainerVisitor;
 import model.Project;
 import model.Subroutine;
 import model.Variable;
+import util.Debugging;
 
 /**
  * Created by Nik on 04-11-2015
@@ -33,6 +34,7 @@ public class Metrics {
 	private Map<Project, Integer> projectStore;
 	private Map<model.Class, Integer> classStore;
 	private Project project;
+	private Debugging debug = Debugging.getInstance();
 	
 	
 	public Metrics() throws IOException {
@@ -172,6 +174,7 @@ public class Metrics {
 			projectAMW  	= 0.0f;
 			classCC 		= 0;
 			classLOC 		= 0;
+			projectSubCC 	= 0;
 			
 			subroutineCount	= 0;
 			classCount 		= 0;
@@ -225,28 +228,30 @@ public class Metrics {
 			for(model.Class c : m.getSuperclasses().values()) {
 				superclassPaths.add(c.getFullPath());
 			}
-			
 			globalDataStore.getStrSetMap(Metric.CLASS_PARENTS.toString()).add(m.getFullPath(), superclassPaths);
 			globalDataStore.getStrSetMap(Metric.CLASS_DEF_METHODS.toString()).add(m.getFullPath(), m.getSubroutineNames());
-			//getStringCounter(Metric.CLASS_REF_METHODS).add(m.getFullPath(), m.getR);
-			
+			globalDataStore.getStrSetMap(Metric.CLASS_FIELDNAMES.toString()).add(m.getFullPath(), m.getVariableNames());
+			globalDataStore.getStrSetMap(Metric.CLASS_REF_CLS_NAMES.toString()).add(m.getFullPath(), m.getReferencedClassNames());
+			Set<String> calledMethods = m.getReferencedMethodsNames();
+			globalDataStore.getStrSetMap(Metric.CLASS_REF_METHOD_NAMES.toString()).add(m.getFullPath(), calledMethods);
+			Set<String> refVars = m.getReferencedVariableNames();
+			globalDataStore.getStrSetMap(Metric.CLASS_REF_VAR_NAMES.toString()).add(m.getFullPath(), refVars );
+
 			
 			globalDataStore.getPrimitiveMapStore(Metric.CLASS_REF_CLS_COUNT.toString()).add(m.getFullPath(), m.getReferencedClassesCount().size());
 			globalDataStore.getPrimitiveMapStore(Metric.CLASS_REF_VAR_COUNT.toString()).add(m.getFullPath(), m.getReferencedVariableCount().size());
-			globalDataStore.getPrimitiveMapStore(Metric.CLASS_PROTECTED_MEMBERS.toString()).add(m.getFullPath(), m.getProtectedVars().getAsSet().size());
+			globalDataStore.getPrimitiveMapStore(Metric.CLASS_PROTECTED_FIELDS.toString()).add(m.getFullPath(), m.getProtectedVars().getAsSet().size());
+			
+			
 
 			globalDataStore.getPrimitiveMapStore(Metric.CLASS_WMC.toString()).add(m.getFullPath(), m.getWMC());
 			globalDataStore.getPrimitiveFloatMapStore(Metric.CLASS_AMW.toString()).add(m.getFullPath(), amw);
 			globalDataStore.getPrimitiveMapStore(Metric.CLASS_LOC.toString()).add(m.getFullPath(), m.getLoc());
 			globalDataStore.getPrimitiveMapStore(Metric.CLASS_METHODS.toString()).add(m.getFullPath(), m.getNOM());
-			
-			//globalDataStore.getPrimitiveMapStore(Metric.CLASS_AMW.toString()).add(m.getFullPath(), m.getAMW());
-			//globalDataStore.getPrimitiveMapStore(Metric.CLASS_AMW.toString()).add(m.getFullPath(), m.getAMW());
 
-	
 			projectCC += m.getCC();
 			classLOC += m.getLoc();
-			classCC +=m.getCC();
+			classCC += m.getCC();
 			currentCls = m;
 			projectAMW += amw;
 			
@@ -288,44 +293,42 @@ public class Metrics {
 		//globalDataStore.getPrimitiveMapStore(Metric.PROJECT_CC.toString()).add(path, this.collector.projectCC);
 		//	globalDataStore.getPrimitiveMapStore(Metric.CLASS_AVG_CC.toString()).add(path, getClassCCAVG());
 
-		Float avgProjectAMW = (float)this.collector.projectAMW / this.collector.classCount; 
+		Float avgProjectAMW = (float)this.collector.projectAMW / checkIfZero(this.collector.classCount);
 		//globalDataStore.getPrimitiveMapStore(Metric.SUBROUTINE_AVG_CC.toString()).add(path, getSubRoutineCCAVG());
 		//globalDataStore.getPrimitiveFloatMapStore(Metric.PROJECT_AVG_AMW.toString()).add(path, avgProjectAMW);
 
 		getCounter(Metric.PROJECT_LOC).add(this.collector.projectLOC);
-		globalDataStore.getPrimitiveMapStore(Metric.PROJECT_AVG_LOC.toString()).add(projectPath, this.collector.projectLOC / checkIfZero(this.collector.moduleCount));
+		globalDataStore.getPrimitiveMapStore(Metric.PROJECT_AVG_LOC.toString()).add(projectPath, this.collector.projectLOC / checkIfZero(this.collector.classCount));
 
+		
+		globalDataStore.getPrimitiveMapStore(Metric.CLASS_AVG_LOC.toString()).add(projectPath, this.collector.classLOC / checkIfZero(this.collector.classCount));
+
+		
+		
 		getCounter(Metric.PROJECT_CC).add(this.collector.projectCC);
 		globalDataStore.getPrimitiveFloatMapStore(Metric.CLASS_AVG_CC.toString()).add(projectPath, getClassCCAVG());
 
 		getCounter(Metric.SUBROUTINE_AVG_CC).add(getSubRoutineCCAVG());
-		getCounter(Metric.PROJECT_AVG_LOC).add(this.collector.projectLOC / checkIfZero(this.collector.moduleCount));
+		getCounter(Metric.PROJECT_AVG_LOC).add(this.collector.projectLOC / checkIfZero(this.collector.classCount));
 		if (!avgProjectAMW.isNaN()) {
 			getFloatCounter(Metric.PROJECT_AVG_AMW).add(avgProjectAMW);
 			globalDataStore.getPrimitiveFloatMapStore(Metric.PROJECT_AVG_AMW.toString()).add(projectPath, avgProjectAMW);
 		}
 
 		this.collector.reset();
-		System.out.println("Project data aggregation: " + count); 
+		//System.out.println("Project data aggregation: " + count); 
 		count++;
 	}
 
 	private Integer getClassCCAVG() {
-		if(this.collector.classCount == 0) {
-			return 1;
-		}
-		return Math.round(this.collector.classCC / this.collector.classCount);
+		return Math.round(this.collector.classCC / checkIfZero(this.collector.classCount));
 	}
 	
 	private Integer getSubRoutineCCAVG() {
-		if(this.collector.subroutineCount == 0) {
-			return 1;
-		}
-		return  Math.round(this.collector.projectCC / this.collector.subroutineCount);
+		return  Math.round(this.collector.projectCC / checkIfZero(this.collector.subroutineCount));
 	}
 	
 	private Integer getNOM() {
-		
 		return Math.round(checkIfZero(this.collector.subroutineCount) / checkIfZero(this.collector.classCount));
 	}
 	

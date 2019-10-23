@@ -1,6 +1,9 @@
 
 class C:
     
+    _name_ = "Class c"
+    id = 52
+    level = "intermediate" 
     
     def __init__(self):
         pass

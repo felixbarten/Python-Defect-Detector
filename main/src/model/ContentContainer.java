@@ -21,6 +21,7 @@ public abstract class ContentContainer extends ContentDefinitions {
 	protected final List<String> referencedVarNamesList;
 	
 	protected final Map<String, Class> referencedClasses;
+	protected final Map<String, MethodCall> invokedMethods;
 
 	protected final List<Assign> assigns;
 
@@ -39,6 +40,7 @@ public abstract class ContentContainer extends ContentDefinitions {
 		this.calledSubroutineNames = new HashSet<>();
 
 		this.referencedClasses = new HashMap<>();
+		this.invokedMethods = new HashMap<>();
 
 		this.assigns = new ArrayList<>();
 		this.loc = loc;
@@ -120,6 +122,14 @@ public abstract class ContentContainer extends ContentDefinitions {
 		return count.intValue();
 	}
 
+	public Map<String, Subroutine> getCalledSubroutines() {
+		return calledSubroutines;
+	}
+	
+	public Set<String> getCalledSubroutineNames() {
+		return calledSubroutineNames;
+	}
+	
 	//-----------------------------------------------------------------------------------------------------\\
 	//---------------------------------------------- ADDERS -----------------------------------------------\\
 	//-----------------------------------------------------------------------------------------------------\\
@@ -179,6 +189,10 @@ public abstract class ContentContainer extends ContentDefinitions {
 		this.getChildren().forEach(c -> c.resolveInheritance(scope));
 	}
 
+	/**
+	 *
+	 *
+	 */
 	public void copyParentVars() {
 		this.getChildren().forEach(ContentContainer::copyParentVars);
 	}
@@ -217,8 +231,14 @@ public abstract class ContentContainer extends ContentDefinitions {
 		}
 	}
 
+	/**
+	 * 
+	 * @param prefix
+	 * @param scopePart
+	 */
 	private void resolveVarReferences(String prefix, ContentDefinitions scopePart) {
-		for (String alias : scopePart.getDefinedVarsInclParentsVars().getNames()) {
+		Set<String> names  = scopePart.getDefinedVarsInclParentsVars().getNames();
+		for (String alias : names) {
 			String prefixedAlias = this.prefix(alias, prefix);
 			if (this.referencedVarNames.contains(prefixedAlias)) {
 				for (Variable var : scopePart.getDefinedVarsInclParentsVars().getVarsWithName(alias)) {
@@ -249,6 +269,7 @@ public abstract class ContentContainer extends ContentDefinitions {
 		this.definedVars.unlink();
 		this.assigns.clear();
 	}
+	
 	public abstract boolean isInParentLine(ContentContainer container);
 	public abstract String getFullPath();
 	public abstract <T> T accept(ContentContainerVisitor<T> visitor);
