@@ -17,6 +17,10 @@ public class Variable implements Unlinkable {
 		this.modifier = determineModifier(name);
 	}
 
+	public final ContentContainer getParent() {
+		return parent;
+	}
+
 	public String getName() {
 		return this.name;
 	}

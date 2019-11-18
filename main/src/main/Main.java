@@ -21,6 +21,7 @@ import analysis.detector.DataClassDecorDetector;
 import analysis.detector.DataClassDetector;
 import analysis.detector.FeatureEnvyLiShatnawiDetector;
 import analysis.detector.FunctionalDecompositionDecorDetector;
+import analysis.detector.InappropriateIntimacyDetector;
 import analysis.detector.LargeClassDecorDetector;
 import analysis.detector.LargeClassDetector;
 import analysis.detector.LongMethodDetector;
@@ -176,6 +177,7 @@ public class Main {
 		register.add(new DataClassDetector());
 		*/
 		register.add(new RefusedBequestDetector());
+		register.add(new InappropriateIntimacyDetector());
 	}
 
 	/**

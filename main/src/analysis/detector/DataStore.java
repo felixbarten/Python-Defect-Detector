@@ -40,7 +40,7 @@ public class DataStore {
 	 * @param name
 	 * @return
 	 */
-	public analysis.storage.Map getPrimitiveMapStore(String name) {
+	public analysis.storage.Map getPrimitiveIntMapStore(String name) {
 		return (PrimitiveIntMap) this.dataStores.get(name);
 	}
 	

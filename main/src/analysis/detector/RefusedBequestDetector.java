@@ -20,7 +20,6 @@ import util.Debugging;
  */
 public class RefusedBequestDetector extends Detector {
 
-
 	private final static String OVERRIDES = "OVERRIDES";
 	// aren't CLOC and class_loc the same? 
 	private final static String CLOC = "CLOC";
@@ -41,8 +40,6 @@ public class RefusedBequestDetector extends Detector {
 	private final static String CLASS_AVG_LOC = "CLASS_AVG_LOC";
 	// average class cyclomatic complexity (stored per project?)
 	private final static String CLASS_AVG_CC  = "CLASS_AVG_CC";
-	
-	
 	private final static String PROJECT_AVG_SUBROUTINE_CC = "PROJECT_AVG_SUBROUTINE_CC"; // average cyclomatic per subroutine in project
 	private final static String PROJECT_AVG_AMW = "PROJECT_AVG_AMW";
 	private final static String PROJECT_AVG_LOC = "PROJECT_AVG_LOC";
@@ -125,14 +122,12 @@ public class RefusedBequestDetector extends Detector {
 		if(hasParent) {
 			debug.debug(cls);
 		}
-		debug.debug("Class: " +  cls.getShortName() + " is preliminary defective: " + hasParent);
+		debug.debug("[RB] Class: " +  cls.getShortName() + " is preliminary defective: " + hasParent);
 		return hasParent; 
 	}
 
 	@Override
-	protected Boolean confirmDefect(String fullPath, String projectPath) {
-		System.out.println(fullPath);
-		
+	protected Boolean confirmDefect(String fullPath, String projectPath) {		
 		// debugging 
 		boolean bequest = cls_ignores_bequest(fullPath);
 		boolean complex = clsComplex(fullPath, projectPath);
@@ -173,7 +168,7 @@ public class RefusedBequestDetector extends Detector {
 		//Integer memberCount = cls.getProtectedParentVars().getAsSet().size();
 		Integer parentMember = 0;
 		for (String parent : global.getStrSetMap(CLASS_PARENTS).get(path)) {
-			parentMember += (Integer) global.getPrimitiveMapStore(CLASS_PROTECTED_FIELDS).get(parent);
+			parentMember += (Integer) global.getPrimitiveIntMapStore(CLASS_PROTECTED_FIELDS).get(parent);
 		}
 		boolean condition = parentMember > memberThreshold;
 		
@@ -187,7 +182,6 @@ public class RefusedBequestDetector extends Detector {
 	 * @return
 	 */
 	private boolean refusedBequest(String path) {
-		System.out.println("Detecting RB"); 
 		// roadblock. Needs additional information from the AST about method calls. which is not currently available. 
 		// collect call data 
 		// check if parent data is called. 
@@ -197,8 +191,8 @@ public class RefusedBequestDetector extends Detector {
 		int methodsCount = 0;
 		float ratio = 0.33f;
 		
-		Integer classRefs = (Integer) global.getPrimitiveMapStore(CLASS_REF_CLS_COUNT).get(path);
-		Integer varRefs = (Integer) global.getPrimitiveMapStore(CLASS_REF_VAR_COUNT).get(path);
+		Integer classRefs = (Integer) global.getPrimitiveIntMapStore(CLASS_REF_CLS_COUNT).get(path);
+		Integer varRefs = (Integer) global.getPrimitiveIntMapStore(CLASS_REF_VAR_COUNT).get(path);
 		
 		Set<String> parents = global.getStrSetMap(CLASS_PARENTS).get(path);
 		List<String> parentVars = new ArrayList<>();
@@ -256,11 +250,12 @@ public class RefusedBequestDetector extends Detector {
 	 * @return boolean whether it has more or fewer overriding methods than the threshold. 
 	 */
 	private boolean overridesMethods(String path) {	
-		// get parents 
-		
-		//foreach parent lookup set of subroutine names 
-		// add all to a set
-		// compare set to current class set of subroutines. 
+		/*
+			Step 1: get parents 
+			Step 2: foreach parent lookup set of subroutine names 
+			Step 3: add all to a set
+			Step 4: compare set to current class set of subroutines. 
+		*/
 		
 		Set<String> parentSubRoutines = new HashSet<>();
 		Set<String> superClasses = global.getStrSetMap(CLASS_PARENTS).get(path);
@@ -271,17 +266,18 @@ public class RefusedBequestDetector extends Detector {
 				parentSubRoutines.addAll(subroutines);
 		}
 		
-		//debug.debug(parentSubRoutines);
 		Set<String> defMethods = global.getStrSetMap(CLASS_DEF_METHODS).get(path);
 		Set<String> intersection = new HashSet<String>();	
+		// duplicate set
 		if(defMethods != null) {
 			intersection = new HashSet<>(defMethods);
-			debug.debug("Intersection is: " + intersection);
 		}
 		//debug
 		intersection.retainAll(parentSubRoutines);
+		debug.debug("Intersection is: " + intersection);
+		boolean condition = intersection.size() > overrideThreshold;
 		
-		return intersection.size() > overrideThreshold;
+		return condition;
 	}
 
 	/**
@@ -295,7 +291,8 @@ public class RefusedBequestDetector extends Detector {
 		boolean clsCCAboveAvg = clsCCAboveAvg(path, projectPath);
 		boolean clsSizeAbvAvg = clsSizeAboveAvg(path, projectPath);
 
-		
+		debug.debug(path + " funccomp: " + funcComplexityAvgAvg + " ccabvavg: " + clsCCAboveAvg + " size: " + clsSizeAbvAvg);
+
 		return (funcComplexityAvgAvg || clsCCAboveAvg ) && clsSizeAbvAvg;
 		//return (funcComplexityAboveAvg(cls) || clsCCAboveAvg(cls)) && clsSizeAboveAvg(cls);
 	}
@@ -306,9 +303,8 @@ public class RefusedBequestDetector extends Detector {
 	 * @return
 	 */
 	private boolean clsSizeAboveAvg(String path, String projectPath) {
-		Integer LOC = (Integer) global.getPrimitiveMapStore(CLASS_LOC).get(path);
-		Integer avgLOC = (Integer) global.getPrimitiveMapStore(PROJECT_AVG_LOC).get(projectPath);
-		Integer clsLOC = (Integer) global.getPrimitiveMapStore(CLASS_AVG_LOC).get(projectPath);
+		Integer LOC = (Integer) global.getPrimitiveIntMapStore(CLASS_LOC).get(path);
+		Integer clsLOC = (Integer) global.getPrimitiveIntMapStore(CLASS_AVG_LOC).get(projectPath);
 		boolean sizeAboveAvg =  LOC >= clsLOC;
 		
 		return sizeAboveAvg;
@@ -325,8 +321,8 @@ public class RefusedBequestDetector extends Detector {
 		// get functional CC for project				
 		Float projectAvg =  global.getPrimitiveFloatMapStore(PROJECT_AVG_AMW).get(projectPath);
 		Float AMW = 0.0f;
-		Integer NOM = (Integer) global.getPrimitiveMapStore(CLASS_METHODS).get(path);
-		Integer WMC = (Integer) global.getPrimitiveMapStore(CLASS_WMC).get(path);
+		Integer NOM = (Integer) global.getPrimitiveIntMapStore(CLASS_METHODS).get(path);
+		Integer WMC = (Integer) global.getPrimitiveIntMapStore(CLASS_WMC).get(path);
 		// Check if class contains methods 
 
 		AMW = (float)WMC / checkIfZero(NOM);
@@ -348,7 +344,7 @@ public class RefusedBequestDetector extends Detector {
 		// get functional CC for project
 		//Integer avgWMC = this.getPrimitiveMapStore(CLASS_AVG_CC).get(cls.getProject().getPath());
 		Float avgWMC = (Float) global.getPrimitiveFloatMapStore(CLASS_AVG_CC).get(projectPath);
-		Integer WMC = (Integer) global.getPrimitiveMapStore(CLASS_WMC).get(path);
+		Integer WMC = (Integer) global.getPrimitiveIntMapStore(CLASS_WMC).get(path);
 		//debug.debug(cls.getShortName() + " has CC above avg: " + cls.getWMC() + " > " + avgWMC);
 		boolean condition = WMC > avgWMC;
 		return condition;
@@ -360,16 +356,6 @@ public class RefusedBequestDetector extends Detector {
 	 */
 	private boolean hasParent(Class cls) {
 		Map<String, Class> supers = cls.getSuperclasses();
-		List<String> supernames = cls.getSuperclassNames();
-		if(supers.size() > 0) {
-			//debug.debug(cls.getShortName() + " has parents:");
-			for(Class c : supers.values()) {
-				debug.debug("\t" + c.getShortName());
-			}
-		}
-	//	if(supernames.size() > 0 && supers.size() == 0) 
-		//	debug.debug("\t" + cls.getShortName() + " has parents but can't be resolved:" + supernames);
-		// default has object as super. 
 		return supers.size() > 0;
 	}
 	

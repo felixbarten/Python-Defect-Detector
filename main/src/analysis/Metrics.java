@@ -36,7 +36,6 @@ public class Metrics {
 	private Project project;
 	private Debugging debug = Debugging.getInstance();
 	
-	
 	public Metrics() throws IOException {
 		this.collector = new Collector();
 		this.finishedCollecting = false;
@@ -65,7 +64,6 @@ public class Metrics {
 		this.intMetrics.put(Metric.CLASS_WMC, new IntMetricVals(Metric.CLASS_WMC.toString()));
 		this.intMetrics.put(Metric.CLASS_AVG_CC, new IntMetricVals(Metric.CLASS_AVG_CC.toString()));
 
-		
 		this.intMetrics.put(Metric.SUBROUTINE_CC, new IntMetricVals(Metric.SUBROUTINE_CC.toString()));
 		this.intMetrics.put(Metric.PROJECT_CC, new IntMetricVals(Metric.PROJECT_CC.toString()));
 		
@@ -74,18 +72,7 @@ public class Metrics {
 		this.intMetrics.put(Metric.PROJECT_AVG_LOC, new IntMetricVals(Metric.PROJECT_AVG_LOC.toString()));
 
 		this.floatMetrics.put(Metric.CLASS_AMW, new FloatMetricVals(Metric.CLASS_AMW.toString())); // just need to store some floats.
-		this.floatMetrics.put(Metric.PROJECT_AVG_AMW, new FloatMetricVals(Metric.PROJECT_AVG_AMW.toString()));
-
-		
-		/*
-		this.strMetrics.put(Metric.CLASS_PARENTS, new SetStrMap(Metric.CLASS_PARENTS.toString()));
-		this.strMetrics.put(Metric.CLASS_DEF_METHODS, new SetStrMap(Metric.CLASS_DEF_METHODS.toString()));
-		this.strMetrics.put(Metric.CLASS_REF_METHODS, new SetStrMap(Metric.CLASS_REF_METHODS.toString()));
-		this.intMetrics.put(Metric.CLASS_REF_CLS_COUNT, new IntMetricVals(Metric.CLASS_REF_CLS_COUNT.toString()));
-		this.intMetrics.put(Metric.CLASS_REF_VAR_COUNT, new IntMetricVals(Metric.CLASS_REF_VAR_COUNT.toString()));
-		this.intMetrics.put(Metric.CLASS_PROTECTED_MEMBERS, new IntMetricVals(Metric.CLASS_PROTECTED_MEMBERS.toString()));
-		*/
-		
+		this.floatMetrics.put(Metric.PROJECT_AVG_AMW, new FloatMetricVals(Metric.PROJECT_AVG_AMW.toString()));		
 	}
 
 	public void register(ContentContainer contentContainer) {
@@ -236,18 +223,33 @@ public class Metrics {
 			globalDataStore.getStrSetMap(Metric.CLASS_REF_METHOD_NAMES.toString()).add(m.getFullPath(), calledMethods);
 			Set<String> refVars = m.getReferencedVariableNames();
 			globalDataStore.getStrSetMap(Metric.CLASS_REF_VAR_NAMES.toString()).add(m.getFullPath(), refVars );
+			
+			// loop through variables get an actual path that we can use maybe and write to file. 
+			// this should save whether the Key class accessed a member of class B. 
+			Set<Variable> refVarInstances = m.getReferencedVariablesSet();
+			Set<String> paths = new HashSet<String>();
+			for(Variable v : refVarInstances) {
+				// for our purposes we don't care about if a class references a variable from itself. 
+				if(m.getName() != v.getParent().getName()) {
+					paths.add(v.getParent().getName() +  " > " + v.getName());
+				}
+			}			
+			
+			globalDataStore.getStrSetMap(Metric.CLASS_REF_VAR_PATHS.toString()).add(m.getFullPath(), paths );
 
 			
-			globalDataStore.getPrimitiveMapStore(Metric.CLASS_REF_CLS_COUNT.toString()).add(m.getFullPath(), m.getReferencedClassesCount().size());
-			globalDataStore.getPrimitiveMapStore(Metric.CLASS_REF_VAR_COUNT.toString()).add(m.getFullPath(), m.getReferencedVariableCount().size());
-			globalDataStore.getPrimitiveMapStore(Metric.CLASS_PROTECTED_FIELDS.toString()).add(m.getFullPath(), m.getProtectedVars().getAsSet().size());
 			
-			
+			globalDataStore.getStrSetMap(Metric.CLASS_REF_VAR_NAMES.toString()).add(m.getFullPath(), refVars );
 
-			globalDataStore.getPrimitiveMapStore(Metric.CLASS_WMC.toString()).add(m.getFullPath(), m.getWMC());
+			
+			globalDataStore.getPrimitiveIntMapStore(Metric.CLASS_REF_CLS_COUNT.toString()).add(m.getFullPath(), m.getReferencedClassesCount().size());
+			globalDataStore.getPrimitiveIntMapStore(Metric.CLASS_REF_VAR_COUNT.toString()).add(m.getFullPath(), m.getReferencedVariableCount().size());
+			globalDataStore.getPrimitiveIntMapStore(Metric.CLASS_PROTECTED_FIELDS.toString()).add(m.getFullPath(), m.getProtectedVars().getAsSet().size());
+
+			globalDataStore.getPrimitiveIntMapStore(Metric.CLASS_WMC.toString()).add(m.getFullPath(), m.getWMC());
 			globalDataStore.getPrimitiveFloatMapStore(Metric.CLASS_AMW.toString()).add(m.getFullPath(), amw);
-			globalDataStore.getPrimitiveMapStore(Metric.CLASS_LOC.toString()).add(m.getFullPath(), m.getLoc());
-			globalDataStore.getPrimitiveMapStore(Metric.CLASS_METHODS.toString()).add(m.getFullPath(), m.getNOM());
+			globalDataStore.getPrimitiveIntMapStore(Metric.CLASS_LOC.toString()).add(m.getFullPath(), m.getLoc());
+			globalDataStore.getPrimitiveIntMapStore(Metric.CLASS_METHODS.toString()).add(m.getFullPath(), m.getNOM());
 
 			projectCC += m.getCC();
 			classLOC += m.getLoc();
@@ -289,26 +291,15 @@ public class Metrics {
 
 		String projectPath = project.getPath();
 
-		//	globalDataStore.getPrimitiveMapStore(Metric.PROJECT_LOC.toString()).add(path, this.collector.projectLOC);
-		//globalDataStore.getPrimitiveMapStore(Metric.PROJECT_CC.toString()).add(path, this.collector.projectCC);
-		//	globalDataStore.getPrimitiveMapStore(Metric.CLASS_AVG_CC.toString()).add(path, getClassCCAVG());
-
 		Float avgProjectAMW = (float)this.collector.projectAMW / checkIfZero(this.collector.classCount);
-		//globalDataStore.getPrimitiveMapStore(Metric.SUBROUTINE_AVG_CC.toString()).add(path, getSubRoutineCCAVG());
-		//globalDataStore.getPrimitiveFloatMapStore(Metric.PROJECT_AVG_AMW.toString()).add(path, avgProjectAMW);
-
 		getCounter(Metric.PROJECT_LOC).add(this.collector.projectLOC);
-		globalDataStore.getPrimitiveMapStore(Metric.PROJECT_AVG_LOC.toString()).add(projectPath, this.collector.projectLOC / checkIfZero(this.collector.classCount));
+		globalDataStore.getPrimitiveIntMapStore(Metric.PROJECT_AVG_LOC.toString()).add(projectPath, this.collector.projectLOC / checkIfZero(this.collector.classCount));
+		globalDataStore.getPrimitiveIntMapStore(Metric.CLASS_AVG_LOC.toString()).add(projectPath, this.collector.classLOC / checkIfZero(this.collector.classCount));
 
-		
-		globalDataStore.getPrimitiveMapStore(Metric.CLASS_AVG_LOC.toString()).add(projectPath, this.collector.classLOC / checkIfZero(this.collector.classCount));
-
-		
-		
 		getCounter(Metric.PROJECT_CC).add(this.collector.projectCC);
 		globalDataStore.getPrimitiveFloatMapStore(Metric.CLASS_AVG_CC.toString()).add(projectPath, getClassCCAVG());
-
 		getCounter(Metric.SUBROUTINE_AVG_CC).add(getSubRoutineCCAVG());
+		
 		getCounter(Metric.PROJECT_AVG_LOC).add(this.collector.projectLOC / checkIfZero(this.collector.classCount));
 		if (!avgProjectAMW.isNaN()) {
 			getFloatCounter(Metric.PROJECT_AVG_AMW).add(avgProjectAMW);
@@ -316,7 +307,6 @@ public class Metrics {
 		}
 
 		this.collector.reset();
-		//System.out.println("Project data aggregation: " + count); 
 		count++;
 	}
 
