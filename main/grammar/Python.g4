@@ -50,7 +50,7 @@ tokens { INDENT, DEDENT }
 
 
 @header
-{ 
+{
 	package gen;
 	
     import java.util.List;
@@ -159,7 +159,7 @@ tokens { INDENT, DEDENT }
 /*
  * parser rules
  */
- 
+
 /// single_input: NEWLINE | simple_stmt | compound_stmt NEWLINE
 single_input
  : NEWLINE
@@ -192,7 +192,7 @@ decorators
 decorated
  : decorators ( classdef | funcdef | async_funcdef )
  ;
-  
+
 // NOTE: this parse rule was introduced because of the keyword inconsistency between different versions of Python
 // print and exec are keywords in Python 2.x, but not in Python 3.x
 // nonlocal is a keyword in Python 3.x, but not in Python 2.x
@@ -205,7 +205,7 @@ name
  | ASYNC
  | AWAIT
  ;
- 
+
 // 3.5: async_funcdef: ASYNC funcdef
 async_funcdef
  : ASYNC funcdef
@@ -214,7 +214,7 @@ async_funcdef
 /// funcdef: 'def' NAME parameters ['->' test] ':' suite
 funcdef
  : DEF name parameters ( '->' test )? ':' suite //added print and exec because they are keywords in Python2 but not in Python3, nonlocal is a keyword in Python3 but not Python2
- ; 
+ ;
 
 /// parameters: '(' [typedargslist] ')'
 // 2.6: parameters: '(' [varargslist] ')'
@@ -244,7 +244,7 @@ typedargslist returns [List<TfpdefContext> regular, List<TestContext> regVals]
    ( ',' '**' keyword=tfpdef )?
  | '**' keyword=tfpdef
  ;
- 
+
 /// tfpdef: NAME [':' test]
 tfpdef
  : name ( ':' test )?
@@ -310,9 +310,7 @@ small_stmt
  | nonlocal_stmt
  | exec_stmt
  | assert_stmt
- | super_stmt
  ;
-
 
 /// expr_stmt: testlist_star_expr (augassign (yield_expr|testlist) |
 ///                      ('=' (yield_expr|testlist_star_expr))*)
@@ -320,8 +318,8 @@ expr_stmt returns [List<ParserRuleContext> chainedAssign]
 @init {
     $chainedAssign = new ArrayList<>();
 }
- : target=testlist_star_expr ( augassign ( assignYield=yield_expr | assignTest=testlist | assignSuper=super_expr)
-                             | ( '=' ( ayi=yield_expr | atsl=testlist_star_expr | sup=super_expr ) )*
+ : target=testlist_star_expr ( augassign ( assignYield=yield_expr | assignTest=testlist)
+                             | ( '=' ( ayi=yield_expr | atsl=testlist_star_expr ) )*
                              )
  ;
 
@@ -385,29 +383,15 @@ continue_stmt
  : CONTINUE
  ;
 
-
-// return needs super_stmt or it will get stuck on return super(); doesnt sound like a good fix. 
-
 /// return_stmt: 'return' [testlist]
 return_stmt
  : RETURN testlist?
- | RETURN super_stmt testlist?
  ;
 
 /// yield_stmt: yield_expr
 yield_stmt
  : yield_expr
  ;
-
-super_stmt
- : super_expr
- ;
- /// TODO
- /// super_stmt: 'super()' in Python 3
- ///  super(<subclass>, instance).<method_call> in Python 2
-super_expr
- : SUPER trailer ('.' expr)*
- ; 
 
 /// raise_stmt: 'raise' [test ['from' test]]
 // 2.6: raise_stmt: 'raise' [test [',' test [',' test]]]
@@ -907,8 +891,6 @@ DEL : 'del';
 PASS : 'pass';
 CONTINUE : 'continue';
 BREAK : 'break';
-SUPER : 'super';
-
 
 NEWLINE
  : ( {atStartOfInput()}?   SPACES
@@ -1052,6 +1034,7 @@ RIGHT_SHIFT_ASSIGN : '>>=';
 POWER_ASSIGN : '**=';
 IDIV_ASSIGN : '//=';
 
+// SKIP reserved in later antlr versions.
 SKIPIT
  : ( SPACES | COMMENT | LINE_JOINING ) -> skip
  ;
@@ -1079,7 +1062,7 @@ fragment SHORT_STRING
 fragment LONG_STRING
  : '\'\'\'' LONG_STRING_ITEM*? '\'\'\''
  | '"""' LONG_STRING_ITEM*? '"""'
- ; 
+ ;
 
 /// longstringitem  ::=  longstringchar | stringescapeseq
 fragment LONG_STRING_ITEM

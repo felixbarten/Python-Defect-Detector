@@ -95,7 +95,6 @@ import ast.statement.simple.Pass;
 import ast.statement.simple.Print;
 import ast.statement.simple.SuperStmt;
 import gen.PythonParser;
-import gen.PythonParser.Super_exprContext;
 import gen.PythonVisitor;
 import util.StringHelper;
 
@@ -377,9 +376,6 @@ public class AstBuilder {
 			if (ctx.assert_stmt() != null) {
 				return ctx.assert_stmt().accept(this);
 			}
-			if (ctx.super_stmt() != null ) {
-				return ctx.super_stmt().accept(this);
-			}
 			throw new IllegalArgumentException("Unknown context");
 		}
 
@@ -407,15 +403,6 @@ public class AstBuilder {
 				exprElements.add((ExprList) ctx.target.accept(this));
 				exprElements.add((ExprList) ctx.assignTest.accept(this));
 				return new Assign(this.getLocInfo(ctx), operator, exprElements, Collections.emptyList());
-			}
-			if(ctx.assignSuper != null) {
-				// what to put here.
-				System.out.println("What now?");
-				return ctx.assignSuper.accept(this);
-			}
-			
-			if(ctx.sup != null) {
-				return ctx.sup.accept(this);
 			}
 
 			//no assign
@@ -665,11 +652,6 @@ public class AstBuilder {
 			Expr vars = ctx.vars == null ? null : (Expr) ctx.vars.accept(this);
 			Expr localVars = ctx.localVars == null ? null : (Expr) ctx.localVars.accept(this);
 			return new Exec(this.getLocInfo(ctx), target, vars, localVars);
-		}
-		
-		@Override 
-		public AstNode visitSuper_stmt(PythonParser.Super_stmtContext ctx) {
-			return ctx.super_expr().accept(this);
 		}
 
 		@Override
@@ -1485,35 +1467,6 @@ public class AstBuilder {
 			public <T> T accept(Visitor<T> visitor) {
 				throw new IllegalArgumentException("Cannot visit CollectionWrapper");
 			}
-		}
-
-		@Override
-		public AstNode visitSuper_expr(Super_exprContext ctx) {
-			// need to find a way to bind these somehow
-			// if you go back during visitation you will not get the right resutlts 
-			Trailer trailer = (Trailer) ctx.trailer().accept(this);
-			List<Expr> exprs = ctx.expr().stream()
-					.map(e -> (Expr) e.accept(this))
-					.collect(Collectors.toList());
-			ParserRuleContext traversal = ctx;
-			RuleContext parent = null;
-			
-			/*
-			 * if you process it here you will get an infinite loop. 
-			int i = 0;
-			while (true) {
-				if (traversal.getParent() instanceof PythonParser.FuncdefContext || traversal.getParent() instanceof PythonParser.Async_funcdefContext) {
-					parent =  traversal.getParent().getPayload();
-					break;
-				} 
-				i++;
-				traversal = traversal.getParent();
-				// failsafe to break out of parent getting loop
-				if (i == 30) break;
-			}
-			*/
-			
-			return new SuperStmt(this.getLocInfo(ctx), trailer, exprs);
 		}
 	}
 }
