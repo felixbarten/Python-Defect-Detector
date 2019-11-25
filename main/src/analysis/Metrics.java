@@ -4,18 +4,22 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import analysis.detector.DataStore;
 import analysis.storage.PrimitiveIntMap;
 import analysis.storage.SetStrMap;
+import model.Assign;
+import model.Class;
 import model.ContentContainer;
 import model.ContentContainerVisitor;
 import model.Project;
 import model.Subroutine;
 import model.Variable;
 import util.Debugging;
+import util.StringHelper;
 
 /**
  * Created by Nik on 04-11-2015
@@ -250,6 +254,8 @@ public class Metrics {
 			globalDataStore.getPrimitiveFloatMapStore(Metric.CLASS_AMW.toString()).add(m.getFullPath(), amw);
 			globalDataStore.getPrimitiveIntMapStore(Metric.CLASS_LOC.toString()).add(m.getFullPath(), m.getLoc());
 			globalDataStore.getPrimitiveIntMapStore(Metric.CLASS_METHODS.toString()).add(m.getFullPath(), m.getNOM());
+			
+			processIIData(m);
 
 			projectCC += m.getCC();
 			classLOC += m.getLoc();
@@ -262,6 +268,70 @@ public class Metrics {
 			return null;
 		}
 
+		private void processIIData(Class m) {
+			model.Module module = m.getParent();
+			
+			Set<Variable> insideVars = new HashSet<>();
+			Set<Variable> outsideVars = new HashSet<>();
+			Set<Variable> fieldAccessVars = new HashSet<>();
+			
+			Set<String> refNames = new HashSet<>();
+			m.getDefinedSubroutinesSet().stream().forEach((sub) -> refNames.addAll(sub.getReferencedVarNamesNotIncludedInVars()));
+
+			System.out.println(m.getReferencedVariableCount());
+			Set<String> unresolvedVars = new HashSet<>();
+			for (String varName : refNames) { 
+				if (varName.contains(".")) {
+					List<String> parts = StringHelper.explode(varName, ".");
+					if (parts.size() > 1  && parts.get(0) != "self") {
+						unresolvedVars.add(parts.get(0));
+					}					
+				}
+			}
+			Map<String, String> instanceVars = new HashMap<>();
+			Map<String, model.Class> typedInstanceVars = new HashMap<>();
+
+			// iterate over Assigns to see if any have our name's Type. 
+			for(Assign a : m.getAssignList()) {
+				if(unresolvedVars.contains(a.getName())) {
+					instanceVars.put(a.getName(), a.getValue());
+				}
+			}
+			// Gather imports and defined Classes. 
+			Map<String, String> imports = new HashMap<>(); 
+			Map<String, model.Class> clsImports = module.getClassImports();
+			Map<String, model.Module> modImports = module.getModuleImports(); 
+			
+			// cls imports already handle Aliased imports. 
+			for (String key : clsImports.keySet()) {
+				if (instanceVars.containsValue(key)) {
+					typedInstanceVars.put(key, clsImports.get(key));
+					continue;
+				}
+			}
+			
+			for (String key : modImports.keySet()) {
+				model.Module impModule = modImports.get(key);
+
+				if (instanceVars.containsValue(key)) {
+					if (impModule.getClass(key) != null) {
+						typedInstanceVars.put(key, impModule.getClass(key));
+						continue;
+					} else {
+						String aliasedCls = module.getImportAlias(key);
+						if(aliasedCls != null && impModule.getClass(aliasedCls) != null) {
+							System.out.println("good....");
+							typedInstanceVars.put(key, impModule.getClass(aliasedCls));
+							continue;
+						}
+					}
+				} 
+			}
+			
+			// now we finally have resolved our classes and instances. We can count occurrences. 
+			
+		}
+		
 		@Override
 		public Void visit(Subroutine m) {
 			getCounter(Metric.SUBROUTINE_LOC).add(m.getLoc());

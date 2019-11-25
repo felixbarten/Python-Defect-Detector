@@ -139,9 +139,9 @@ public class VarDefinitions implements Unlinkable {
 
 	/**
 	 * Adds a variable to the Map. 
-	 * @param alias 
-	 * @param var
-	 * @param unrestricted
+	 * @param alias String alias for var
+	 * @param var Variable
+	 * @param unrestricted boolean 
 	 */
 	private void add(String alias, Variable var, boolean unrestricted) {
 		// create key if it doesn't exist yet. 

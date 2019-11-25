@@ -48,39 +48,7 @@ public class ModelBuilderTest {
 		Set<String> twoVars = two.getDefinedVariablesSet().stream().map(Variable::getName).collect(Collectors.toSet());
 		assert (twoVars.size() == 3); //self.varr, self.co & self.co2
 	}
-	
-	@Test 
-	public void protectedMemberTest() {
-		Map<String, Class> classes = TestHelper.getClasses("main/src/tests/samples/parents");
 
-		Class parent = classes.get("BaseCls");
-		Class cls = classes.get("SubCls");
-		Class subCls2 = classes.get("SubCls2");
-		Class subCls3 = classes.get("SubCls3");
-
-		Set<Variable> vd = parent.getProtectedVars().getAsSet();
-		displayVars(vd, parent.getName());
-		displayVars(cls.getProtectedVars().getAsSet(), cls.getName());
-		System.out.println(subCls3.getSuperclassNames());
-		
-		
-		for(Class par : subCls3.getParentsSet()) {
-			String path = par.getFullPath();
-			System.out.println(path);
-		}
-		
-		
-		// double scoping increases the protected member count too much
-		assert(vd.size() == 6);
-		assert(cls.getProtectedVars().getAsSet().size() == 2);
-	}
-	
-	private void displayVars(Set<Variable> vd, String name) {
-		System.out.println("Variables for class name: " + name);
-		for(Variable v : vd) {
-			System.out.println("Prot var: " + v.getName() + " " + v.getVarType().toString());
-		}
-	}
 	
 	@Test
 	public void collectMethods() {
@@ -221,50 +189,7 @@ public class ModelBuilderTest {
 	
 		assert(false);
 	}
-	
-	@Test
-	public void testIntensiveCoupling() {
-		Map<String, Class> classes = TestHelper.getClasses("main/src/tests/samples/intensive_coupling");
-		
-		Class a = classes.get("A");
-		Class b = classes.get("B");
-		try {
-			Debugging debug = Debugging.getInstance();
-			
-			for (Class c : a.getReferencedClassesCount().keySet()) {
-				debug.debug(c);
-			}
-			
-			Map<String, Integer> refVals = a.getReferencedVariableCount();
-			for (String key : refVals.keySet()) {
-				debug.debug("Key: " + key + " val: " + refVals.get(key));
-			}
-			
-			
-			debug.debug("\nClass B:\n");
-			for (Class c : b.getReferencedClassesCount().keySet()) {
-				debug.debug(c);
-			}
-						
-		
-			Map<String, Integer> refVals2 = b.getReferencedVariableCount();
-			for (String key : refVals2.keySet()) {
-				debug.debug("Key: " + key + " val: " + refVals2.get(key));
-			}
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	
-		
-		assert(b.getReferencedClassNames().size() == 1);
-		assert(a.getReferencedClassNames().size() == 1);
-		
-		
 
-	}
-	
 	@Test
 	public void checkCyclomaticTest1() {
 		Map<String, Class> classes = TestHelper.getClasses("main/src/tests/samples/cyclomatic_complexity");

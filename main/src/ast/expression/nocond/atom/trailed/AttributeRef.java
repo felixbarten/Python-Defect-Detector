@@ -40,6 +40,7 @@ public class AttributeRef extends TrailedAtom {
 		List<String> parts = new ArrayList<>();
 		parts.add(this.getBase().toString());
 		this.attributes.forEach(a -> parts.add(a.toString()));
-		return String.join(".", parts);
+		String objString = String.join(".", parts);
+		return objString;
 	}
 }

@@ -249,33 +249,6 @@ public class ModelBuilder {
 			return null;
 		}
 		
-		
-		// TODO
-		@Override
-		public Void visit(MethodCallStmt n) {
-			MethodCall call;
-			
-		
-			return null;
-		}
-
-		
-		// TODO
-
-		@Override
-		public Void visit(SuperStmt n) {
-			SuperCall call;
-			
-			String name = (n.getCaller() != null && n.getCaller().getName().toString() != null) ? n.getCaller().getName().toString() : null;
-			
-			if (name != null && name == subroutines.peek().name) {
-				call = new SuperCall(subroutines.peek(), null);
-				statements.add(call);
-			}
-			
-			return null;
-		}
-		
 		@Override
 		public void visitChildren(ClassDef n) {
 			//prevents registering class names as variables
@@ -301,6 +274,10 @@ public class ModelBuilder {
 			return null;
 		}
 
+		/**
+		 * This method visits a attribute reference object. 
+		 * Attribute reference objects contain the meaning of assigning a variable a name with another variable. 
+		 */
 		@Override
 		public Void visit(AttributeRef n) {
 			this.addVarDef(n.toString());
@@ -310,6 +287,10 @@ public class ModelBuilder {
 			return null;
 		}
 
+		/**
+		 * Add Variable Reference to current container's list of referenced variables. 
+		 * @param fullName String of variable. 
+		 */
 		private void addVarRef(String fullName) {
 			this.getCurrentContainer().addVariableReference(fullName);
 		}
@@ -341,6 +322,8 @@ public class ModelBuilder {
 					this.addVarDef(nameParts.get(0), VarType.CLASS);
 					this.addVarDef(nameParts.get(0), VarType.INSTANCE);
 				}
+				
+				//TODO field access information is lost here. only 
 			}
 			else {
 				this.addVarDef(nameParts.get(0), VarType.LOCAL);

@@ -33,6 +33,7 @@ public abstract class Detector {
 
 	private SetStrMap defects;
 
+	@SuppressWarnings("rawtypes")
 	protected Map<String, analysis.storage.Map> dataStores;
 
 	private final Map<Metric, Set<Integer>> requiredPercentages;
@@ -68,6 +69,7 @@ public abstract class Detector {
 	private void processChecked(String projectPath, ContentContainer contentContainer) {
 		Boolean defective = this.preliminaryVisitor.checkForDefect(contentContainer);
 		if (defective) {
+			// write preliminary defects to str map file. 
 			this.defects.add(projectPath, contentContainer.getFullPath());
 		}
 	}
@@ -109,6 +111,7 @@ public abstract class Detector {
 
 	public abstract void addDataStores() throws IOException;
 
+	@SuppressWarnings("rawtypes")
 	protected void addDataStore(String name, analysis.storage.Map dataStore) {
 		this.dataStores.put(name, dataStore);
 	}
@@ -142,6 +145,7 @@ public abstract class Detector {
 	 * Loops through the Storage maps in DataStores and reads/writes them to file
 	 * @throws IOException
 	 */
+	@SuppressWarnings("rawtypes")
 	public void deserializeData() throws IOException {
 		for (analysis.storage.Map m : this.dataStores.values()) {
 			m.deserialize();

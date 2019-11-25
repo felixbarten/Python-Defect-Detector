@@ -374,5 +374,12 @@ public class Class extends ContentContainer {
 		}
 		return inheritedVarNames;
 	}
+
+	public model.Module getParent() {
+		if(parent instanceof Module) {
+			return (model.Module) parent; 
+		}
+		return null;
+	}
 	
 }

@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.sql.Time;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -16,19 +15,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import analysis.Register;
-import analysis.detector.BlobDecorDetector;
-import analysis.detector.DataClassDecorDetector;
-import analysis.detector.DataClassDetector;
-import analysis.detector.FeatureEnvyLiShatnawiDetector;
-import analysis.detector.FunctionalDecompositionDecorDetector;
 import analysis.detector.InappropriateIntimacyDetector;
-import analysis.detector.LargeClassDecorDetector;
-import analysis.detector.LargeClassDetector;
-import analysis.detector.LongMethodDetector;
-import analysis.detector.LongParamListDetector;
 import analysis.detector.RefusedBequestDetector;
-import analysis.detector.SpaghettiCodeDecorDetector;
-import analysis.detector.SwissArmyKnifeDecorDetector;
 import ast.Module;
 import model.ModelBuilder;
 import model.Project;
@@ -148,7 +136,7 @@ public class Main {
 	 * @throws FileNotFoundException
 	 */
 	private static void processProject(Register register, File file) throws FileNotFoundException {
-		String memory = Long.toString(((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024));
+		//String memory = Long.toString(((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024));
 		Project project = createProject(file);
 		register.check(project);
 		System.gc();

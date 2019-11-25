@@ -39,7 +39,9 @@ public class Linker {
 		List<String> sourcePaths = this.getSourcePaths(sourceModule.getFilePath());
 		for (String sourcePath : sourcePaths) {
 			String fullPath = sourcePath + FILE_DELIMITER + this.getFilePath(target);
-			Boolean added = this.addModuleImport(sourceModule, fullPath, alias);
+			String clsName = target;
+			
+			Boolean added = this.addModuleImport(sourceModule, fullPath, alias, clsName);
 			if (added) {
 				break;
 			}
@@ -70,7 +72,7 @@ public class Linker {
 			String fullModulePath = path + FILE_DELIMITER + modulePathEnd;
 			String fullClassPath = path + FILE_DELIMITER + classPathEnd;
 
-			Boolean added = this.addModuleImport(sourceModule, fullModulePath, alias);
+			Boolean added = this.addModuleImport(sourceModule, fullModulePath, alias, className);
 			if (added) {
 				break;
 			}
@@ -95,10 +97,11 @@ public class Linker {
 	}
 
 
-	private Boolean addModuleImport(Module source, String path, String alias) {
+	private Boolean addModuleImport(Module source, String path, String alias, String className) {
 		if (this.project.hasModule(path)) {
 			Module importedModule = this.project.getModule(path);
 			source.addImport(importedModule, alias);
+			source.addAlias(alias, className);
 			return true;
 		}
 		return false;
@@ -128,6 +131,8 @@ public class Linker {
 			Module m = this.project.getModule(importModule);
 			if (m.containsClass(className)) {
 				source.addImport(m.getClass(className), alias);
+				if(className != alias)
+					source.addAlias(alias, className);
 				return true;
 			}
 		}

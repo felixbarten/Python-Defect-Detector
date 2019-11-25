@@ -133,6 +133,11 @@ public abstract class ContentContainer extends ContentDefinitions {
 	//-----------------------------------------------------------------------------------------------------\\
 	//---------------------------------------------- ADDERS -----------------------------------------------\\
 	//-----------------------------------------------------------------------------------------------------\\
+	
+	/**
+	 * Add varName to the list and set of referenced variables. 
+	 * @param varName
+	 */
 	public void addVariableReference(String varName) {
 		this.referencedVarNames.add(varName);
 		this.referencedVarNamesList.add(varName);
@@ -268,6 +273,25 @@ public abstract class ContentContainer extends ContentDefinitions {
 		this.referencedVars.unlink();
 		this.definedVars.unlink();
 		this.assigns.clear();
+	}
+	
+	public final Set<String> getReferencedVarNamesNotIncludedInVars() {
+		HashSet<String> excludedNames = new HashSet<>(referencedVarNames);
+		for(Variable v : referencedVars.getAsSet()) {
+			if (referencedVarNames.contains(v.getName())) {
+				excludedNames.remove(v.getName());
+			}
+		}
+		
+		return excludedNames;
+	}
+
+	public final List<String> getReferencedVarNamesList() {
+		return referencedVarNamesList;
+	}
+	
+	public final List<Assign> getAssignList() {
+		return assigns;
 	}
 	
 	public abstract boolean isInParentLine(ContentContainer container);

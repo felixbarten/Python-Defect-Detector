@@ -7,6 +7,7 @@ class B:
     _protB2 = "sdgfsdfsdfsdfsd"
     _protBInt = 23
     pubB = 2323
+    pubBC = 23233333
     a = A()
     
 

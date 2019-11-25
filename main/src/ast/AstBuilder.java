@@ -1405,7 +1405,7 @@ public class AstBuilder {
 		}
 
 		private Integer getLocInfo(ParserRuleContext ctx) {
-			Integer startLine = ctx.getStart().getLine();
+			Integer startLine = ctx.getStart().getLine(); 
 			Integer stopLine = ctx.getStop() == null ? startLine : ctx.getStop().getLine();
 			return this.locCounter.count(startLine, stopLine);
 		}
