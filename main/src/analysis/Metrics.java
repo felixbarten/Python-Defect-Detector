@@ -1,12 +1,14 @@
 package analysis;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import analysis.detector.DataStore;
 import analysis.storage.PrimitiveIntMap;
@@ -268,37 +270,120 @@ public class Metrics {
 			return null;
 		}
 
-		private void processIIData(Class m) {
-			model.Module module = m.getParent();
+		/**
+		 * This method will do the heavy lifting for Inappropriate Intimacy detection. It loops through the class's subroutines and finds unresolved referenced variables. 
+		 * The method will attempt to resolve the origin of the unresolved variables. After resolving the the instance variables calls and attribute references can be examined.
+		 * The counting of these variables will be useful to see how many links class A has with Class B. 
+		 * @param cls
+		 */
+		private void processIIData(Class cls) {
+			model.Module module = cls.getParent();
+			String clsName = cls.getName();
 			
-			Set<Variable> insideVars = new HashSet<>();
-			Set<Variable> outsideVars = new HashSet<>();
-			Set<Variable> fieldAccessVars = new HashSet<>();
+			Map<String, Long> occurrenceCount = new HashMap<>();
 			
-			Set<String> refNames = new HashSet<>();
-			m.getDefinedSubroutinesSet().stream().forEach((sub) -> refNames.addAll(sub.getReferencedVarNamesNotIncludedInVars()));
+			List<String> refVarNamesList = new ArrayList<>();
+			Set<String> refVarNamesSet = new HashSet<>();
 
-			System.out.println(m.getReferencedVariableCount());
-			Set<String> unresolvedVars = new HashSet<>();
-			for (String varName : refNames) { 
+			Set<String> calledSubRoutinesSet = new HashSet<>();
+			Set<String> calledSubRoutinesList = new HashSet<>();
+
+			
+			cls.getDefinedSubroutinesSet().stream().forEach((sub) -> refVarNamesSet.addAll(sub.getReferencedVarNamesNotIncludedInVars()));
+			cls.getDefinedSubroutinesSet().stream().forEach((sub) -> refVarNamesList.addAll(sub.getReferencedVarNamesNotIncludedInVarsList()));
+			cls.getDefinedSubroutinesSet().stream().forEach((sub) -> calledSubRoutinesSet.addAll(sub.getCalledSubroutineNames()));
+			cls.getDefinedSubroutinesSet().stream().forEach((sub) -> calledSubRoutinesList.addAll(sub.getCalledSubroutineNamesList()));
+			
+			// Set of unresolved variables that are not "self"
+			Set<String> unknownTypeVars = new HashSet<>();
+			for (String varName : refVarNamesSet) { 
 				if (varName.contains(".")) {
 					List<String> parts = StringHelper.explode(varName, ".");
 					if (parts.size() > 1  && parts.get(0) != "self") {
-						unresolvedVars.add(parts.get(0));
+						unknownTypeVars.add(parts.get(0));
 					}					
 				}
 			}
+			
+			// Map of varname => Type(as String) 
 			Map<String, String> instanceVars = new HashMap<>();
-			Map<String, model.Class> typedInstanceVars = new HashMap<>();
 
-			// iterate over Assigns to see if any have our name's Type. 
-			for(Assign a : m.getAssignList()) {
-				if(unresolvedVars.contains(a.getName())) {
+			// iterate over Assigns to see if any have our variable's Type. 
+			for(Assign a : cls.getAssignList()) {
+				if(unknownTypeVars.contains(a.getName())) {
 					instanceVars.put(a.getName(), a.getValue());
 				}
 			}
+			Map<String, model.Class> importStringToClassMap = checkImports(module, instanceVars);
+			// Map variable name => Type (of Class). 
+			Map<String, model.Class> typedVariables = new HashMap<>();
+			// yet another loop. to combine data. 
+			for(Map.Entry<String, String> entry : instanceVars.entrySet()) {
+				if(importStringToClassMap.get(entry.getValue()) != null) {
+					typedVariables.put(entry.getKey(), importStringToClassMap.get(entry.getValue()));			
+				}
+			}
+			
+			// Remove identified variables. 
+			unknownTypeVars.removeAll(typedVariables.keySet());
+			
+			// log unidentified variables. 
+			
+			//TODO more permanent logging
+			try {
+				Debugging.getInstance().debug(unknownTypeVars);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			Map<String, Long> occurrences = refVarNamesList.stream().collect(Collectors.groupingBy(String::toString, Collectors.counting()));
+			
+			// now we finally have resolved our classes and instances. We can count occurrences. 				
+			for (String varName : typedVariables.keySet()) {
+				for (String subroutine : calledSubRoutinesList) {
+					if (subroutine.startsWith(varName) && subroutine.contains(".")) {
+						if(!occurrenceCount.containsKey(varName)) {
+							occurrenceCount.put(varName, (long) 1);
+						} else {
+							occurrenceCount.computeIfPresent(varName, (k,v) -> v + 1);
+						}
+					}
+				}
+				
+				for (String refVar : refVarNamesSet) {
+					if (refVar.startsWith(varName) && refVar.contains(".")) {
+						if(!occurrenceCount.containsKey(varName)) {
+							occurrenceCount.put(varName, (long) 1);
+						} else {
+							// imperfect workaround for double adding names to list. 
+							if (occurrences.containsKey(refVar) && occurrences.get(refVar) > 2) {
+								long increment = occurrences.get(refVar) - 1;
+								occurrenceCount.computeIfPresent(varName, (k,v) -> v + increment);
+							} else {
+								occurrenceCount.computeIfPresent(varName, (k,v) -> v + 1);
+							}
+						}
+					}
+				}
+			
+			}
+			
+			// Data storage. 
+			
+			System.out.println();
+			
+		}
+		
+		/**
+		 * Check the gathered Import types and attempt to match them with the module's imports. 
+		 * @param module
+		 * @param instanceVars
+		 * @return
+		 */
+		private Map<String, Class> checkImports(model.Module module, Map<String, String> instanceVars) {
+			
+			Map<String, model.Class> typedInstanceVars = new HashMap<>();
 			// Gather imports and defined Classes. 
-			Map<String, String> imports = new HashMap<>(); 
 			Map<String, model.Class> clsImports = module.getClassImports();
 			Map<String, model.Module> modImports = module.getModuleImports(); 
 			
@@ -320,7 +405,6 @@ public class Metrics {
 					} else {
 						String aliasedCls = module.getImportAlias(key);
 						if(aliasedCls != null && impModule.getClass(aliasedCls) != null) {
-							System.out.println("good....");
 							typedInstanceVars.put(key, impModule.getClass(aliasedCls));
 							continue;
 						}
@@ -328,8 +412,7 @@ public class Metrics {
 				} 
 			}
 			
-			// now we finally have resolved our classes and instances. We can count occurrences. 
-			
+			return typedInstanceVars;
 		}
 		
 		@Override

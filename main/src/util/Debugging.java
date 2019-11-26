@@ -74,6 +74,13 @@ public class Debugging {
 		debugFile(c);
 	}
 
+	public void debug(Set<String> set) {
+		debugStream.println("\nSet:");
+		for(String s : set) {
+			debugStream.println("\t" + s);
+		}
+	}
+	
 	private void debugFile(Object o) {
 		if(debugFileStream != null)
 			debugFileStream.println(o);

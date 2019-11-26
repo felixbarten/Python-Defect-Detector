@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
  */
 public abstract class ContentContainer extends ContentDefinitions {
 
+	protected final List<String> calledSubroutineNamesList;
 	protected final Set<String> calledSubroutineNames;
 	protected final Map<String, Subroutine> calledSubroutines;
 
@@ -38,6 +39,7 @@ public abstract class ContentContainer extends ContentDefinitions {
 
 		this.calledSubroutines = new HashMap<>();
 		this.calledSubroutineNames = new HashSet<>();
+		this.calledSubroutineNamesList = new ArrayList<String>();
 
 		this.referencedClasses = new HashMap<>();
 		this.invokedMethods = new HashMap<>();
@@ -130,6 +132,10 @@ public abstract class ContentContainer extends ContentDefinitions {
 		return calledSubroutineNames;
 	}
 	
+	public List<String> getCalledSubroutineNamesList() {
+		return calledSubroutineNamesList;
+	}
+	
 	//-----------------------------------------------------------------------------------------------------\\
 	//---------------------------------------------- ADDERS -----------------------------------------------\\
 	//-----------------------------------------------------------------------------------------------------\\
@@ -149,6 +155,7 @@ public abstract class ContentContainer extends ContentDefinitions {
 
 	public void addSubroutineCall(String subroutineName) {
 		this.calledSubroutineNames.add(subroutineName);
+		this.calledSubroutineNamesList.add(subroutineName);
 	}
 
 	public void addClassDefinition(Class cls) {
@@ -284,6 +291,21 @@ public abstract class ContentContainer extends ContentDefinitions {
 		}
 		
 		return excludedNames;
+	}
+	
+	public final List<String> getReferencedVarNamesNotIncludedInVarsList() {
+		List<String> exludedNameList = new ArrayList<String>(referencedVarNamesList);
+		for(Variable v : referencedVars.getAsSet()) {
+			while(true) {
+				if (exludedNameList.contains(v.getName())) {
+					exludedNameList.remove(v.getName());
+				} else {
+					break;
+				}
+			}
+		}
+		
+		return exludedNameList;
 	}
 
 	public final List<String> getReferencedVarNamesList() {
