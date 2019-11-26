@@ -175,7 +175,7 @@ public class Main {
 	private static void createLocations(Properties config) {
 		FileHelper.createLocation(config.getProperty("locations.log.out"), true);
 		FileHelper.createLocation(config.getProperty("locations.log.error"), true);
-		FileHelper.createLocation(config.getProperty("locations.data.input"), true);
+		FileHelper.createLocation(config.getProperty("locations.data.input"), false);
 		FileHelper.createLocation(config.getProperty("locations.data.output"), true);
 		FileHelper.createLocation(config.getProperty("locations.data.results"), true);
 	}
