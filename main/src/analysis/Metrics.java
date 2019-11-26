@@ -165,6 +165,7 @@ public class Metrics {
 		private int classCC = 0;
 		private int moduleCount = 0;
 		private model.Class currentCls = null;
+		private model.Module currentModule = null;
 
 		private void reset() {
 			projectLOC = 0;
@@ -200,6 +201,7 @@ public class Metrics {
 
 		@Override
 		public Void visit(model.Module m) {
+			currentModule = m;
 			projectLOC += m.getLoc();
 			moduleCount++;
 			currentCls = null;
@@ -295,9 +297,9 @@ public class Metrics {
 		 * @param cls
 		 */
 		private void processIIData(Class cls) {
-			model.Module module = cls.getParent();
 			String clsName = cls.getName();
 
+			List<Assign> subroutineAssigns = new ArrayList<>();
 			Map<String, Long> occurrenceCount = new HashMap<>();
 
 			List<String> refVarNamesList = new ArrayList<>();
@@ -311,6 +313,7 @@ public class Metrics {
 				refVarNamesList.addAll(sub.getReferencedVarNamesNotIncludedInVarsList());
 				calledSubRoutinesSet.addAll(sub.getCalledSubroutineNames());
 				calledSubRoutinesList.addAll(sub.getCalledSubroutineNamesList());
+				subroutineAssigns.addAll(sub.getAssignList());
 			});
 
 			if (refVarNamesSet.isEmpty())
@@ -339,7 +342,16 @@ public class Metrics {
 					instanceVars.put(a.getName(), a.getValue());
 				}
 			}
-			Map<String, model.Class> importStringToClassMap = checkImports(module, instanceVars);
+			
+			for(Assign a : subroutineAssigns) {
+				if (unknownTypeVars.contains(a.getName())) {
+					instanceVars.put(a.getName(), a.getValue());
+				}
+			}
+			
+			if(instanceVars.isEmpty()) return;
+			
+			Map<String, model.Class> importStringToClassMap = checkImports(instanceVars);
 			// Map variable name => Type (of Class).
 			Map<String, model.Class> typedVariables = new HashMap<>();
 			// yet another loop. to combine data.
@@ -383,6 +395,8 @@ public class Metrics {
 							occurrenceCount.put(varName, (long) 1);
 						} else {
 							// imperfect workaround for double adding names to list.
+							//occurrenceCount.computeIfPresent(varName, (k, v) -> v + 1);
+
 							if (occurrences.containsKey(refVar) && occurrences.get(refVar) > 2) {
 								long increment = occurrences.get(refVar) - 1;
 								occurrenceCount.computeIfPresent(varName, (k, v) -> v + increment);
@@ -409,8 +423,10 @@ public class Metrics {
 		 * @param instanceVars
 		 * @return
 		 */
-		private Map<String, Class> checkImports(model.Module module, Map<String, String> instanceVars) {
-
+		private Map<String, Class> checkImports(Map<String, String> instanceVars) {
+			if(currentModule == null) return null;
+			model.Module module = currentModule; 
+			
 			Map<String, model.Class> typedInstanceVars = new HashMap<>();
 			// Gather imports and defined Classes.
 			Map<String, model.Class> clsImports = module.getClassImports();
