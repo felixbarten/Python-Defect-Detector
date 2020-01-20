@@ -1,4 +1,8 @@
+import Logging
+
+import sys as system
 from A import A
+from C import *
 
 #intensive coupling
 class B:

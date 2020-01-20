@@ -1,7 +1,9 @@
 package model;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Model for Python modules Created by Nik on 21-07-2015
@@ -11,6 +13,7 @@ public class Module extends ContentContainer {
 	private final Map<String, Class> classImports;
 	private final Map<String, Module> moduleImports;
 	private final Map<String, String> aliases;
+	private final Set<String> libraryImports;
 
 	private final String filePath;
 	private final String error;
@@ -23,7 +26,8 @@ public class Module extends ContentContainer {
 
 		this.classImports = new HashMap<>();
 		this.moduleImports = new HashMap<>();
-		this.aliases = new HashMap<>(); 
+		this.libraryImports = new HashSet<>();
+		this.aliases = new HashMap<>();
 	}
 
 	public void addImport(Module m, String name) {
@@ -139,9 +143,17 @@ public class Module extends ContentContainer {
 	public void addAlias(String alias, String className) {
 		this.aliases.put(alias, className);
 	}
-	
+
 	public String getImportAlias(String alias) {
 		return this.aliases.get(alias);
+	}
+	
+	public void addLibraryImport(String lib) {
+		this.libraryImports.add(lib);
+	}
+	
+	public Set<String> getLibraryImports() {
+		return this.libraryImports;
 	}
 
 }

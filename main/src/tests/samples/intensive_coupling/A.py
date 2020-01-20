@@ -1,3 +1,6 @@
+import sys
+
+import os as operating
 from B import B
 
 #intensive coupling 

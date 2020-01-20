@@ -19,7 +19,6 @@ public class Linker {
 
 	public Linker(Project project) {
 		this.project = project;
-
 	}
 
 	/**
@@ -33,8 +32,9 @@ public class Linker {
 	}
 
 	public void addModuleImport(String source, String target, String alias) {
-		assert (this.project.hasModule(source));
-
+		if (!this.project.hasModule(source)) {
+			return;
+		}
 		Module sourceModule = this.project.getModule(source);
 		List<String> sourcePaths = this.getSourcePaths(sourceModule.getFilePath());
 		for (String sourcePath : sourcePaths) {
@@ -50,7 +50,12 @@ public class Linker {
 
 	public void addImportFrom(String source, String importPath, String target, String alias) {
 		assert (this.project.hasModule(source));
-
+		/*
+		 * Why is there even an assert here? It doesn't serve a purpose. They will be removed by the compiler unless specified. 
+		 * 
+		 * If import * from blah then call addImportgAll if not addImportSpecific. 
+		 */
+		
 		if (target.equals("*")) {
 			this.addImportAll(source, importPath);
 		}
@@ -103,7 +108,11 @@ public class Linker {
 			source.addImport(importedModule, alias);
 			source.addAlias(alias, className);
 			return true;
+		} else {
+			// Module is not contained inside the project. Therefore likely a library. 
+			source.addLibraryImport(alias);
 		}
+		
 		return false;
 	}
 

@@ -18,6 +18,8 @@ public class Debugging {
 	private static Debugging instance;
 	private PrintStream debugStream; 
 	private PrintStream debugFileStream; 
+	private String IIPath;
+	
 	
 	private Debugging() throws IOException {
 		Properties config = Settings.getConfig();
@@ -129,4 +131,22 @@ public class Debugging {
 		message += "]";
 		return message;	
 		}
+
+	public void debugSet(Set<String> unknownTypeVars, String clsName) throws IOException {
+		if(this.IIPath == null) {
+			Properties config = Settings.getConfig();
+			this.IIPath =  FileHelper.stampedFileName(config.getProperty("locations.log.out"), "debugII", "log");
+		}
+		PrintStream IIDebugFileStream = new PrintStream(new FileOutputStream(IIPath, true));
+		
+		IIDebugFileStream.println("\nUnidentified II vars for: " + clsName);
+		for(String s : unknownTypeVars) {
+			IIDebugFileStream.append("\t" + s);
+		}
+		IIDebugFileStream.append("\n\n");
+		
+		IIDebugFileStream.flush();
+		IIDebugFileStream.close();
+	
+	}
 }

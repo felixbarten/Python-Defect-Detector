@@ -75,6 +75,7 @@ public class Main {
 		printMain("Fetched projects.");
 		printMain("Processing projects...");
 		File projectsFolder = new File(config.getProperty("locations.data.input"));
+		
 		for (File file : projectsFolder.listFiles()) {
 			if (file.isDirectory() && (!filterEnabled || projects.contains(file.getAbsolutePath()))) {
 				long startProject = System.currentTimeMillis();

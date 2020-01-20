@@ -2,6 +2,7 @@ package analysis;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -363,16 +364,27 @@ public class Metrics {
 
 			// Remove identified variables.
 			unknownTypeVars.removeAll(typedVariables.keySet());
+			
+			// remove unknown vars that are equal to an imported 3rd party dependency. 
+			
+			Set<String> libraryImports = Collections.emptySet();
+			if(cls.getParent() instanceof model.Module) {
+				libraryImports = cls.getParent().getLibraryImports();
+			}
+			unknownTypeVars.removeAll(libraryImports);
 
 			// log unidentified variables.
-
-			// TODO more permanent logging
+			
+			// log remaining things to their own file. 
 			try {
-				Debugging.getInstance().debug(unknownTypeVars);
+				if(unknownTypeVars.size() > 0 ) 
+					Debugging.getInstance().debugSet(unknownTypeVars, cls.getFullPath());
 			} catch (IOException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
+			
 			Map<String, Long> occurrences = refVarNamesList.stream()
 					.collect(Collectors.groupingBy(String::toString, Collectors.counting()));
 
@@ -407,12 +419,19 @@ public class Metrics {
 					}
 				}
 
-			}
-
+			}			
 			// Data storage.
-
-			System.out.println();
-
+			// as there are a few data restrictions with the current system I've chosen to add a sort of comp key with the data.
+			Set<String> couplingData = new HashSet<String>();
+			for (String key : occurrenceCount.keySet()) {
+				String data = typedVariables.get(key).getFullPath() + "&ref=";
+				String occ = occurrenceCount.get(key).toString();
+				String finalData = data + occ;
+				couplingData.add(finalData);
+			}
+			
+			globalDataStore.getStrSetMap(Metric.CLASS_COUPLING.toString()).add(cls.getFullPath(), couplingData);
+			// during detector the comp key can be split again and checked if the class has a binding in the opposite direction (making it II if they are higher than the threshold value). 
 		}
 
 		/**
