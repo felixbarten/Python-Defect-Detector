@@ -88,8 +88,8 @@ public class InappropriateIntimacyDetector extends Detector {
 		// check referenced classes.
 		// check if any of ref. classes has coupling with this class.
 		// check if the amount of coupling is more or equal to the threshold.
-		List<Match> matches = new ArrayList<Match>();
-		List<Match> positiveMatches = new ArrayList<Match>();
+		List<IIMatch> matches = new ArrayList<IIMatch>();
+		List<IIMatch> positiveMatches = new ArrayList<IIMatch>();
 
 		Map<String, Long> coupledClasses = getCouplingMap(fullPath);
 
@@ -97,7 +97,7 @@ public class InappropriateIntimacyDetector extends Detector {
 		for (String path : coupledClasses.keySet()) {
 			Long result = checkForBidirectionalMapping(path, fullPath);
 			if (result != null) {
-				matches.add(new Match(path, fullPath, coupledClasses.get(path), result));
+				matches.add(new IIMatch(path, fullPath, coupledClasses.get(path), result));
 			}
 		}
 		// validate matches. 
@@ -110,10 +110,9 @@ public class InappropriateIntimacyDetector extends Detector {
 		return positiveMatches.size() > 0 ;
 	}
 
-	private void printResults(List<Match> positiveMatches) {
-
-		for (Match m : positiveMatches) {
-			System.out.println("[II] Detected II between " + m.path1 + " and " + m.path2);
+	private void printResults(List<IIMatch> positiveMatches) {
+		for (IIMatch m : positiveMatches) {
+			System.out.println("[II] Detected II between " + m.pathClsA + " and " + m.pathClsB);
 			debug.debug(m);
 		}
 	}
@@ -122,7 +121,7 @@ public class InappropriateIntimacyDetector extends Detector {
 		Map<String, Long> map = getCouplingMap(path);
 
 		for (String p : map.keySet()) {
-			if (p == origPath) {
+			if (p.equals(origPath)) {
 				return map.get(p);
 			}
 		}
@@ -145,53 +144,53 @@ public class InappropriateIntimacyDetector extends Detector {
 		return "Inappropriate Intimacy";
 	}
 
-	class Match {
-		private String path1;
-		private String path2;
-		private Long occurrence1;
-		private Long occurrence2;
+	public class IIMatch {
+		private String pathClsA;
+		private String pathClsB;
+		private Long occurrencesAtoB;
+		private Long occurrencesBtoA;
 
-		Match(String pathA, String pathB, Long occ1, Long occ2) {
-			this.path1 = pathA;
-			this.path2 = pathB;
-			this.occurrence1 = occ1;
-			this.occurrence2 = occ2;
+		IIMatch(String pathA, String pathB, Long occ1, Long occ2) {
+			this.pathClsA = pathA;
+			this.pathClsB = pathB;
+			this.occurrencesAtoB = occ1;
+			this.occurrencesBtoA = occ2;
 		}
 
 		public final String getPath1() {
-			return path1;
+			return pathClsA;
 		}
 
 		public final void setPath1(String path1) {
-			this.path1 = path1;
+			this.pathClsA = path1;
 		}
 
 		public final String getPath2() {
-			return path2;
+			return pathClsB;
 		}
 
 		public final void setPath2(String path2) {
-			this.path2 = path2;
+			this.pathClsB = path2;
 		}
 
 		public final Long getOccurrence1() {
-			return occurrence1;
+			return occurrencesAtoB;
 		}
 
 		public final void setOccurrence1(Long occurrence1) {
-			this.occurrence1 = occurrence1;
+			this.occurrencesAtoB = occurrence1;
 		}
 
 		public final Long getOccurrence2() {
-			return occurrence2;
+			return occurrencesBtoA;
 		}
 
 		public final void setOccurrence2(Long occurrence2) {
-			this.occurrence2 = occurrence2;
+			this.occurrencesBtoA = occurrence2;
 		}
 
 		public boolean validate(Integer threshold) { 
-			return this.occurrence1 != null && this.occurrence2 != null && (this.occurrence1 >= threshold && this.occurrence2 >= threshold);
+			return this.occurrencesAtoB != null && this.occurrencesBtoA != null && (this.occurrencesAtoB >= threshold && this.occurrencesBtoA >= threshold);
 		}
 
 	}

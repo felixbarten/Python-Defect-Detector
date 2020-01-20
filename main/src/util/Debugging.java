@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import analysis.detector.InappropriateIntimacyDetector.IIMatch;
 import model.Subroutine;
 import model.VarDefinitions;
 import model.Variable;
@@ -56,6 +57,19 @@ public class Debugging {
 	public void debug(Object o) {
 		debugStream.println(o);
 		debugFile(o);
+	}
+	
+	public void debug(IIMatch m) {
+		String path1 = m.getPath1();
+		String path2 = m.getPath2();
+		try {
+			String cls1 = path1.split(">")[1];
+			String cls2 = path2.split(">")[1];
+			
+			debugStream.println("[II] II Found between class: " + cls1 + " " + cls2);
+		} catch (IndexOutOfBoundsException e) {
+			debugStream.println("[II] II found between: " + path1 + " " + path2);
+		}
 	}
 	
 	public void debug(model.Class c) {
