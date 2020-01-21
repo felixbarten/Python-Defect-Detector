@@ -89,6 +89,10 @@ public class Debugging {
 		debugStream.println("\n");
 		debugFile(c);
 	}
+	
+	public void debug(Exception e) {
+		e.printStackTrace(debugStream);
+	}
 
 	public void debug(Set<String> set) {
 		debugStream.println("\nSet:");

@@ -65,14 +65,16 @@ public class InappropriateIntimacyDetector extends Detector {
 
 	@Override
 	protected Boolean isPreliminarilyDefective(model.Class cls) {
-		boolean condition = hasImports(cls);
-		debug.debug("[II] Class: " + cls.getShortName() + " is preliminary defective: " + condition);
+		boolean preliminarilyDefective = hasImports(cls);
+		if(preliminarilyDefective) {
+			debug.debug("[II] Class: " + cls.getShortName() + " is preliminary defective: " + preliminarilyDefective);
+		}
 		/*
 		 * normally testing whether a class has a referenced class would be enough. In
 		 * my time testing this it has not worked well.... So instead of flagging every
 		 * class true I've decided to see if there are imports present.
 		 */
-		return condition;
+		return preliminarilyDefective;
 	}
 
 	private Boolean hasImports(model.Class cls) {

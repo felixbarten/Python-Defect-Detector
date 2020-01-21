@@ -119,10 +119,8 @@ public class RefusedBequestDetector extends Detector {
 		// libraries don't get added to the superclass set so precondition is met as the classes can't be iterated if they're not in the Set. 		
 		
 		boolean hasParent = hasParent(cls);
-		if(hasParent) {
-			debug.debug(cls);
-		}
-		debug.debug("[RB] Class: " +  cls.getShortName() + " is preliminary defective: " + hasParent);
+		if(hasParent)
+			debug.debug("[RB] Class: " +  cls.getShortName() + " is preliminary defective: " + hasParent);
 		return hasParent; 
 	}
 

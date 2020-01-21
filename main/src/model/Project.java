@@ -1,6 +1,7 @@
 package model;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -10,8 +11,12 @@ import java.util.stream.Collectors;
  * Model for project contains modules. 
  * Created by Nik on 03-08-2015
  */
-public class Project implements Unlinkable {
+public class Project implements Unlinkable, Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2643092858223935288L;
 	private final Map<String, Module> modules;
 	private final File folder;
 

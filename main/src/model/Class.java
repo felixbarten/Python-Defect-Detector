@@ -1,5 +1,6 @@
 package model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,8 +14,12 @@ import java.util.stream.Collectors;
 /**
  * Created by Nik on 30-06-2015
  */
-public class Class extends ContentContainer {
+public class Class extends ContentContainer implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3211743801399466682L;
 	private ContentContainer parent;
 	private final List<String> superclassNames;
 	private final Map<String, Class> superclasses;
@@ -212,13 +217,6 @@ public class Class extends ContentContainer {
 		}
 		return this.parent.equals(aClass.parent);
 
-	}
-
-	@Override
-	public int hashCode() {
-		int result = this.getName().hashCode();
-		result = 31 * result + this.parent.hashCode();
-		return result;
 	}
 	
 	/**

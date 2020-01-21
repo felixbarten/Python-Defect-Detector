@@ -1,5 +1,6 @@
 package model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -9,8 +10,12 @@ import java.util.stream.Collectors;
 /**
  * Created by Nik on 31-10-2015
  */
-public abstract class ContentDefinitions implements Unlinkable {
+public abstract class ContentDefinitions implements Unlinkable, Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 9041457731072360743L;
 	protected final Map<String, Class> definedClasses;
 	protected final Map<String, Subroutine> definedSubroutines;
 	protected final VarDefinitions definedVars;

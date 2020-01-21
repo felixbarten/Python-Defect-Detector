@@ -1,5 +1,6 @@
 package model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -10,7 +11,7 @@ import java.util.stream.Collectors;
  * This class stores the Variable instances assigned to a class or method. 
  * Created by Nik on 02-11-2015
  */
-public class VarDefinitions implements Unlinkable {
+public class VarDefinitions implements Unlinkable, Serializable {
 
 	/**
 	 * To facilitate the addition of variables in diffent scopes such as class and instance. The datatype is a map of sets of Variables. 

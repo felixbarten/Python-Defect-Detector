@@ -1,10 +1,13 @@
 package model;
 
+import java.io.Serializable;
+
 /**
  * Created by Nik on 26-10-2015
  */
-public class Variable implements Unlinkable {
+public class Variable implements Unlinkable, Serializable {
 
+	private static final long serialVersionUID = -333665092245543207L;
 	private ContentContainer parent;
 	private final String name;
 	private final VarType varType;

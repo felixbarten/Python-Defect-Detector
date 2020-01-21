@@ -1,9 +1,11 @@
 package model;
 
+import java.io.Serializable;
+
 /**
  * Created by Nik on 23-10-2015
  */
-public class Assign {
+public class Assign implements Serializable {
 
 	private final String name;
 	private final String value;

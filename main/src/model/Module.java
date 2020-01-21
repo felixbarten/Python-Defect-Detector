@@ -1,5 +1,6 @@
 package model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -8,7 +9,7 @@ import java.util.Set;
 /**
  * Model for Python modules Created by Nik on 21-07-2015
  */
-public class Module extends ContentContainer {
+public class Module extends ContentContainer  {
 
 	private final Map<String, Class> classImports;
 	private final Map<String, Module> moduleImports;
@@ -18,6 +19,7 @@ public class Module extends ContentContainer {
 	private final String filePath;
 	private final String error;
 
+	
 	public Module(String name, Integer loc, String filePath, String error) {
 		super(name, loc);
 
