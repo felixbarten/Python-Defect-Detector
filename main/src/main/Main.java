@@ -26,7 +26,7 @@ import model.ModelBuilder;
 import model.Project;
 import process.File2Tree;
 import process.GitLocationProcessor;
-import util.Debugging;
+import util.DebuggingLogger;
 import util.FileHelper;
 import util.Settings;
 
@@ -50,7 +50,7 @@ public class Main {
 		} else {
 			config = Settings.getConfig();
 		}
-		Debugging.getInstance();
+		DebuggingLogger.getInstance();
 		createLocations(config);
 
 		boolean filterEnabled = config.containsKey("locations.data.input.filter");
@@ -93,6 +93,8 @@ public class Main {
 		for (File file : projectsFolder.listFiles()) {
 			if (file.isDirectory() && (!filterEnabled || projects.contains(file.getAbsolutePath()))) {
 				long startProject = System.currentTimeMillis();
+				out.flush();
+				err.flush();
 				if (processedProjects.contains(file.getPath()) && !forceReprocess) {
 					// deserialize project from storage
 					try {
@@ -115,9 +117,10 @@ public class Main {
 						}
 					} catch (ClassNotFoundException cnf) {
 						printMain("Processed project object could not be restored. Reprocessing...");
-						Debugging.getInstance().debug(cnf);
+						DebuggingLogger.getInstance().debug(cnf);
 					}
 				}
+				printMain("Starting processing of: " + file.getName());
 				processProject(register, file);
 				if (processLogging) {
 					recordProgress(file, config);
@@ -154,7 +157,7 @@ public class Main {
 	}
 
 	private static void reprocessProject(Register register, Project project) throws FileNotFoundException {
-		register.check(project);
+		register.check(project, true);
 		System.gc();
 	}
 
@@ -225,7 +228,7 @@ public class Main {
 		// Runtime.getRuntime().freeMemory()) / 1024 / 1024));
 		Project project = createProject(file);
 		storeProject(project, file);
-		register.check(project);
+		register.check(project, false);
 		System.gc();
 
 		// printMain("Memory usage: " + memory + " -> " +

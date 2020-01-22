@@ -51,7 +51,7 @@ public class Register {
 	 * @param project
 	 * @throws FileNotFoundException
 	 */
-	public void check(Project project) throws FileNotFoundException {
+	public void check(Project project, boolean processed) throws FileNotFoundException {
 		if (this.finished) {
 			throw new IllegalStateException();
 		}
@@ -62,7 +62,9 @@ public class Register {
 		project.getModules().forEach(m -> this.check(project.getPath(), m));
 		this.metrics.getProjectData(project); //write metric data for one project. 
 		
-		project.unlink();
+		if(!processed) {
+			project.unlink();
+		}
 	}
 
 	private void checkProject(String path, Project project) {

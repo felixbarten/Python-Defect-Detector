@@ -12,7 +12,7 @@ import model.Class;
 import model.Subroutine;
 import model.VarDefinitions;
 import model.Variable;
-import util.Debugging;
+import util.DebuggingLogger;
 
 /**
  * Created by Nik on 08-07-2015

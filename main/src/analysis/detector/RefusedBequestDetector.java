@@ -11,7 +11,7 @@ import analysis.storage.PrimitiveIntMap;
 import analysis.storage.SetStrMap;
 import model.Class;
 import util.Settings;
-import util.Debugging;
+import util.DebuggingLogger;
 
 /**
  * Detector for Refused Bequest
@@ -62,7 +62,7 @@ public class RefusedBequestDetector extends Detector {
 	private static final String CLASS_REF_CLS_NAMES = "CLASS_REF_CLS_NAMES";
 	private static final String CLASS_REF_VAR_NAMES = "CLASS_REF_VAR_NAMES";
 
-	private Debugging debug;
+	private DebuggingLogger debug;
 	private DataStore global;
 	
 	private int memberThreshold = 0;
@@ -70,7 +70,7 @@ public class RefusedBequestDetector extends Detector {
 
 	public RefusedBequestDetector() throws IOException {
 		super();
-		this.debug = Debugging.getInstance();
+		this.debug = DebuggingLogger.getInstance();
 		global = DataStore.getInstance();
 		// get from settings
 		try {
@@ -129,11 +129,11 @@ public class RefusedBequestDetector extends Detector {
 		// debugging 
 		boolean bequest = cls_ignores_bequest(fullPath);
 		boolean complex = clsComplex(fullPath, projectPath);
-		debug.debug("Class with path: " + fullPath + " has refused bequest? " + bequest);
-		debug.debug("Class with path: " + fullPath + " is complex? " + complex);		
+		//debug.debug("Class with path: " + fullPath + " has refused bequest? " + bequest);
+		//debug.debug("Class with path: " + fullPath + " is complex? " + complex);		
 		
 		if (bequest && complex) {
-			debug.debug("Class with path: " + fullPath + " has refused bequest.");
+			debug.debug("[RB] Class with path: " + fullPath + " has refused bequest.");
 		}
 		
 		return complex && bequest;
@@ -150,7 +150,7 @@ public class RefusedBequestDetector extends Detector {
 		boolean overrides = overridesMethods(path);
 		
 	//	debug.debug(cls.getParentsSet());
-		debug.debug("prot: " + prot + " refused: " + refused + " overrides: " + overrides);
+		//debug.debug("prot: " + prot + " refused: " + refused + " overrides: " + overrides);
 		//return (fewProtectedMembers(cls) && refusedBequest(cls)) || overridesMethods() ;
 		return (prot && refused) || overrides;
 	}

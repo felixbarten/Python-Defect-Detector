@@ -12,7 +12,7 @@ import analysis.Metric;
 import analysis.storage.PrimitiveIntMap;
 import analysis.storage.SetStrMap;
 import model.Subroutine;
-import util.Debugging;
+import util.DebuggingLogger;
 import util.Settings;
 import util.StringHelper;
 
@@ -26,7 +26,7 @@ public class InappropriateIntimacyDetector extends Detector {
 	private final static String CLASS_REF_VAR_PATHS = "CLASS_REF_VAR_PATHS";
 	private final static String CLASS_COUPLING = "CLASS_COUPLING";
 
-	private Debugging debug;
+	private DebuggingLogger debug;
 	private DataStore global;
 
 	private int couplingThreshold = 0;
@@ -34,7 +34,7 @@ public class InappropriateIntimacyDetector extends Detector {
 	public InappropriateIntimacyDetector() throws IOException {
 		super();
 
-		debug = Debugging.getInstance();
+		debug = DebuggingLogger.getInstance();
 		global = DataStore.getInstance();
 
 		// get from settings
@@ -132,7 +132,11 @@ public class InappropriateIntimacyDetector extends Detector {
 
 	private Map<String, Long> getCouplingMap(String fullPath) {
 		Set<String> couplingData = global.getStrSetMap(CLASS_COUPLING).get(fullPath);
-		if (couplingData == null) return Collections.<String, Long>emptyMap();
+		
+		if (couplingData == null) {
+			return Collections.<String, Long>emptyMap();
+		}
+		
 		Map<String, Long> map = new HashMap<String, Long>();
 		for (String data : couplingData) {
 			String[] arr = data.split("&ref=");

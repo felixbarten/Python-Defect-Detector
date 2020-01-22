@@ -15,20 +15,20 @@ import model.Subroutine;
 import model.VarDefinitions;
 import model.Variable;
 
-public class Debugging {
+public class DebuggingLogger {
 
-	private static Debugging instance;
+	private static DebuggingLogger instance;
 	private PrintStream debugStream; 
 	private PrintWriter debugFileStream; 
 	private String IIPath;
 	
 	
-	private Debugging() throws IOException {
+	private DebuggingLogger() throws IOException {
 		Properties config = Settings.getConfig();
 		this.debugStream = System.out;
 		this.debugFileStream = null;
 		
-		if(Boolean.parseBoolean(config.getProperty("debug"))) {			
+		if(Boolean.parseBoolean(config.getProperty("debugging.enabled"))) {			
 			String path = FileHelper.stampedFileName(config.getProperty("locations.log.out"), "debug", "log");
 			System.out.println("Creating debugging log file. In: " + path);
 
@@ -44,9 +44,9 @@ public class Debugging {
 		}
 	}
 	
-	public static Debugging getInstance() throws IOException {
+	public static DebuggingLogger getInstance() throws IOException {
 		if (instance == null) {
-			instance = new Debugging();
+			instance = new DebuggingLogger();
 		}
 		return instance;
 	}

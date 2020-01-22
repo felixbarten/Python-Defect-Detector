@@ -6,7 +6,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import model.Class;
-import util.Debugging;
+import util.DebuggingLogger;
 
 public class InappropriateIntimacyTest {
 
@@ -18,7 +18,7 @@ public class InappropriateIntimacyTest {
 		Class a = classes.get("A");
 		Class b = classes.get("B");
 		try {
-			Debugging debug = Debugging.getInstance();
+			DebuggingLogger debug = DebuggingLogger.getInstance();
 			
 			for (Class c : a.getReferencedClassesCount().keySet()) {
 				debug.debug(c);

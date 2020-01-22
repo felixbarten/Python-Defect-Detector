@@ -21,7 +21,7 @@ import model.ContentContainerVisitor;
 import model.Project;
 import model.Subroutine;
 import model.Variable;
-import util.Debugging;
+import util.DebuggingLogger;
 import util.StringHelper;
 
 /**
@@ -41,7 +41,7 @@ public class Metrics {
 	private Map<Project, Integer> projectStore;
 	private Map<model.Class, Integer> classStore;
 	private Project project;
-	private Debugging debug = Debugging.getInstance();
+	private DebuggingLogger debug = DebuggingLogger.getInstance();
 
 	public Metrics() throws IOException {
 		this.collector = new Collector();
@@ -378,7 +378,7 @@ public class Metrics {
 			// log remaining things to their own file. 
 			try {
 				if(unknownTypeVars.size() > 0 ) 
-					Debugging.getInstance().debugSet(unknownTypeVars, cls.getFullPath());
+					DebuggingLogger.getInstance().debugSet(unknownTypeVars, cls.getFullPath());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
