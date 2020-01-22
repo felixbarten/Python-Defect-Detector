@@ -291,7 +291,7 @@ public class Metrics {
 		 * This method will do the heavy lifting for Inappropriate Intimacy detection.
 		 * It loops through the class's subroutines and finds unresolved referenced
 		 * variables. The method will attempt to resolve the origin of the unresolved
-		 * variables. After resolving the the instance variables calls and attribute
+		 * variables. After resolving the type of the instance variables, calls and attribute
 		 * references can be examined. The counting of these variables will be useful to
 		 * see how many links class A has with Class B.
 		 * 
@@ -353,7 +353,7 @@ public class Metrics {
 			if(instanceVars.isEmpty()) return;
 			
 			Map<String, model.Class> importStringToClassMap = checkImports(instanceVars);
-			// Map variable name => Type (of Class).
+			// Map variable name => Type (of model.Class).
 			Map<String, model.Class> typedVariables = new HashMap<>();
 			// yet another loop. to combine data.
 			for (Map.Entry<String, String> entry : instanceVars.entrySet()) {
@@ -420,18 +420,25 @@ public class Metrics {
 				}
 
 			}			
-			// Data storage.
+			storeIIData(cls, occurrenceCount, typedVariables);
+		}
+
+		/**
+		 * Stores II Data in the global datastore. 
+		 * @param cls
+		 * @param occurrenceCount
+		 * @param typedVariables
+		 */
+		private void storeIIData(Class cls, Map<String, Long> occurrenceCount,
+				Map<String, model.Class> typedVariables) {
 			// as there are a few data restrictions with the current system I've chosen to add a sort of comp key with the data.
 			Set<String> couplingData = new HashSet<String>();
 			for (String key : occurrenceCount.keySet()) {
-				String data = typedVariables.get(key).getFullPath() + "&ref=";
-				String occ = occurrenceCount.get(key).toString();
-				String finalData = data + occ;
-				couplingData.add(finalData);
+				couplingData.add(typedVariables.get(key).getFullPath() + "&ref=" + occurrenceCount.get(key).toString());
 			}
-			
 			globalDataStore.getStrSetMap(Metric.CLASS_COUPLING.toString()).add(cls.getFullPath(), couplingData);
 			// during detector the comp key can be split again and checked if the class has a binding in the opposite direction (making it II if they are higher than the threshold value). 
+
 		}
 
 		/**

@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import util.StringHelper;
+
 /**
  * Created by Nik on 30-06-2015
  */
@@ -23,22 +25,23 @@ public class Class extends ContentContainer implements Serializable {
 	private ContentContainer parent;
 	private final List<String> superclassNames;
 	private final Map<String, Class> superclasses;
-	private final Project project; 
+	private final Project project;
 	private List<Subroutine> subroutines;
-	
+
 	private final VarDefinitions inheritedVars;
 	private Integer complexity;
 	private float WMC;
 	private float AMW;
-	
+
 	/**
-	 * Class model constructor. 
-	 * Complexity value is initialized lazily as defined subroutines get inserted after object creation.
+	 * Class model constructor. Complexity value is initialized lazily as defined
+	 * subroutines get inserted after object creation.
+	 * 
 	 * @param name
 	 * @param loc
 	 * @param parent
 	 * @param superclassNames
-	 * @param project 
+	 * @param project
 	 */
 	public Class(String name, Integer loc, ContentContainer parent, List<String> superclassNames, Project project) {
 		super(name, loc);
@@ -86,8 +89,8 @@ public class Class extends ContentContainer implements Serializable {
 	}
 
 	private Boolean privateFieldsWithOnePublicMethod() {
-		return //this.privateVariablesCount() > 10 &&
-				this.getDefinedSubroutinesSet().stream().filter(s -> !s.isPrivate()).count() == 1;
+		return // this.privateVariablesCount() > 10 &&
+		this.getDefinedSubroutinesSet().stream().filter(s -> !s.isPrivate()).count() == 1;
 	}
 
 	private Integer calculateLcom() {
@@ -106,21 +109,22 @@ public class Class extends ContentContainer implements Serializable {
 	}
 
 	/**
-	 * Resolve inheritance by looping through superclass names and see if they can be found in the scope. If not they are discarded. 
+	 * Resolve inheritance by looping through superclass names and see if they can
+	 * be found in the scope. If not they are discarded.
 	 */
 	@Override
 	public void resolveInheritance(Scope scope) {
 		super.resolveInheritance(scope);
 		// loop through superclassnames
 		for (String clsName : this.superclassNames) {
-			// if superclsname is defined in the scope (how large is the scope?) 
-			// Why does the scope not contain the right files? 
+			// if superclsname is defined in the scope (how large is the scope?)
+			// Why does the scope not contain the right files?
 			if (scope.definedClasses.containsKey(clsName)) {
-				//retrieve cls. object
+				// retrieve cls. object
 				Class parentCls = scope.definedClasses.get(clsName);
-				// check if parent cls is in inheritance line. 
+				// check if parent cls is in inheritance line.
 				if (!parentCls.isInInheritanceLine(this)) {
-					// add to maps. 
+					// add to maps.
 					this.superclasses.put(clsName, parentCls);
 					this.referencedClasses.put(clsName, parentCls);
 				}
@@ -131,7 +135,7 @@ public class Class extends ContentContainer implements Serializable {
 	@Override
 	public void copyParentVars() {
 		super.copyParentVars();
-		// loop through parents 
+		// loop through parents
 		for (Class parent : this.superclasses.values()) {
 			VarDefinitions parentVars = parent.getParentVars();
 
@@ -158,8 +162,10 @@ public class Class extends ContentContainer implements Serializable {
 	}
 
 	/**
-	 * If the container matches this container it's in the same inheritance line. Else loop through superclasses and see if any of the superclasses match the container.
-	 * If that fails it's not in the inheritance line. 
+	 * If the container matches this container it's in the same inheritance line.
+	 * Else loop through superclasses and see if any of the superclasses match the
+	 * container. If that fails it's not in the inheritance line.
+	 * 
 	 * @param container
 	 * @return
 	 */
@@ -218,70 +224,78 @@ public class Class extends ContentContainer implements Serializable {
 		return this.parent.equals(aClass.parent);
 
 	}
-	
+
 	/**
 	 * Returns a set of private modifier variables from parent
+	 * 
 	 * @return
 	 */
 	public VarDefinitions getPrivateParentVars() {
 		VarDefinitions privVars = new VarDefinitions();
-		
-		for( Variable v : inheritedVars.getAsSet()) {
-			if (v.isPrivate()) privVars.add(v);
+
+		for (Variable v : inheritedVars.getAsSet()) {
+			if (v.isPrivate())
+				privVars.add(v);
 		}
-		
+
 		return privVars;
 	}
-	
+
 	/**
 	 * Returns a set of protected modifier variables from parent
+	 * 
 	 * @return
 	 */
 	public VarDefinitions getProtectedParentVars() {
 		VarDefinitions protVars = new VarDefinitions();
-		
-		for( Variable v : inheritedVars.getAsSet()) {
-			if (v.isProtected()) protVars.add(v);
+
+		for (Variable v : inheritedVars.getAsSet()) {
+			if (v.isProtected())
+				protVars.add(v);
 		}
-		
+
 		return protVars;
 	}
-	
+
 	/**
-	 * Returns list of protected members; 
+	 * Returns list of protected members;
+	 * 
 	 * @return VarDefinitions protected members.
 	 */
 	public VarDefinitions getProtectedVars() {
 		VarDefinitions protVars = new VarDefinitions();
-		
-		for( Variable v : definedVars.getAsSet()) {
-			if (v.isProtected()) protVars.add(v);
+
+		for (Variable v : definedVars.getAsSet()) {
+			if (v.isProtected())
+				protVars.add(v);
 		}
-		
+
 		return protVars;
 	}
-	
+
 	/**
-	 * Returns list of private members; 
+	 * Returns list of private members;
+	 * 
 	 * @return VarDefinitions protected members.
 	 */
 	public VarDefinitions getPrivateVars() {
 		VarDefinitions privVars = new VarDefinitions();
-		
-		for( Variable v : definedVars.getAsSet()) {
-			if (v.isPrivate()) privVars.add(v);
+
+		for (Variable v : definedVars.getAsSet()) {
+			if (v.isPrivate())
+				privVars.add(v);
 		}
-		
+
 		return privVars;
 	}
-	
+
 	public Project getProject() {
 		return project;
 	}
 
-	
 	/**
 	 * Get class Cyclomatic Complexity.
+	 * 
 	 * @return Cyclomatic Complexity
 	 */
 	public Integer getCC() {
@@ -290,47 +304,48 @@ public class Class extends ContentContainer implements Serializable {
 		}
 		return complexity;
 	}
-	
+
 	public float getAMW() {
-		if(definedSubroutines.size() > 0) {
-			AMW  =  getWMC() / definedSubroutines.size();
+		if (definedSubroutines.size() > 0) {
+			AMW = getWMC() / definedSubroutines.size();
 		}
 		return AMW;
 	}
-	
+
 	public float getWMC() {
 		return getCC();
 	}
-	
+
 	public Set<String> getSubroutineNames() {
 		Set<String> names = new HashSet<String>();
 		for (Subroutine s : definedSubroutines.values()) {
 			names.add(s.getName());
 		}
-		return names; 
+		return names;
 	}
-	
+
 	public Set<String> getVariableNames() {
 		return definedVars.getNames();
 	}
 
 	private Integer calculateCC() {
-		int cc = 0; 
+		int cc = 0;
 		List<Subroutine> ms = this.definedSubroutines.values().stream().collect(Collectors.toList());
 		for (Subroutine s : ms) {
 			cc += s.getCC();
 		}
 		return cc;
 	}
-	
+
 	public void addSubroutine(Subroutine m) {
-		if(!subroutines.contains(m)) {
+		if (!subroutines.contains(m)) {
 			subroutines.add(m);
 		}
 	}
-	
+
 	/**
-	 * Returns the NOM metric (number of methods per class) 
+	 * Returns the NOM metric (number of methods per class)
+	 * 
 	 * @return int NOM
 	 */
 	public Integer getNOM() {
@@ -340,7 +355,7 @@ public class Class extends ContentContainer implements Serializable {
 	public String getShortName() {
 		String longName = this.name;
 		String[] explode = longName.split(">");
-		return explode.length > 1 ? explode[1]: longName;
+		return explode.length > 1 ? explode[1] : longName;
 	}
 
 	public Set<String> getReferencedVariableNames() {
@@ -348,19 +363,19 @@ public class Class extends ContentContainer implements Serializable {
 		getReferencedVariablesSet().stream().forEach((m) -> paths.add(m.getName()));
 		return paths;
 	}
-		
+
 	public Set<String> getReferencedClassPaths() {
 		Set<String> paths = new HashSet<>();
 		getReferencedClassesSet().stream().forEach((m) -> paths.add(m.getFullPath()));
 		return paths;
 	}
-	
+
 	public Set<String> getReferencedClassNames() {
 		Set<String> paths = new HashSet<>();
 		getReferencedClassesSet().stream().forEach((m) -> paths.add(m.getName()));
 		return paths;
 	}
-	
+
 	public Set<String> getReferencedMethodsNames() {
 		return getCalledSubroutineNames();
 	}
@@ -374,10 +389,60 @@ public class Class extends ContentContainer implements Serializable {
 	}
 
 	public model.Module getParent() {
-		if(parent instanceof Module) {
-			return (model.Module) parent; 
+		if (parent instanceof Module) {
+			return (model.Module) parent;
 		}
 		return null;
 	}
-	
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("\nClass filepath: " + this.getFullPath());
+		sb.append("Class: " + this.getShortName());
+		sb.append("CC: " + this.getCC());
+		sb.append("LOC: " + this.getLoc());
+		sb.append("Superclasses: " + this.getSuperclassNames());
+		sb.append("Super classes added: " + printChildren(this.getSuperclasses()));
+		sb.append("Variables: " + this.getVariableNames());
+		sb.append("Methods: " + printChildren(this.getDefinedSubroutinesSet()));
+		sb.append("Inherited vars: " + this.getInheritedVarNames());
+		sb.append("protected parent vars: " + this.getProtectedParentVars().getNames());
+		sb.append("private parent vars: " + this.getPrivateParentVars().getNames());
+		sb.append("referenced class names: " + this.getReferencedClassNames());
+		sb.append("referenced var names: " + this.getReferencedVariableNames());
+		sb.append("\n");
+
+		return sb.toString();
+
+	}
+
+	private String printChildren(Map<String, model.Class> classes) {
+		String message = "[";
+		for (model.Class c : classes.values()) {
+			message += c.getShortName() + ", ";
+		}
+		message += "]";
+		return message;
+	}
+
+	private String printChildren(VarDefinitions vd) {
+		String message = "[";
+		for (Variable v : vd.getAsSet()) {
+			message += v.getName() + ", ";
+		}
+		message += "]";
+		return message;
+	}
+
+	private String printChildren(Set<Subroutine> subs) {
+		String message = "[";
+		for (Subroutine sr : subs) {
+			message += sr.getName() + ", ";
+		}
+		message += "]";
+		return message;
+	}
+
 }

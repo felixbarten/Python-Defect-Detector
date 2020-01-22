@@ -92,7 +92,7 @@ public class Main {
 		List<String> processedProjects = fetchProcessedProjects(config);
 		for (File file : projectsFolder.listFiles()) {
 			if (file.isDirectory() && (!filterEnabled || projects.contains(file.getAbsolutePath()))) {
-
+				long startProject = System.currentTimeMillis();
 				if (processedProjects.contains(file.getPath()) && !forceReprocess) {
 					// deserialize project from storage
 					try {
@@ -106,16 +106,18 @@ public class Main {
 							Project project = (Project) ois.readObject();
 							ois.close();
 							reprocessProject(register, project);
+							projectNum++;
+							printMain("Processed " + projectNum + " out of " + totalProjects + " projects.\nCompleted: "
+									+ file.getName() + " in " + printExecutionTime(startProject));
 							continue;
 						} else {
 							printMain("Serialized File could not be located. Processing normally...");
 						}
 					} catch (ClassNotFoundException cnf) {
-						printMain("Processed project could not be restored. Reprocessing...");
+						printMain("Processed project object could not be restored. Reprocessing...");
 						Debugging.getInstance().debug(cnf);
 					}
 				}
-				long startProject = System.currentTimeMillis();
 				processProject(register, file);
 				if (processLogging) {
 					recordProgress(file, config);
