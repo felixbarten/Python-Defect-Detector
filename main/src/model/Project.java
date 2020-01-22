@@ -78,9 +78,4 @@ public class Project implements Unlinkable, Serializable {
 		return this.getFolder().equals(project.getFolder());
 
 	}
-
-	@Override
-	public int hashCode() {
-		return this.getFolder().hashCode();
-	}
 }

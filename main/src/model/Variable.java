@@ -88,14 +88,4 @@ public class Variable implements Unlinkable, Serializable {
 		return this.getVarType() == variable.getVarType();
 
 	}
-
-	@Override
-	public int hashCode() {
-		int result = this.parent.hashCode();
-		result = 31 * result + this.getName().hashCode();
-		result = 31 * result + this.getVarType().hashCode();
-		return result;
-	}
-
-
 }

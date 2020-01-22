@@ -129,11 +129,6 @@ public class Module extends ContentContainer  {
 
 	}
 
-	@Override
-	public int hashCode() {
-		return this.getFilePath().hashCode();
-	}
-
 	public final Map<String, Class> getClassImports() {
 		return classImports;
 	}

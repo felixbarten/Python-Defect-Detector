@@ -107,6 +107,8 @@ public class Main {
 							ois.close();
 							reprocessProject(register, project);
 							continue;
+						} else {
+							printMain("Serialized File could not be located. Processing normally...");
 						}
 					} catch (ClassNotFoundException cnf) {
 						printMain("Processed project could not be restored. Reprocessing...");

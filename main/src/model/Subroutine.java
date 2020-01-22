@@ -119,14 +119,6 @@ public class Subroutine extends ContentContainer {
 		return this.parent.equals(that.parent);
 
 	}
-
-	@Override
-	public int hashCode() {
-		int result = this.getName().hashCode();
-		result = 31 * result + this.getSubroutineType().hashCode();
-		result = 31 * result + this.parent.hashCode();
-		return result;
-	}
 	
 	/**
 	 * Returns parent class if set. 

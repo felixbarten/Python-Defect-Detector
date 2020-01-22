@@ -41,11 +41,4 @@ public class DesignDefect {
 		return this.getDefect().equals(that.getDefect());
 
 	}
-
-	@Override
-	public int hashCode() {
-		int result = this.getFullPath().hashCode();
-		result = 31 * result + this.getDefect().hashCode();
-		return result;
-	}
 }
