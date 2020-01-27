@@ -1,5 +1,6 @@
 package main;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -30,7 +31,12 @@ public class CsvCreator {
 
 	public void createStream(String streamId, String... headers) throws IOException {
 		Properties config = Settings.getConfig();
-
+		// folder structure is unreliable. 
+		File file = new File(FileHelper.stampedFileName(this.folder, streamId + "_stats", "csv"));
+		if(!file.getParentFile().exists()) {
+			file.mkdir();
+		}
+		
 		PrintStream stream = new PrintStream(new FileOutputStream(FileHelper.stampedFileName(this.folder, streamId + "_stats", "csv")));
 		List<String> headerParts = new ArrayList<>();
 		for (String header : headers) {

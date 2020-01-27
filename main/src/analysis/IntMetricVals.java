@@ -50,6 +50,9 @@ public class IntMetricVals {
 		File file = new File(this.valuesFileName);
 		this.existing = file.exists();
 		if (!this.existing) {
+			if(!file.getParentFile().exists()) {
+				file.mkdir();
+			}
 			try {
 				this.valueStream = new PrintStream(new FileOutputStream(this.valuesFileName));
 			}

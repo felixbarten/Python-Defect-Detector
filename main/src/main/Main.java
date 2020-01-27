@@ -148,12 +148,15 @@ public class Main {
 		print.close();
 	}
 
+	/**
+	 * Wrapper for boolean inference from String values.
+	 * 
+	 * @param key
+	 * @param config
+	 * @return
+	 */
 	private static boolean propertyToBoolean(String key, Properties config) {
-		String value = config.getProperty(key);
-		if (value.equalsIgnoreCase("true")) {
-			return true;
-		}
-		return false;
+		return config.getProperty(key).equalsIgnoreCase("true");
 	}
 
 	private static void reprocessProject(Register register, Project project) throws FileNotFoundException {
@@ -170,6 +173,7 @@ public class Main {
 
 	private static String printExecutionTime(long start) {
 		long duration = System.currentTimeMillis() - start;
+		// Low priority: formatting breaks when hours exceeds 1. 1 hour 66 mins... etc
 		return (String.format("%d days, %d hours, %d min, %d sec", TimeUnit.MILLISECONDS.toDays(duration),
 				TimeUnit.MILLISECONDS.toHours(duration), TimeUnit.MILLISECONDS.toMinutes(duration),
 				TimeUnit.MILLISECONDS.toSeconds(duration)
@@ -197,10 +201,20 @@ public class Main {
 		return projects;
 	}
 
+	/**
+	 * Fetch projects from process log file.
+	 * 
+	 * @param config
+	 * @return List of procesed projects.
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
 	private static List<String> fetchProcessedProjects(Properties config) throws FileNotFoundException, IOException {
-
 		List<String> projects = Collections.emptyList();
 		String path = config.getProperty("locations.data.input.processlog");
+		if (path == null) {
+			return projects;
+		}
 		File CSV = new File(path);
 
 		if (!CSV.exists()) {
@@ -236,8 +250,14 @@ public class Main {
 		// 1024 / 1024) + "\t\t" + file.getAbsolutePath());
 	}
 
+	/**
+	 * Serialize Project object to file.
+	 * 
+	 * @param project
+	 * @param file
+	 * @throws IOException
+	 */
 	private static void storeProject(Project project, File file) throws IOException {
-
 		String projectName = file.getName();
 		FileOutputStream fos = new FileOutputStream(processedProjectsLoc + "/" + projectName + ".ser");
 		ObjectOutputStream oos = new ObjectOutputStream(fos);

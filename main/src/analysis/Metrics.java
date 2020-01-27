@@ -291,9 +291,9 @@ public class Metrics {
 		 * This method will do the heavy lifting for Inappropriate Intimacy detection.
 		 * It loops through the class's subroutines and finds unresolved referenced
 		 * variables. The method will attempt to resolve the origin of the unresolved
-		 * variables. After resolving the type of the instance variables, calls and attribute
-		 * references can be examined. The counting of these variables will be useful to
-		 * see how many links class A has with Class B.
+		 * variables. After resolving the type of the instance variables, calls and
+		 * attribute references can be examined. The counting of these variables will be
+		 * useful to see how many links class A has with Class B.
 		 * 
 		 * @param cls
 		 */
@@ -321,6 +321,7 @@ public class Metrics {
 				return;
 
 			// Set of unresolved variables that are not "self"
+			// if you have a variable set a, b, c they will be duplicated to self.a, self.b, self.c better to remove them. 
 			Set<String> unknownTypeVars = new HashSet<>();
 			for (String varName : refVarNamesSet) {
 				if (varName.contains(".")) {
@@ -340,18 +341,26 @@ public class Metrics {
 			// iterate over Assigns to see if any have our variable's Type.
 			for (Assign a : cls.getAssignList()) {
 				if (unknownTypeVars.contains(a.getName())) {
+					if (instanceVars.containsKey(a.getName())) {
+						debug.debug("Double key: " + a.getName());
+					}
 					instanceVars.put(a.getName(), a.getValue());
 				}
 			}
-			
-			for(Assign a : subroutineAssigns) {
+
+			for (Assign a : subroutineAssigns) {
 				if (unknownTypeVars.contains(a.getName())) {
+					if (instanceVars.containsKey(a.getName())) {
+						debug.debug("Double key: " + a.getName());
+					}
 					instanceVars.put(a.getName(), a.getValue());
 				}
 			}
-			
-			if(instanceVars.isEmpty()) return;
-			
+
+			if (instanceVars.isEmpty())
+				return;
+
+			// Map class name => Type (of model.Class).
 			Map<String, model.Class> importStringToClassMap = checkImports(instanceVars);
 			// Map variable name => Type (of model.Class).
 			Map<String, model.Class> typedVariables = new HashMap<>();
@@ -364,33 +373,32 @@ public class Metrics {
 
 			// Remove identified variables.
 			unknownTypeVars.removeAll(typedVariables.keySet());
-			
-			// remove unknown vars that are equal to an imported 3rd party dependency. 
-			
+
+			// remove unknown vars that are equal to an imported 3rd party dependency.
+
 			Set<String> libraryImports = Collections.emptySet();
-			if(cls.getParent() instanceof model.Module) {
+			if (cls.getParent() instanceof model.Module) {
 				libraryImports = cls.getParent().getLibraryImports();
 			}
 			unknownTypeVars.removeAll(libraryImports);
 
 			// log unidentified variables.
-			
-			// log remaining things to their own file. 
+
+			// log remaining things to their own file.
 			try {
-				if(unknownTypeVars.size() > 0 ) 
+				if (unknownTypeVars.size() > 0)
 					DebuggingLogger.getInstance().debugSet(unknownTypeVars, cls.getFullPath());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
-			
 			Map<String, Long> occurrences = refVarNamesList.stream()
 					.collect(Collectors.groupingBy(String::toString, Collectors.counting()));
 
-			// now we finally have resolved our classes and instances. We can count
-			// occurrences.
+			// now we finally have resolved our classes and instances. We can count occurrences.
 			for (String varName : typedVariables.keySet()) {
+				
 				for (String subroutine : calledSubRoutinesList) {
 					if (subroutine.startsWith(varName) && subroutine.contains(".")) {
 						if (!occurrenceCount.containsKey(varName)) {
@@ -407,10 +415,13 @@ public class Metrics {
 							occurrenceCount.put(varName, (long) 1);
 						} else {
 							// imperfect workaround for double adding names to list.
-							//occurrenceCount.computeIfPresent(varName, (k, v) -> v + 1);
+							// occurrenceCount.computeIfPresent(varName, (k, v) -> v + 1);
 
-							if (occurrences.containsKey(refVar) && occurrences.get(refVar) > 2) {
-								long increment = occurrences.get(refVar) - 1;
+							if (occurrences.containsKey(refVar) && occurrences.get(refVar) >= 2) {
+								
+								long increment = occurrences.get(refVar);
+								//long increment = occurrences.get(refVar) - 1;
+
 								occurrenceCount.computeIfPresent(varName, (k, v) -> v + increment);
 							} else {
 								occurrenceCount.computeIfPresent(varName, (k, v) -> v + 1);
@@ -419,25 +430,29 @@ public class Metrics {
 					}
 				}
 
-			}			
+			}
 			storeIIData(cls, occurrenceCount, typedVariables);
 		}
 
 		/**
-		 * Stores II Data in the global datastore. 
+		 * Stores II Data in the global datastore.
+		 * 
 		 * @param cls
 		 * @param occurrenceCount
 		 * @param typedVariables
 		 */
 		private void storeIIData(Class cls, Map<String, Long> occurrenceCount,
 				Map<String, model.Class> typedVariables) {
-			// as there are a few data restrictions with the current system I've chosen to add a sort of comp key with the data.
+			// as there are a few data restrictions with the current system I've chosen to
+			// add a sort of comp key with the data.
 			Set<String> couplingData = new HashSet<String>();
 			for (String key : occurrenceCount.keySet()) {
 				couplingData.add(typedVariables.get(key).getFullPath() + "&ref=" + occurrenceCount.get(key).toString());
 			}
 			globalDataStore.getStrSetMap(Metric.CLASS_COUPLING.toString()).add(cls.getFullPath(), couplingData);
-			// during detector the comp key can be split again and checked if the class has a binding in the opposite direction (making it II if they are higher than the threshold value). 
+			// during detector the comp key can be split again and checked if the class has
+			// a binding in the opposite direction (making it II if they are higher than the
+			// threshold value).
 
 		}
 
@@ -450,9 +465,10 @@ public class Metrics {
 		 * @return
 		 */
 		private Map<String, Class> checkImports(Map<String, String> instanceVars) {
-			if(currentModule == null) return null;
-			model.Module module = currentModule; 
-			
+			if (currentModule == null)
+				return null;
+			model.Module module = currentModule;
+
 			Map<String, model.Class> typedInstanceVars = new HashMap<>();
 			// Gather imports and defined Classes.
 			Map<String, model.Class> clsImports = module.getClassImports();
@@ -474,6 +490,7 @@ public class Metrics {
 						typedInstanceVars.put(key, impModule.getClass(key));
 						continue;
 					} else {
+						// check alias
 						String aliasedCls = module.getImportAlias(key);
 						if (aliasedCls != null && impModule.getClass(aliasedCls) != null) {
 							typedInstanceVars.put(key, impModule.getClass(aliasedCls));

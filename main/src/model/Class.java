@@ -399,21 +399,22 @@ public class Class extends ContentContainer implements Serializable {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("\nClass filepath: " + this.getFullPath());
-		sb.append("Class: " + this.getShortName());
-		sb.append("CC: " + this.getCC());
-		sb.append("LOC: " + this.getLoc());
-		sb.append("Superclasses: " + this.getSuperclassNames());
-		sb.append("Super classes added: " + printChildren(this.getSuperclasses()));
-		sb.append("Variables: " + this.getVariableNames());
-		sb.append("Methods: " + printChildren(this.getDefinedSubroutinesSet()));
-		sb.append("Inherited vars: " + this.getInheritedVarNames());
-		sb.append("protected parent vars: " + this.getProtectedParentVars().getNames());
-		sb.append("private parent vars: " + this.getPrivateParentVars().getNames());
-		sb.append("referenced class names: " + this.getReferencedClassNames());
-		sb.append("referenced var names: " + this.getReferencedVariableNames());
+		sb.append("Class filepath: " + this.getFullPath());
+		sb.append("\nClass: " + this.getShortName());
+		sb.append("\nCC: " + this.getCC());
+		sb.append("\nLOC: " + this.getLoc());
+		sb.append("\nSuperclasses: " + this.getSuperclassNames());
+		sb.append("\nSuper classes added: " + printChildren(this.getSuperclasses()));
+		sb.append("\nVariables: " + this.getVariableNames());
+		sb.append("\nMethods: " + printChildren(this.getDefinedSubroutinesSet()));
+		sb.append("\nInherited vars: " + this.getInheritedVarNames());
+		sb.append("\nProtected parent vars: " + this.getProtectedParentVars().getNames());
+		sb.append("\nPrivate parent vars: " + this.getPrivateParentVars().getNames());
+		sb.append("\nReferenced class names: " + this.getReferencedClassNames());
+		sb.append("\nReferenced var names: " + this.getReferencedVariableNames());
 		sb.append("\n");
-
+		
+		
 		return sb.toString();
 
 	}

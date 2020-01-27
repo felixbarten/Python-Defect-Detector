@@ -60,7 +60,6 @@ public class InappropriateIntimacyDetector extends Detector {
 		global = DataStore.getInstance();
 		global.addDataStore(CLASS_REF_VAR_PATHS, new SetStrMap(this.getDataStoreFilePath(CLASS_REF_VAR_PATHS)));
 		global.addDataStore(CLASS_COUPLING, new SetStrMap(this.getDataStoreFilePath(CLASS_COUPLING)));
-
 	}
 
 	@Override
@@ -81,6 +80,7 @@ public class InappropriateIntimacyDetector extends Detector {
 		model.Module module = cls.getParent();
 		if (module != null && module instanceof model.Module) {
 			return module.getClassImports().size() > 0 || module.getModuleImports().size() > 0;
+			//return module.getClassImports().size() > 0 || module.getModuleImports().size() > 0 || module.getLibraryImports().size() > 0;
 		}
 		return false;
 	}
@@ -132,7 +132,6 @@ public class InappropriateIntimacyDetector extends Detector {
 
 	private Map<String, Long> getCouplingMap(String fullPath) {
 		Set<String> couplingData = global.getStrSetMap(CLASS_COUPLING).get(fullPath);
-		
 		if (couplingData == null) {
 			return Collections.<String, Long>emptyMap();
 		}
@@ -199,6 +198,18 @@ public class InappropriateIntimacyDetector extends Detector {
 			return this.occurrencesAtoB != null && this.occurrencesBtoA != null && (this.occurrencesAtoB >= threshold && this.occurrencesBtoA >= threshold);
 		}
 
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("Class A: " + pathClsA);
+			sb.append("\nClass B: " + pathClsB);
+			sb.append("\nA to B: " + occurrencesAtoB); 
+			sb.append("\nB to A: " + occurrencesBtoA);
+			sb.append("\nValid: " + (occurrencesAtoB >= 3 && occurrencesBtoA >= 3));
+			return sb.toString();
+			
+		}
+		
 	}
 
 }
