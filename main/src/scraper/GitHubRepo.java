@@ -12,6 +12,7 @@ public class GitHubRepo {
 	private String name;
 	private String owner;
 	private Map<String, Long> languageUsage;
+	private boolean fork = false;
 
 	public GitHubRepo(String url) {
 		this.url = url;
@@ -29,6 +30,10 @@ public class GitHubRepo {
 
 	public String getOwner() {
 		return this.owner;
+	}
+	
+	public boolean getFork() {
+		return this.fork;
 	}
 
 	public void setOwner(String owner) {

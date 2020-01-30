@@ -30,3 +30,6 @@ class D:
     
     def methodThree(self): 
         return b.pubB + b.pubA
+    
+    def methodFour(self): 
+        return b.memberCls.getMember()

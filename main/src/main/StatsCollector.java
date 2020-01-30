@@ -23,9 +23,13 @@ public class StatsCollector {
 	//args[0] = the location of the projects
 	//args[1] = the CSV file which contains project disk location, github link
 	public static void main(String[] args) throws IOException {
-
-		Properties config = Settings.getConfig();
-
+		Properties config = null;
+		if (args[0] != null) {
+			config = Settings.getConfig(args[0]);
+		} else {
+			config = Settings.getConfig();
+		}
+		
 		PrintStream out = new PrintStream(new FileOutputStream(FileHelper.stampedFileName(config.getProperty("locations.log.out"), "out", "log")));
 		PrintStream err = new PrintStream(new FileOutputStream(FileHelper.stampedFileName(config.getProperty("locations.log.error"), "err", "log")));
 		System.setOut(out);

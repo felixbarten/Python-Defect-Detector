@@ -28,6 +28,7 @@ public class StatsCsvCreator extends CsvCreator {
 	private final List<File> projectFolders;
 	private final GitLocationProcessor gitLocs;
 	private final String filterFile;
+	private boolean filtering = true;
 
 	private static final String CLASS_STREAM_NAME = "class";
 	private static final String MODULE_STREAM_NAME = "module";
@@ -39,6 +40,9 @@ public class StatsCsvCreator extends CsvCreator {
 		this.projectFolders = projectFolders;
 		this.gitLocs = new GitLocationProcessor(config.getProperty("locations.data.input.disklocations"));
 		this.gitLocs.readData();
+		if(this.filterFile == null) {
+			this.filtering = false;
+		}
 	}
 
 	public void createStatsCsv() throws IOException {
@@ -46,17 +50,26 @@ public class StatsCsvCreator extends CsvCreator {
 		this.createModuleStream();
 		this.createProjectStream();
 
-		BufferedReader br = new BufferedReader(new FileReader(this.filterFile));
-		List<String> projects = br.lines().collect(Collectors.toList());
-		br.close();
-
+		List<String> projects = new ArrayList<String>();
+		
+		if(this.filterFile != null) {
+			BufferedReader br = new BufferedReader(new FileReader(this.filterFile));
+			projects = br.lines().collect(Collectors.toList());
+			br.close();
+		}
+		
 		for (File f : this.projectFolders) {
-			if (projects.contains(f.getAbsolutePath())) {
-				System.out.print(((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/1024/1024));
+			if (!filtering) {
 				this.createStatsCsv(f);
 				System.gc();
-				System.out.println(" -> " + ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/1024/1024) + "\t\t" + f.getAbsolutePath());
-			}
+			} else {
+				if (projects.contains(f.getAbsolutePath())) {
+					System.out.print(((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/1024/1024));
+					this.createStatsCsv(f);
+					System.gc();
+					System.out.println(" -> " + ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/1024/1024) + "\t\t" + f.getAbsolutePath());
+				}
+		}
 		}
 	}
 
@@ -76,8 +89,8 @@ public class StatsCsvCreator extends CsvCreator {
 	}
 
 	private void createStatsCsv(File projectFolder) {
-//			System.out.println("----------------------------------------------- NEW PROJECT -----------------------------------------------");
-//			System.out.println("Name: " + projectFolder.getAbsolutePath());
+		System.out.println("----------------------------------------------- NEW PROJECT -----------------------------------------------");
+		System.out.println("Name: " + projectFolder.getAbsolutePath());
 		try {
 			List<String> allFiles = FileHelper.getPythonFilePaths(projectFolder);
 			Map<String, Module> trees = File2Tree.getAsts(allFiles);
@@ -111,7 +124,7 @@ public class StatsCsvCreator extends CsvCreator {
 			System.err.println("EXCEPTION: " + ex.getMessage());
 			ex.printStackTrace();
 		}
-//			System.out.println("-----------------------------------------------------------------------------------------------------------");
+		System.out.println("-----------------------------------------------------------------------------------------------------------");
 	}
 
 	private void printProjectLine(String projectPath, String gitLink, Integer moduleCount, Long loc, Integer classCount, Double parseRatio) {

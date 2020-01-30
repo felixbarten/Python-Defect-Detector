@@ -92,7 +92,7 @@ public class Main {
 		 * Every repo uses two API requests one to retrieve general project information and one to inquire about the use of programming languages. 
 		 * However, if a project does not exist it will only use one request so some resyncing of the limit is preferable.
 		 */
-		long maxRequests = 4950;
+		long maxRequests = 4970;
 		long apiHits = 0;
 		if (rateLimit.containsKey("remaining") && rateLimit.get("remaining") > 0) {
 			apiHits = maxRequests - rateLimit.get("remaining");
@@ -107,6 +107,8 @@ public class Main {
 					if (results.containsKey(repo.getUrl())) {
 						continue;
 					}
+					// api request limit is low filter now rather than later. 
+					
 					Map<String, Long> langUse = gitHubApi.getLanguageUse(repo);
 					repo.setLanguageUsage(langUse);
 					results.put(repo.getUrl(), repo);

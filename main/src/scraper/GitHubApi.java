@@ -26,7 +26,7 @@ public class GitHubApi {
 	public void updateRepoInfo(GitHubRepo repo) {
 		String resp = get("/repos/" + repo.getOwner() + '/' + repo.getName()); // 1 request to API . Receives project information.  
 		JSONObject responsePart = new JSONObject(resp);
-
+		// if contains parent node it's a fork. 
 		if (responsePart.has("parent")) {
 			JSONObject parent = responsePart.getJSONObject("parent");
 			repo.setName(parent.getString("name"));
@@ -51,6 +51,15 @@ public class GitHubApi {
 		}
 		return langUse;
 	}
+	
+	public boolean getForkStatus(GitHubRepo repo) {
+		String response = this.get("/repos/" + repo.getOwner() + "/" + repo.getName() + "/forks"); // 1 API request makes for 3 total. 
+		JSONObject responsePart = new JSONObject(response);	
+		Boolean forkStatus = responsePart.getBoolean("fork");
+		
+		return forkStatus;
+	}
+	
 
 	private String get(String url) {
 		return this.get(url, new HashMap<>()); //not an empty collection, b/c of adding auth token later!

@@ -101,7 +101,7 @@ public class FileHelper {
 	
 	private static void createDateDir(String path) {
 		File file = new File(path);
-		if(!file.exists() && file.isDirectory()) {
+		if(!file.exists()) {
 			file.mkdir();
 		}
 	}
