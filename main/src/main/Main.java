@@ -38,12 +38,15 @@ public class Main {
 	private static final String PREFIX = "[MAIN] ";
 	private static boolean debugging = true;
 	private static PrintStream console;
+	private static PrintStream errors;
 	private static String processedProjectsLoc = "";
+	private static final long  MEGABYTE = 1024L * 1024L;
 
 	public static void main(String[] args) throws IOException {
 		long startTime = System.currentTimeMillis();
 		printMain("Starting program...");
 		console = System.out;
+		errors = System.err;
 		Properties config = null;
 		if (args[0] != null) {
 			config = Settings.getConfig(args[0]);
@@ -60,6 +63,7 @@ public class Main {
 		PrintStream err = new PrintStream(new FileOutputStream(
 				FileHelper.stampedFileName(config.getProperty("locations.log.error"), "err", "log")));
 		System.setOut(out);
+		System.setErr(err);
 
 		printMain("Starting detection.");
 		// Don't redirect error stream for development
@@ -86,15 +90,23 @@ public class Main {
 
 		long totalProjects = Arrays.asList(projectsFolder.listFiles()).parallelStream().filter((f) -> f.isDirectory())
 				.count();
-
 		processedProjectsLoc = config.getProperty("locations.data.outputProjects");
+
+		if(filterEnabled) {
+			totalProjects = projects.size();
+		}
 		long projectNum = 0;
+		long loopCounter = 0;
 		List<String> processedProjects = fetchProcessedProjects(config);
 		for (File file : projectsFolder.listFiles()) {
 			if (file.isDirectory() && (!filterEnabled || projects.contains(file.getAbsolutePath()))) {
 				long startProject = System.currentTimeMillis();
+				loopCounter++;
 				out.flush();
 				err.flush();
+				if (loopCounter % 25 == 0) {
+					printHeapStatus();
+				}
 				if (processedProjects.contains(file.getPath()) && !forceReprocess) {
 					// deserialize project from storage
 					try {
@@ -138,6 +150,20 @@ public class Main {
 		err.close();
 		String endTime = printExecutionTime(startTime);
 		console.println(PREFIX + " Finished program in : " + endTime);
+	}
+
+	private static void printHeapStatus() {
+		// stackoverflow provides
+		// Get current size of heap in bytes
+		long heapSize = Runtime.getRuntime().totalMemory(); 
+		// Get maximum size of heap in bytes. The heap cannot grow beyond this size.// Any attempt will result in an OutOfMemoryException.
+		long heapMaxSize = Runtime.getRuntime().maxMemory();
+		 // Get amount of free memory within the heap in bytes. This size will increase // after garbage collection and decrease as new objects are created.
+		long heapFreeSize = Runtime.getRuntime().freeMemory(); 		
+		printMain("<------------------------------------------------------------------------------>");
+		printMain("Heap Size: " + (heapSize / MEGABYTE) + " Max size: " + (heapMaxSize / MEGABYTE) + " Free: " + (heapFreeSize / MEGABYTE));
+		printMain("<------------------------------------------------------------------------------>");
+
 	}
 
 	private static void recordProgress(File file, Properties config) throws FileNotFoundException {

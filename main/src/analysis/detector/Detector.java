@@ -136,6 +136,10 @@ public abstract class Detector {
 		return (ListMap) this.dataStores.get(name);
 	}
 
+	/** 
+	 * Need to profile might be perf. hog as the other clean method. 
+	 * However, detectors do stay in scope so cleaning these maps would be beneficial if we are out of memory. 
+	 */
 	public void removeData() {
 		this.defects.clean();
 		this.dataStores.values().forEach(analysis.storage.Map::clean);

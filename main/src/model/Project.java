@@ -19,6 +19,7 @@ public class Project implements Unlinkable, Serializable {
 	private static final long serialVersionUID = -2643092858223935288L;
 	private final Map<String, Module> modules;
 	private final File folder;
+	private boolean processed = false;
 
 	public Project(File folder) {
 		this.folder = folder;
@@ -56,6 +57,10 @@ public class Project implements Unlinkable, Serializable {
 		return this.modules.values().stream().collect(Collectors.toSet());
 	}
 
+	public void processed() {
+		this.processed = true;
+	}
+	
 	/**
 	 * method to allow the lovely Garbage Collector to do its job
 	 */

@@ -39,9 +39,9 @@ public abstract class Map<T> {
 		this.filePath = filePath;
 		File file = new File(this.filePath);
 		this.existing = file.exists();
-		if (!this.existing) {
-			this.stream = new PrintStream(new FileOutputStream(this.filePath));
-		}
+	
+		this.stream = new PrintStream(new FileOutputStream(this.filePath, true));
+		
 	}
 
 	public void add(String key, Integer element) {
@@ -53,17 +53,15 @@ public abstract class Map<T> {
 	}
 
 	public void add(String key, String element) {
-		if (!this.existing) {
 			if (this.stream == null) {
 				throw new IllegalStateException("The stream has not been initialized");
 			}
 			String line = key + DELIMITER + element;
 			this.stream.println(line);
-		}
+		
 	}
 
 	public void add(String key, Set<String> elements) {
-		if (!this.existing) {
 			if (this.stream == null) {
 				throw new IllegalStateException("The stream has not been initialized");
 			}
@@ -71,17 +69,16 @@ public abstract class Map<T> {
 				String line = key + DELIMITER + elem;
 				this.stream.println(line);
 			}
-		}
+		
 	}
 	
 	public void add(String key, List<String> elements) {
-		if (!this.existing) {
 			if (this.stream == null) {
 				throw new IllegalStateException("The stream has not been initialized");
 			}
 			Set<String> elementsSet = new HashSet<String>(elements);
 			this.add(key, elementsSet);
-		}
+		
 	}
 	
 	
@@ -113,9 +110,8 @@ public abstract class Map<T> {
 	 * @throws IOException
 	 */
 	public void deserialize(Boolean readData) throws IOException {
-		if (!this.existing) {
-			this.stream.close();
-		}
+		this.stream.close();
+		
 
 		this.reader = new BufferedReader(new FileReader(this.filePath));
 		if (readData) {

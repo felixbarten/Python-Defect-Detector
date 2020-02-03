@@ -59,11 +59,12 @@ public class Register {
 			this.allDetectorsAdded = true; //don't allow any additional detectors
 		}
 		
-		project.getModules().forEach(m -> this.check(project.getPath(), m));
+		project.getModules().forEach(m -> this.check(project.getPath(), m, processed));
 		this.metrics.getProjectData(project); //write metric data for one project. 
 		
 		if(!processed) {
-			project.unlink();
+			// performance hog.
+			//project.unlink();
 		}
 	}
 
@@ -77,10 +78,14 @@ public class Register {
 	 * @param projectPath
 	 * @param contentContainer
 	 */
-	private void check(String projectPath, ContentContainer contentContainer) {
+	private void check(String projectPath, ContentContainer contentContainer, boolean processed) {
+		if(processed) {
+			// if project has already been processed no need to visit every node in the tree again.
+			return;
+		}
 		this.metrics.register(contentContainer);
 		this.detectors.forEach(d -> d.process(projectPath, contentContainer));
-		contentContainer.getChildren().forEach(c -> this.check(projectPath, c));
+		contentContainer.getChildren().forEach(c -> this.check(projectPath, c, processed));
 	}
 
 	/**

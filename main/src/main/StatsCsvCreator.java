@@ -118,12 +118,14 @@ public class StatsCsvCreator extends CsvCreator {
 			}
 			int moduleCount = project.getModules().size();
 			this.printProjectLine(project.getPath(), link, moduleCount, loc, classCount, correctlyParsed.doubleValue() / moduleCount);
-			project.unlink();
+			// unlink takes ages. 
+			//project.unlink();
 		}
 		catch (Exception ex) {
 			System.err.println("EXCEPTION: " + ex.getMessage());
 			ex.printStackTrace();
 		}
+		System.gc();
 		System.out.println("-----------------------------------------------------------------------------------------------------------");
 	}
 

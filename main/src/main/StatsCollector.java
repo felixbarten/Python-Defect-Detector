@@ -32,7 +32,7 @@ public class StatsCollector {
 		
 		PrintStream out = new PrintStream(new FileOutputStream(FileHelper.stampedFileName(config.getProperty("locations.log.out"), "out", "log")));
 		PrintStream err = new PrintStream(new FileOutputStream(FileHelper.stampedFileName(config.getProperty("locations.log.error"), "err", "log")));
-		System.setOut(out);
+		//System.setOut(out);
 		System.setErr(err);
 
 		File sourceFolder = new File(config.getProperty("locations.data.input"));

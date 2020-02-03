@@ -79,7 +79,8 @@ public class FilterAssistant {
 				// filter desirable projects and write to file the projects to be kept. 	
 				if (filter(data)) {
 					accepted++;
-					results.println(StringHelper.implode(Arrays.asList(data), delimiter));
+					//results.println(StringHelper.implode(Arrays.asList(data), delimiter));
+					results.println(data[0]);
 					moduleCount += Long.parseLong(data[2]);
 					classCount += Long.parseLong(data[4]);
 					locCount += Long.parseLong(data[3]);
