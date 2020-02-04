@@ -172,9 +172,17 @@ public abstract class Detector {
 		// does key exist in properties?
 		boolean exists = suspectConfig.containsKey(this.getName());
 		// fetch folder name
-		String folder = Settings.getConfig().getProperty("locations.data.output");
+		Properties config = Settings.getConfig();
+		String folder = config.getProperty("locations.data.output");
+		String filePath = "";
+		if (config.containsKey("locations.data.useDateSubDirs") && config.getProperty("locations.data.useDateSubDirs").equalsIgnoreCase("true")) {
+			filePath = FileHelper.stampedTempFileName(folder, this.getName(), DATA_STORES_EXTENSION);
+		} else {
+			filePath = FileHelper.regularFileName(folder, this.getName(), DATA_STORES_EXTENSION);
+		}
+		
 		// if it does exist fetch fro suspects. if it does not. create new stampedFileName with Detector name.  
-		return exists ? suspectConfig.getProperty(this.getName()) : FileHelper.stampedTempFileName(folder, this.getName(), DATA_STORES_EXTENSION);
+		return exists ? suspectConfig.getProperty(this.getName()) : filePath;
 	}
 
 	
@@ -189,8 +197,17 @@ public abstract class Detector {
 		Properties mapsConfig = Settings.getMapsConfig();
 		String fullName = this.getName() + "_" + type;
 		boolean exists = mapsConfig.containsKey(fullName);
-		String folder = Settings.getConfig().getProperty("locations.data.output");
-		return exists ? mapsConfig.getProperty(fullName) : FileHelper.stampedTempFileName(folder, type, DATA_STORES_EXTENSION);
+		Properties config = Settings.getConfig();
+		String folder = config.getProperty("locations.data.output");
+		String filePath = "";
+		if (config.containsKey("locations.data.useDateSubDirs") && config.getProperty("locations.data.useDateSubDirs").equalsIgnoreCase("true")) {
+			filePath = FileHelper.stampedTempFileName(folder, type, DATA_STORES_EXTENSION);
+
+		} else {
+			filePath = FileHelper.regularFileName(folder, type, DATA_STORES_EXTENSION);
+		}
+		
+		return exists ? mapsConfig.getProperty(fullName) : filePath;
 	}
 
 	//override these where necessary

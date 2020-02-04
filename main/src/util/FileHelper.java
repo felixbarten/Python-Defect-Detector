@@ -64,7 +64,28 @@ public class FileHelper {
 		String datetime = timeFormat.format(now);
 		return datetime + "_" + fileName + "." + extension;
 	}
+	
+	
+	/**
+	 * Creates a date stamped file name
+	 * @param fileName
+	 * @param extension
+	 * @return filename with datetime prefix
+	 */
+	public static String stampedDateFileName(String fileName, String extension) {
+		Date now = new Date();
+		SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+		String datetime = timeFormat.format(now);
+		return datetime + "_" + fileName + "." + extension;
+	}
 
+	public static String stampedDateFileName(String directory, String fileName, String extension) {
+		Date now = new Date();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-SSS");
+		String date = dateFormat.format(now);
+		return directory + "/" + date + "_" + fileName + "." + extension;
+	}
+	
 	/**
 	 * Creates time stamped filenames in a date subdirectory.
 	 * @param directory Path to directory
@@ -81,6 +102,10 @@ public class FileHelper {
 		String time = timeFormat.format(now);
 		createDateDir(directory + "/" + date + "/");
 		return directory + "/" + date + "/" + time + "_" + fileName + "." + extension;
+	}
+	
+	public static String regularFileName(String directory, String fileName, String extension) {
+		return directory + "/" + fileName + "." + extension;
 	}
 	
 	/**

@@ -233,7 +233,16 @@ public class FloatMetricVals {
 	private String getValuesFileName(String type) throws IOException {
 		Properties metricsConfig = Settings.getMetricsConfig();
 		boolean exists = metricsConfig.containsKey(type);
-		String folder = Settings.getConfig().getProperty("locations.data.output");
-		return exists ? metricsConfig.getProperty(type) : FileHelper.stampedFileName(folder, type, METRIC_VALS_EXTENSION);
+		Properties config = Settings.getConfig();
+		
+		String folder = config.getProperty("locations.data.output");
+		
+		String filePath = "";
+		if (config.containsKey("locations.data.useDateSubDirs") && config.getProperty("locations.data.useDateSubDirs").equalsIgnoreCase("true")) {
+			FileHelper.stampedFileName(folder, type, METRIC_VALS_EXTENSION);
+		} else {
+			filePath = FileHelper.regularFileName(folder, type, METRIC_VALS_EXTENSION);
+		}		
+		return exists ? metricsConfig.getProperty(type) : filePath;
 	}
 }

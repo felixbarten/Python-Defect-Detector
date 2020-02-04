@@ -300,27 +300,28 @@ public class Metrics {
 			List<Assign> subroutineAssigns = new ArrayList<>();
 			Map<String, Long> occurrenceCount = new HashMap<>();
 
-			List<String> refVarNamesList = new ArrayList<>();
-			Set<String> refVarNamesSet = new HashSet<>();
+			List<String> referencedVarNamesList = new ArrayList<>();
+			Set<String> referencedVarNamesSet = new HashSet<>();
 
 			Set<String> calledSubRoutinesSet = new HashSet<>();
 			Set<String> calledSubRoutinesList = new HashSet<>();
 
 			cls.getDefinedSubroutinesSet().stream().forEach((sub) -> {
-				refVarNamesSet.addAll(sub.getReferencedVarNamesNotIncludedInVars());
-				refVarNamesList.addAll(sub.getReferencedVarNamesNotIncludedInVarsList());
+				referencedVarNamesSet.addAll(sub.getReferencedVarNamesNotIncludedInVars());
+				referencedVarNamesList.addAll(sub.getReferencedVarNamesNotIncludedInVarsList());
 				calledSubRoutinesSet.addAll(sub.getCalledSubroutineNames());
 				calledSubRoutinesList.addAll(sub.getCalledSubroutineNamesList());
 				subroutineAssigns.addAll(sub.getAssignList());
 			});
 
-			if (refVarNamesSet.isEmpty())
+			if (referencedVarNamesSet.isEmpty()) {
 				return;
-
+			}
+			
 			// Set of unresolved variables that are not "self"
 			// if you have a variable set a, b, c they will be duplicated to self.a, self.b, self.c better to remove them. 
 			Set<String> unknownTypeVars = new HashSet<>();
-			for (String varName : refVarNamesSet) {
+			for (String varName : referencedVarNamesSet) {
 				if (varName.contains(".")) {
 					List<String> parts = StringHelper.explode(varName, ".");
 					if (parts.size() > 1 && !parts.get(0).equalsIgnoreCase("self")) {
@@ -333,38 +334,40 @@ public class Metrics {
 				return;
 			}
 			
-			// Map of varname => Type(as String)
-			Map<String, String> instanceVars = new HashMap<>();
+			// Map of variable name => Type(as String)
+			Map<String, String> instancedVars = new HashMap<>();
 
-			// iterate over Assigns to see if any have our variable's Type.
+			// loop through all Assigns to see if any have our variable's Type.
 			for (Assign a : cls.getAssignList()) {
 				if (unknownTypeVars.contains(a.getName())) {
-					if (instanceVars.containsKey(a.getName())) {
+					if (instancedVars.containsKey(a.getName())) {
+						// when encountering a double key grab the first one. Tracking them all introduces considerable complexity. 
 						debug.debug("Double key: " + a.getName());
 					}
-					instanceVars.put(a.getName(), a.getValue());
+					instancedVars.put(a.getName(), a.getValue());
 				}
 			}
 
 			for (Assign a : subroutineAssigns) {
 				if (unknownTypeVars.contains(a.getName())) {
-					if (instanceVars.containsKey(a.getName())) {
+					if (instancedVars.containsKey(a.getName())) {
+						// same as with the Class keys in set. Class assigns take precedence over subroutine assigns. 
 						debug.debug("Double key: " + a.getName());
 					}
-					instanceVars.put(a.getName(), a.getValue());
+					instancedVars.put(a.getName(), a.getValue());
 				}
 			}
 
-			if (instanceVars.isEmpty()) {
+			if (instancedVars.isEmpty()) {
 				return;
 			}
 			
-			// Map class name => Type (of model.Class).
-			Map<String, model.Class> importStringToClassMap = checkImports(instanceVars);
+			// Map class name (String) => Type (instanceof model.Class).
+			Map<String, model.Class> importStringToClassMap = checkImports(instancedVars);
 			// Map variable name => Type (of model.Class).
 			Map<String, model.Class> typedVariables = new HashMap<>();
 			// yet another loop. to combine data.
-			for (Map.Entry<String, String> entry : instanceVars.entrySet()) {
+			for (Map.Entry<String, String> entry : instancedVars.entrySet()) {
 				if (importStringToClassMap.get(entry.getValue()) != null) {
 					typedVariables.put(entry.getKey(), importStringToClassMap.get(entry.getValue()));
 				}
@@ -390,7 +393,7 @@ public class Metrics {
 				e.printStackTrace();
 			}
 
-			Map<String, Long> occurrences = refVarNamesList.stream()
+			Map<String, Long> occurrences = referencedVarNamesList.stream()
 					.collect(Collectors.groupingBy(String::toString, Collectors.counting()));
 
 			// now we finally have resolved our classes and instances. We can count occurrences.
@@ -406,7 +409,7 @@ public class Metrics {
 					}
 				}
 
-				for (String refVar : refVarNamesSet) {
+				for (String refVar : referencedVarNamesSet) {
 					if (refVar.startsWith(varName) && refVar.contains(".")) {
 						if (!occurrenceCount.containsKey(varName)) {
 							occurrenceCount.put(varName, (long) 1);
@@ -441,6 +444,8 @@ public class Metrics {
 				Map<String, model.Class> typedVariables) {
 			/*
 			 *  As there are a few data restrictions with the current system I've chosen to create a composite key of the data.
+			 *  Example: 
+			 *  <String to class that the coupling goes to> &ref= <long num of references to this class> 
 			 */
 			Set<String> couplingData = new HashSet<String>();
 			for (String key : occurrenceCount.keySet()) {
@@ -457,9 +462,8 @@ public class Metrics {
 		 * Check the gathered Import types and attempt to match them with the module's
 		 * imports.
 		 * 
-		 * @param module
-		 * @param instanceVars
-		 * @return
+		 * @param instanceVars Map of Strings 
+		 * @return map<String, Class> of mapped types from imports. 
 		 */
 		private Map<String, Class> checkImports(Map<String, String> instanceVars) {
 			if (currentModule == null) {
@@ -467,6 +471,7 @@ public class Metrics {
 			}
 			model.Module module = currentModule;
 
+			// Map (String) Class name => (model.Class) Class Type. 
 			Map<String, model.Class> typedInstanceVars = new HashMap<>();
 			// Gather imports and defined Classes.
 			Map<String, model.Class> clsImports = module.getClassImports();
@@ -480,10 +485,12 @@ public class Metrics {
 				}
 			}
 
+			// loop through module imports to see which classes they contain. 
 			for (String key : modImports.keySet()) {
 				model.Module impModule = modImports.get(key);
 
 				if (instanceVars.containsValue(key)) {
+					// check if module contains a Class with our key. 
 					if (impModule.getClass(key) != null) {
 						typedInstanceVars.put(key, impModule.getClass(key));
 						continue;

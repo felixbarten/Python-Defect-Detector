@@ -88,12 +88,16 @@ public class InappropriateIntimacyDetector extends Detector {
 
 	@Override
 	protected Boolean confirmDefect(String fullPath, String projectPath) {
-		// check referenced classes.
-		// check if any of ref. classes has coupling with this class.
-		// check if the amount of coupling is more or equal to the threshold.
+		/* 
+		 * Step 1: check referenced classes.
+		 * Step 2: check if any of ref. classes has coupling with this class.
+		 * Step 3: check if the amount of coupling is more or equal to the threshold.
+		 */
+
 		List<IIMatch> matches = new ArrayList<IIMatch>();
 		List<IIMatch> positiveMatches = new ArrayList<IIMatch>();
 
+		// Map of (String) class path => amount of times referenced (Long) 
 		Map<String, Long> coupledClasses = getCouplingMap(fullPath);
 
 		// This might be time intensive.
@@ -105,7 +109,9 @@ public class InappropriateIntimacyDetector extends Detector {
 		}
 		// validate matches. 
 		matches.forEach((m) -> {
-			if(m.validate(couplingThreshold)) positiveMatches.add(m);
+			if(m.validate(couplingThreshold)) {
+				positiveMatches.add(m);
+			}
 		});
 		
 		printResults(positiveMatches);
@@ -120,6 +126,13 @@ public class InappropriateIntimacyDetector extends Detector {
 		}
 	}
 
+	/**
+	 * Check if there is a bidirectional relationship between classes. 
+	 * Retrieves the coupling data of {@code path} and sees if it contains {@code origPath}. 
+	 * @param path to class file
+	 * @param origPath path to original class 
+	 * @return Long of how many times {@code path} has references to {@code origPath}. If {@code origPath} cannot be found in coupling data return {@code null}
+	 */
 	private Long checkForBidirectionalMapping(String path, String origPath) {
 		Map<String, Long> map = getCouplingMap(path);
 
@@ -131,6 +144,11 @@ public class InappropriateIntimacyDetector extends Detector {
 		return null;
 	}
 
+	/**
+	 * Returns a map of referenced classes with {@code fullPath} as the origin. 
+	 * @param fullPath
+	 * @return map of coupling data.
+	 */
 	private Map<String, Long> getCouplingMap(String fullPath) {
 		Set<String> couplingData = global.getStrSetMap(CLASS_COUPLING).get(fullPath);
 		if (couplingData == null) {
@@ -150,49 +168,39 @@ public class InappropriateIntimacyDetector extends Detector {
 		return "Inappropriate Intimacy";
 	}
 
+	/**
+	 * Helper class for storing Matching data. 
+	 * 
+	 * @author felix
+	 *
+	 */
 	public class IIMatch {
 		private String pathClsA;
 		private String pathClsB;
 		private Long occurrencesAtoB;
 		private Long occurrencesBtoA;
 
-		IIMatch(String pathA, String pathB, Long occ1, Long occ2) {
+		IIMatch(String pathA, String pathB, Long aToB, Long bToA) {
 			this.pathClsA = pathA;
 			this.pathClsB = pathB;
-			this.occurrencesAtoB = occ1;
-			this.occurrencesBtoA = occ2;
+			this.occurrencesAtoB = aToB;
+			this.occurrencesBtoA = bToA;
 		}
 
-		public final String getPath1() {
+		public final String getPathA() {
 			return pathClsA;
 		}
 
-		public final void setPath1(String path1) {
-			this.pathClsA = path1;
-		}
-
-		public final String getPath2() {
+		public final String getPathB() {
 			return pathClsB;
-		}
-
-		public final void setPath2(String path2) {
-			this.pathClsB = path2;
 		}
 
 		public final Long getOccurrence1() {
 			return occurrencesAtoB;
 		}
-
-		public final void setOccurrence1(Long occurrence1) {
-			this.occurrencesAtoB = occurrence1;
-		}
-
+		
 		public final Long getOccurrence2() {
 			return occurrencesBtoA;
-		}
-
-		public final void setOccurrence2(Long occurrence2) {
-			this.occurrencesBtoA = occurrence2;
 		}
 
 		public boolean validate(Integer threshold) { 
@@ -208,9 +216,7 @@ public class InappropriateIntimacyDetector extends Detector {
 			sb.append("\nB to A: " + occurrencesBtoA);
 			sb.append("\nValid: " + (occurrencesAtoB >= 3 && occurrencesBtoA >= 3));
 			return sb.toString();
-			
 		}
-		
 	}
 
 }

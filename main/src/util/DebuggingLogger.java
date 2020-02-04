@@ -62,8 +62,8 @@ public class DebuggingLogger {
 	}
 	
 	public void debug(IIMatch m) {
-		String path1 = m.getPath1();
-		String path2 = m.getPath2();
+		String path1 = m.getPathA();
+		String path2 = m.getPathB();
 		try {
 			String cls1 = path1.split(">")[1];
 			String cls2 = path2.split(">")[1];

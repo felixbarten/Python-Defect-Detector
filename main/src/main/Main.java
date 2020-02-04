@@ -40,6 +40,7 @@ public class Main {
 	private static final String CSV_NAME = "RESULTS";
 	private static final String PREFIX = "[MAIN] ";
 	private static boolean debugging = true;
+	private static boolean useDateDirs = false;
 	private static PrintStream console;
 	private static PrintStream errors;
 	private static PrintStream processLog;
@@ -63,6 +64,7 @@ public class Main {
 		DebuggingLogger.getInstance();
 		createLocations(config);
 		printTimestamp = propertyToBoolean("console.timestamp", config);
+		useDateDirs = propertyToBoolean("locations.data.useDateSubDirs", config);
 		boolean filterEnabled = config.containsKey("locations.data.input.filter");
 
 		PrintStream out = new PrintStream(new FileOutputStream(
@@ -72,16 +74,8 @@ public class Main {
 		System.setOut(out);
 		System.setErr(err);
 		
-		printMain("Registering detectors...");
-		Register register = new Register();
-		registerDetectors(register);
-		printMain("Registered detectors.");
-
-		printMain("Reading Git Location data");
-		// TODO gitlocs seems to be broken
-		gitLocs = new GitLocationProcessor(config.getProperty("locations.data.input.disklocations"));
-		gitLocs.readData();
-		printMain("Finished reading Git Location data");
+		Register register = setupRegister();
+		setupGitLocations(config);
 
 		
 		printMain("Fetching projects...");
@@ -95,7 +89,8 @@ public class Main {
 		File projectsFolder = new File(config.getProperty("locations.data.input"));
 		boolean processLogging = propertyToBoolean("processing.keeplog", config);
 		boolean forceReprocess = propertyToBoolean("processing.reprocess", config);
-
+		boolean skipProcessed = propertyToBoolean("processing.skip", config);
+		
 		long totalProjects = Arrays.asList(projectsFolder.listFiles()).parallelStream().filter((f) -> f.isDirectory())
 				.count();
 		processedProjectsLoc = config.getProperty("locations.data.outputProjects");
@@ -123,12 +118,18 @@ public class Main {
 				}
 				// If project has already been processed and reprocessing is disabled.
 				if (processedProjects.contains(file.getPath()) && !forceReprocess) {
+					if(skipProcessed) {
+						projectNum++;
+						printMain("Processed " + projectNum + " out of " + totalProjects + " projects.");
+						printMain("Skipped project: " + file.getName());
+						continue;
+					}
 					// deserialize project from storage
 					try {
 						printMain("Fetching preprocessed project from disk.");
 						String projectName = file.getName();
 						File serFile = new File(processedProjectsLoc + "/" + projectName + ".ser");
-						if (serFile.exists()) {
+						if (serFile.exists()) {		
 							reprocessProject(register, deserializeProject(projectName));
 							projectNum++;
 							printMain("Processed " + projectNum + " out of " + totalProjects + " projects.");
@@ -163,15 +164,39 @@ public class Main {
 		exit(out, err);
 	}
 
+	/**
+	 * Load git locations.
+	 * @param config
+	 */
+	private static void setupGitLocations(Properties config) {
+		printMain("Reading Git Location data");
+		// TODO gitlocs seems to be broken
+		gitLocs = new GitLocationProcessor(config.getProperty("locations.data.input.disklocations"));
+		gitLocs.readData();
+		printMain("Finished reading Git Location data");
+	}
+
+	/**
+	 * @return register with all detectors registered. 
+	 * @throws IOException
+	 */
+	private static Register setupRegister() throws IOException {
+		printMain("Registering detectors...");
+		Register register = new Register();
+		registerDetectors(register);
+		printMain("Registered detectors.");
+		return register;
+	}
+
 	private static void printStartup() {
 		printMain("Starting program...");
-		printMain("Starting with JVM max heap size: " +  Runtime.getRuntime().maxMemory() / MEGABYTE + " MB");
+		printMain("Starting with JVM max heap size: " +  (Runtime.getRuntime().maxMemory() / MEGABYTE / 1024) + " GB");
 	}
 
 	/**
 	 * Returns a Project object from a serialized file.
 	 * @param projectName
-	 * @return Project 
+	 * @return Project object from file. 
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 * @throws ClassNotFoundException
@@ -187,7 +212,7 @@ public class Main {
 	}
 
 	/**
-	 * Final method.
+	 * Final method. close all open printstreams and exit program. 
 	 */
 	private static void exit(PrintStream out, PrintStream err) {
 		err.flush();
@@ -200,14 +225,14 @@ public class Main {
 
 	private static void printHeapStatus() {
 		// stackoverflow provides
-		// Get current size of heap in bytes
-		long heapSize = Runtime.getRuntime().totalMemory(); 
+		// Get current size of heap in bytes && convert to MB.
+		long heapSize = Runtime.getRuntime().totalMemory() / MEGABYTE; 
 		// Get maximum size of heap in bytes. The heap cannot grow beyond this size.// Any attempt will result in an OutOfMemoryException.
-		long heapMaxSize = Runtime.getRuntime().maxMemory();
+		long heapMaxSize = Runtime.getRuntime().maxMemory() / MEGABYTE;
 		 // Get amount of free memory within the heap in bytes. This size will increase // after garbage collection and decrease as new objects are created.
-		long heapFreeSize = Runtime.getRuntime().freeMemory(); 		
+		long heapFreeSize = Runtime.getRuntime().freeMemory() / MEGABYTE; 		
 		printMain("<------------------------------------------------------------------------------>");
-		printMain("Heap Size: " + (heapSize / MEGABYTE) + "MB Max size: " + (heapMaxSize / MEGABYTE) + "MB Free: " + (heapFreeSize / MEGABYTE) + "MB");
+		printMain("Heap Size: " + heapSize + "MB Max size: " + heapMaxSize + "MB Free: " + heapFreeSize + "MB");
 		printMain("<------------------------------------------------------------------------------>");
 
 	}
@@ -235,6 +260,13 @@ public class Main {
 		return false;
 	}
 
+	/**
+	 * Reprocess a project that has been marked as processed. 
+	 * @param register
+	 * @param project
+	 * @param skipProcessed 
+	 * @throws FileNotFoundException
+	 */
 	private static void reprocessProject(Register register, Project project) throws FileNotFoundException {
 		register.check(project, true);
 		runGarbageCollection();
@@ -252,6 +284,11 @@ public class Main {
 		}
 	}
 
+	/**
+	 * Prints the execution time from the parameter starts's time to now.
+	 * @param start time in milliseconds 
+	 * @return formatted time string between start and now. 
+	 */
 	private static String printExecutionTime(long start) {
 		long duration = System.currentTimeMillis() - start;
 		long days = TimeUnit.MILLISECONDS.toDays(duration);
@@ -268,7 +305,7 @@ public class Main {
 	 * 
 	 * @param config
 	 * @param boolean to enable or disable filtering.
-	 * @return list of projects for processing
+	 * @return list of projects for processing.
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
@@ -287,7 +324,7 @@ public class Main {
 	 * Fetch projects from process log file.
 	 * 
 	 * @param config
-	 * @return List of procesed projects.
+	 * @return List of processed projects.
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
@@ -382,11 +419,11 @@ public class Main {
 	 * @param Config object from which to retrieve the file paths.
 	 */
 	private static void createLocations(Properties config) {
-		FileHelper.createLocation(config.getProperty("locations.log.out"), true);
-		FileHelper.createLocation(config.getProperty("locations.log.error"), true);
+		FileHelper.createLocation(config.getProperty("locations.log.out"), useDateDirs);
+		FileHelper.createLocation(config.getProperty("locations.log.error"), useDateDirs);
 		FileHelper.createLocation(config.getProperty("locations.data.input"), false);
-		FileHelper.createLocation(config.getProperty("locations.data.output"), true);
-		FileHelper.createLocation(config.getProperty("locations.data.results"), true);
+		FileHelper.createLocation(config.getProperty("locations.data.output"), useDateDirs);
+		FileHelper.createLocation(config.getProperty("locations.data.results"), useDateDirs);
 	}
 
 	/**
