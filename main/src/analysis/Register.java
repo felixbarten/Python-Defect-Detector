@@ -68,11 +68,6 @@ public class Register {
 		}
 	}
 
-	private void checkProject(String path, Project project) {
-		//this.metrics.register(contentContainer);
-
-	}
-
 	/**
 	 * Overloaded check method. Goes deeper into modules in previous check method. Recurses on itself untill there are no more internal children in the ContentContainer. 
 	 * @param projectPath
@@ -89,9 +84,11 @@ public class Register {
 	}
 
 	/**
-	 * Finish method after all checking has been performed. Blocks additional checking from taking place. Iterates through detectors to save data to disk. 
+	 * Finish method after all checking has been performed. Blocks additional checking from taking place. 
+	 * Iterates through detectors to save data to disk. 
 	 * 
-	 * *important* Deserialize has to be called before anything else. If deserialize is called late the data gathered during the running of the detector 
+	 * *IMPORTANT* Deserialize has to be called before anything else. 
+	 * If deserialize is called late the data gathered during the running of the detector 
 	 * will only exist on disk and will not be loaded into memory.
 	 * @param gitLocs
 	 * @param csvCreator

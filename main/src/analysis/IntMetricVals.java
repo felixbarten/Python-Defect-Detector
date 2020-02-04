@@ -50,7 +50,7 @@ public class IntMetricVals {
 		File file = new File(this.valuesFileName);
 		this.existing = file.exists();
 		if (!this.existing) {
-			if(!file.getParentFile().exists()) {
+			if(file.getParentFile() != null && !file.getParentFile().exists()) {
 				file.mkdir();
 			}
 			try {

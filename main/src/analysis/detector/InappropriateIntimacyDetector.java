@@ -17,6 +17,7 @@ import util.Settings;
 import util.StringHelper;
 
 /**
+ * Inappropriate Intimacy Detector using Fowler's Code Smell definition.
  * Created by felixb on 9-4-2018
  */
 public class InappropriateIntimacyDetector extends Detector {

@@ -18,6 +18,7 @@ import analysis.storage.SetStrMap;
 public class DataStore {
 
 	private static DataStore instance = null;
+	@SuppressWarnings("rawtypes")
 	protected Map<String, analysis.storage.Map> dataStores;
 
 	protected DataStore() {
@@ -31,6 +32,7 @@ public class DataStore {
 		return instance;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public void addDataStore(String name, analysis.storage.Map dataStore) {
 		this.dataStores.put(name, dataStore);
 	}
@@ -40,6 +42,7 @@ public class DataStore {
 	 * @param name
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public analysis.storage.Map getPrimitiveIntMapStore(String name) {
 		return (PrimitiveIntMap) this.dataStores.get(name);
 	}
@@ -91,6 +94,7 @@ public class DataStore {
 	 * Loops through the Storage maps in DataStores and writes them to file.
 	 * @throws IOException
 	 */
+	@SuppressWarnings("rawtypes")
 	public void deserializeData() throws IOException {
 		for (analysis.storage.Map m : this.dataStores.values()) {
 			m.deserialize();

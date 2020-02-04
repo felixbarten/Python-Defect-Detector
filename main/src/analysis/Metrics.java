@@ -182,8 +182,7 @@ public class Metrics {
 		}
 
 		/**
-		 * This Method is ran at the end of the data collection process not on each
-		 * project.
+		 * This method runs at the end of the data collection process not on each project.
 		 */
 		public void finishCollection() {
 			getCounter(Metric.PROJECT_GLOBAL_CC).add(projectSubCC);
@@ -245,14 +244,12 @@ public class Metrics {
 			Set<String> refVars = m.getReferencedVariableNames();
 			globalDataStore.getStrSetMap(Metric.CLASS_REF_VAR_NAMES.toString()).add(m.getFullPath(), refVars);
 
-			// loop through variables get an actual path that we can use maybe and write to
-			// file.
+			// loop through variables get an actual path that we can use maybe and write to file.
 			// this should save whether the Key class accessed a member of class B.
 			Set<Variable> refVarInstances = m.getReferencedVariablesSet();
 			Set<String> paths = new HashSet<String>();
 			for (Variable v : refVarInstances) {
-				// for our purposes we don't care about if a class references a variable from
-				// itself.
+				// for our purposes we don't care if a class references a variable from itself.
 				if (m.getName() != v.getParent().getName()) {
 					paths.add(v.getParent().getName() + " > " + v.getName());
 				}
@@ -332,9 +329,10 @@ public class Metrics {
 				}
 			}
 
-			if (unknownTypeVars.isEmpty())
+			if (unknownTypeVars.isEmpty()) {
 				return;
-
+			}
+			
 			// Map of varname => Type(as String)
 			Map<String, String> instanceVars = new HashMap<>();
 
@@ -357,9 +355,10 @@ public class Metrics {
 				}
 			}
 
-			if (instanceVars.isEmpty())
+			if (instanceVars.isEmpty()) {
 				return;
-
+			}
+			
 			// Map class name => Type (of model.Class).
 			Map<String, model.Class> importStringToClassMap = checkImports(instanceVars);
 			// Map variable name => Type (of model.Class).
@@ -374,7 +373,7 @@ public class Metrics {
 			// Remove identified variables.
 			unknownTypeVars.removeAll(typedVariables.keySet());
 
-			// remove unknown vars that are equal to an imported 3rd party dependency.
+			// remove unknown vars that are equal to an imported 3rd party d	ependency.
 
 			Set<String> libraryImports = Collections.emptySet();
 			if (cls.getParent() instanceof model.Module) {
@@ -382,14 +381,12 @@ public class Metrics {
 			}
 			unknownTypeVars.removeAll(libraryImports);
 
-			// log unidentified variables.
 
-			// log remaining things to their own file.
+			// log remaining unid variables to their own file.
 			try {
 				if (unknownTypeVars.size() > 0)
-					DebuggingLogger.getInstance().debugSet(unknownTypeVars, cls.getFullPath());
+					DebuggingLogger.getInstance().debugIISet(unknownTypeVars, cls.getFullPath());
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -421,7 +418,6 @@ public class Metrics {
 								
 								long increment = occurrences.get(refVar);
 								//long increment = occurrences.get(refVar) - 1;
-
 								occurrenceCount.computeIfPresent(varName, (k, v) -> v + increment);
 							} else {
 								occurrenceCount.computeIfPresent(varName, (k, v) -> v + 1);
@@ -443,17 +439,18 @@ public class Metrics {
 		 */
 		private void storeIIData(Class cls, Map<String, Long> occurrenceCount,
 				Map<String, model.Class> typedVariables) {
-			// as there are a few data restrictions with the current system I've chosen to
-			// add a sort of comp key with the data.
+			/*
+			 *  As there are a few data restrictions with the current system I've chosen to create a composite key of the data.
+			 */
 			Set<String> couplingData = new HashSet<String>();
 			for (String key : occurrenceCount.keySet()) {
 				couplingData.add(typedVariables.get(key).getFullPath() + "&ref=" + occurrenceCount.get(key).toString());
 			}
 			globalDataStore.getStrSetMap(Metric.CLASS_COUPLING.toString()).add(cls.getFullPath(), couplingData);
-			// during detector the comp key can be split again and checked if the class has
-			// a binding in the opposite direction (making it II if they are higher than the
-			// threshold value).
-
+			/*
+			 *  During II detector the composite key can be split again and checked if the class has
+			 *  a binding in the opposite direction (making it II if they are higher than the threshold value).
+			 */
 		}
 
 		/**
@@ -465,8 +462,9 @@ public class Metrics {
 		 * @return
 		 */
 		private Map<String, Class> checkImports(Map<String, String> instanceVars) {
-			if (currentModule == null)
+			if (currentModule == null) {
 				return null;
+			}
 			model.Module module = currentModule;
 
 			Map<String, model.Class> typedInstanceVars = new HashMap<>();

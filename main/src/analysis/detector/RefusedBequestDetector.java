@@ -46,7 +46,6 @@ public class RefusedBequestDetector extends Detector {
 	private final static String SUBROUTINE_AVG_CC = "SUBROUTINE_AVG_CC";
 	// stores the NOM (number of methods) per project. 
 	private final static String GLOBAL_AVG_NOM = "GLOBAL_AVG_NOM";
-	
 	private final static String PARENT_PROTECTED_MEMBERS = "PARENT_PROTECTED_MEMBERS";
 	private static final String CLASS_PARENTS = "CLASS_PARENTS";
 	private static final String CLASS_REF_VAR_COUNT = "CLASS_REF_VAR_COUNT";
@@ -108,19 +107,17 @@ public class RefusedBequestDetector extends Detector {
 		global.addDataStore(CLASS_REF_CLS_NAMES, new SetStrMap(this.getDataStoreFilePath((CLASS_REF_CLS_NAMES))));
 	}
 
+	/**
+	  	To satisfy precondition of parent class must be direct ancestor and a library/dependency. 
+	  	Libraries don't get added to the superclass set so precondition is satisfied as the classes can't be iterated if they're not in the Set. 		
+		
+	 */
 	@Override
 	protected Boolean isPreliminarilyDefective(Class cls) {
-		Set<Class> parents = cls.getParentsSet();
-		
-		// why is this here
-		//this.getPrimitiveMapStore(CLASS_CC).add(cls.getFullPath(), cls.getCC());
-		
-		// try to satisfy precondition of parent class must be direct ancestor and not some library. 
-		// libraries don't get added to the superclass set so precondition is met as the classes can't be iterated if they're not in the Set. 		
-		
 		boolean hasParent = hasParent(cls);
-		if(hasParent)
+		if(hasParent) {
 			debug.debug("[RB] Class: " +  cls.getShortName() + " is preliminary defective: " + hasParent);
+		}
 		return hasParent; 
 	}
 
@@ -129,11 +126,9 @@ public class RefusedBequestDetector extends Detector {
 		// debugging 
 		boolean bequest = cls_ignores_bequest(fullPath);
 		boolean complex = clsComplex(fullPath, projectPath);
-		//debug.debug("Class with path: " + fullPath + " has refused bequest? " + bequest);
-		//debug.debug("Class with path: " + fullPath + " is complex? " + complex);		
-		
+
 		if (bequest && complex) {
-			debug.debug("[RB] Class with path: " + fullPath + " has refused bequest.");
+			debug.debug("[RB] Class with path: " + fullPath + " has Refused (Parent) Bequest.");
 		}
 		
 		return complex && bequest;
@@ -148,10 +143,7 @@ public class RefusedBequestDetector extends Detector {
 		boolean prot = fewProtectedMembers(path);
 		boolean refused = refusedBequest(path);
 		boolean overrides = overridesMethods(path);
-		
-	//	debug.debug(cls.getParentsSet());
-		//debug.debug("prot: " + prot + " refused: " + refused + " overrides: " + overrides);
-		//return (fewProtectedMembers(cls) && refusedBequest(cls)) || overridesMethods() ;
+		// ^ debugging
 		return (prot && refused) || overrides;
 	}
 	
@@ -162,7 +154,10 @@ public class RefusedBequestDetector extends Detector {
 	 * @return
 	 */
 	private boolean fewProtectedMembers(String path) {
-		// this one is weird in Python as a class can have more than one parent. so the threshold may need to be higher than in Java. 
+		/* 
+		 * this one is weird in Python as a class can have more than one parent. 
+		 * So the threshold may need to be higher than in Java. 
+		 */
 		//Integer memberCount = cls.getProtectedParentVars().getAsSet().size();
 		Integer parentMember = 0;
 		for (String parent : global.getStrSetMap(CLASS_PARENTS).get(path)) {
@@ -180,6 +175,8 @@ public class RefusedBequestDetector extends Detector {
 	 * @return
 	 */
 	private boolean refusedBequest(String path) {
+		// TODO Comment needs to be verified. 
+		
 		// roadblock. Needs additional information from the AST about method calls. which is not currently available. 
 		// collect call data 
 		// check if parent data is called. 
@@ -226,10 +223,8 @@ public class RefusedBequestDetector extends Detector {
 			}
 		}
 		parentMemberCount = parentVars.size() + parentMethods.size();
-		
-		boolean condition = ((count + methodsCount) / checkIfZero(parentMemberCount)) < ratio;
-				
-		return condition;
+						
+		return ((count + methodsCount) / checkIfZero(parentMemberCount)) < ratio;
 	}
 	
 	private int checkIfZero(int n) {
@@ -270,9 +265,8 @@ public class RefusedBequestDetector extends Detector {
 		if(defMethods != null) {
 			intersection = new HashSet<>(defMethods);
 		}
-		//debug
 		intersection.retainAll(parentSubRoutines);
-		debug.debug("Intersection is: " + intersection);
+		// Debugging marker.
 		boolean condition = intersection.size() > overrideThreshold;
 		
 		return condition;
@@ -285,14 +279,11 @@ public class RefusedBequestDetector extends Detector {
 	 * @return
 	 */
 	private boolean clsComplex(String path, String projectPath) {
-		boolean funcComplexityAvgAvg = funcComplexityAboveAvg(path, projectPath);
+		boolean funcComplexityAbvAvg = funcComplexityAboveAvg(path, projectPath);
 		boolean clsCCAboveAvg = clsCCAboveAvg(path, projectPath);
 		boolean clsSizeAbvAvg = clsSizeAboveAvg(path, projectPath);
-
-		debug.debug(path + " funccomp: " + funcComplexityAvgAvg + " ccabvavg: " + clsCCAboveAvg + " size: " + clsSizeAbvAvg);
-
-		return (funcComplexityAvgAvg || clsCCAboveAvg ) && clsSizeAbvAvg;
-		//return (funcComplexityAboveAvg(cls) || clsCCAboveAvg(cls)) && clsSizeAboveAvg(cls);
+		// debugging 
+		return (funcComplexityAbvAvg || clsCCAboveAvg ) && clsSizeAbvAvg;
 	}
 	
 	/**
@@ -349,7 +340,7 @@ public class RefusedBequestDetector extends Detector {
 	}
 	
 	/**
-	 * precondition. Class must have a parent.
+	 * Precondition for RBP processing. Class must have a parent.
 	 * @return
 	 */
 	private boolean hasParent(Class cls) {

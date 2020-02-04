@@ -12,11 +12,14 @@ import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 
 import analysis.Register;
 import analysis.detector.InappropriateIntimacyDetector;
@@ -39,12 +42,16 @@ public class Main {
 	private static boolean debugging = true;
 	private static PrintStream console;
 	private static PrintStream errors;
+	private static PrintStream processLog;
 	private static String processedProjectsLoc = "";
 	private static final long  MEGABYTE = 1024L * 1024L;
+	private static boolean printTimestamp = false;
+	private static int memoryUpdateFreq = 10;
 
 	public static void main(String[] args) throws IOException {
 		long startTime = System.currentTimeMillis();
-		printMain("Starting program...");
+		printStartup();
+		// keep local references to current printout streams (console in dev environment)
 		console = System.out;
 		errors = System.err;
 		Properties config = null;
@@ -55,7 +62,7 @@ public class Main {
 		}
 		DebuggingLogger.getInstance();
 		createLocations(config);
-
+		printTimestamp = propertyToBoolean("console.timestamp", config);
 		boolean filterEnabled = config.containsKey("locations.data.input.filter");
 
 		PrintStream out = new PrintStream(new FileOutputStream(
@@ -64,25 +71,26 @@ public class Main {
 				FileHelper.stampedFileName(config.getProperty("locations.log.error"), "err", "log")));
 		System.setOut(out);
 		System.setErr(err);
-
-		printMain("Starting detection.");
-		// Don't redirect error stream for development
-		// System.setErr(err);
+		
 		printMain("Registering detectors...");
-
 		Register register = new Register();
 		registerDetectors(register);
 		printMain("Registered detectors.");
 
 		printMain("Reading Git Location data");
+		// TODO gitlocs seems to be broken
 		gitLocs = new GitLocationProcessor(config.getProperty("locations.data.input.disklocations"));
 		gitLocs.readData();
 		printMain("Finished reading Git Location data");
 
+		
 		printMain("Fetching projects...");
 		// Only projects in the filtered list are processed. If filtered list exists.
 		List<String> projects = fetchFilteredProjects(config, filterEnabled);
-		printMain("Fetched projects.");
+		if(filterEnabled) {
+			printMain("Using filtered list with " + projects.size() + " projects.");
+		}
+		
 		printMain("Processing projects...");
 		File projectsFolder = new File(config.getProperty("locations.data.input"));
 		boolean processLogging = propertyToBoolean("processing.keeplog", config);
@@ -98,15 +106,22 @@ public class Main {
 		long projectNum = 0;
 		long loopCounter = 0;
 		List<String> processedProjects = fetchProcessedProjects(config);
+		if(processedProjects.size() > 0 ) {
+			printMain("Found: " + processedProjects.size() + " preprocessed projects.");
+		}
+		
+		printMain("Processing projects...");
 		for (File file : projectsFolder.listFiles()) {
 			if (file.isDirectory() && (!filterEnabled || projects.contains(file.getAbsolutePath()))) {
 				long startProject = System.currentTimeMillis();
 				loopCounter++;
 				out.flush();
 				err.flush();
-				if (loopCounter % 25 == 0) {
+				//print memory updates every X projects
+				if (loopCounter % memoryUpdateFreq == 0) {
 					printHeapStatus();
 				}
+				// If project has already been processed and reprocessing is disabled.
 				if (processedProjects.contains(file.getPath()) && !forceReprocess) {
 					// deserialize project from storage
 					try {
@@ -114,15 +129,10 @@ public class Main {
 						String projectName = file.getName();
 						File serFile = new File(processedProjectsLoc + "/" + projectName + ".ser");
 						if (serFile.exists()) {
-							FileInputStream fis = new FileInputStream(
-									processedProjectsLoc + "/" + projectName + ".ser");
-							ObjectInputStream ois = new ObjectInputStream(fis);
-							Project project = (Project) ois.readObject();
-							ois.close();
-							reprocessProject(register, project);
+							reprocessProject(register, deserializeProject(projectName));
 							projectNum++;
-							printMain("Processed " + projectNum + " out of " + totalProjects + " projects.\nCompleted: "
-									+ file.getName() + " in " + printExecutionTime(startProject));
+							printMain("Processed " + projectNum + " out of " + totalProjects + " projects.");
+							printMain("Completed: " + file.getName() + " in " + printExecutionTime(startProject));
 							continue;
 						} else {
 							printMain("Serialized File could not be located. Processing normally...");
@@ -138,8 +148,8 @@ public class Main {
 					recordProgress(file, config);
 				}
 				projectNum++;
-				printMain("Processed " + projectNum + " out of " + totalProjects + " projects.\nCompleted: "
-						+ file.getName() + " in " + printExecutionTime(startProject));
+				printMain("Processed " + projectNum + " out of " + totalProjects + " projects.");
+				printMain("Completed: "	+ file.getName() + " in " + printExecutionTime(startProject));
 			}
 		}
 		printMain("Finished processing projects.");
@@ -147,9 +157,45 @@ public class Main {
 		CsvCreator csvCreator = new CsvCreator(config.getProperty("locations.data.results"));
 		csvCreator.createStream(CSV_NAME, "Project", "Url", "Location", "Defect");
 		register.finish(gitLocs, csvCreator);
-		err.close();
 		String endTime = printExecutionTime(startTime);
-		console.println(PREFIX + " Finished program in : " + endTime);
+		printMain("Finished program in : " + endTime);
+
+		exit(out, err);
+	}
+
+	private static void printStartup() {
+		printMain("Starting program...");
+		printMain("Starting with JVM max heap size: " +  Runtime.getRuntime().maxMemory() / MEGABYTE + " MB");
+	}
+
+	/**
+	 * Returns a Project object from a serialized file.
+	 * @param projectName
+	 * @return Project 
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	private static Project deserializeProject(String projectName)
+			throws FileNotFoundException, IOException, ClassNotFoundException {
+		FileInputStream fis = new FileInputStream(
+				processedProjectsLoc + "/" + projectName + ".ser");
+		ObjectInputStream ois = new ObjectInputStream(fis);
+		Project project = (Project) ois.readObject();
+		ois.close();
+		return project;
+	}
+
+	/**
+	 * Final method.
+	 */
+	private static void exit(PrintStream out, PrintStream err) {
+		err.flush();
+		out.flush();
+		processLog.flush();
+		err.close();
+		out.close();
+		processLog.close();
 	}
 
 	private static void printHeapStatus() {
@@ -161,49 +207,59 @@ public class Main {
 		 // Get amount of free memory within the heap in bytes. This size will increase // after garbage collection and decrease as new objects are created.
 		long heapFreeSize = Runtime.getRuntime().freeMemory(); 		
 		printMain("<------------------------------------------------------------------------------>");
-		printMain("Heap Size: " + (heapSize / MEGABYTE) + " Max size: " + (heapMaxSize / MEGABYTE) + " Free: " + (heapFreeSize / MEGABYTE));
+		printMain("Heap Size: " + (heapSize / MEGABYTE) + "MB Max size: " + (heapMaxSize / MEGABYTE) + "MB Free: " + (heapFreeSize / MEGABYTE) + "MB");
 		printMain("<------------------------------------------------------------------------------>");
 
 	}
 
 	private static void recordProgress(File file, Properties config) throws FileNotFoundException {
-		PrintStream print = new PrintStream(
-				new FileOutputStream(config.getProperty("locations.data.input.processlog"), true));
-		print.append(file.getPath());
-		print.append('\n');
-		print.close();
+		if(processLog == null) {
+			processLog = new PrintStream(
+					new FileOutputStream(config.getProperty("locations.data.input.processlog"), true));
+		}
+		processLog.append(file.getPath());
+		processLog.append('\n');
 	}
 
 	/**
-	 * Wrapper for boolean inference from String values.
+	 * Wrapper for boolean inference from String values. If key doesn't exist assume false.
 	 * 
 	 * @param key
 	 * @param config
 	 * @return
 	 */
 	private static boolean propertyToBoolean(String key, Properties config) {
-		return config.getProperty(key).equalsIgnoreCase("true");
+		if (config.containsKey(key)) {
+			return config.getProperty(key).equalsIgnoreCase("true");			
+		} 
+		return false;
 	}
 
 	private static void reprocessProject(Register register, Project project) throws FileNotFoundException {
 		register.check(project, true);
-		System.gc();
+		runGarbageCollection();
 	}
 
 	private static void printMain(String msg) {
-		System.out.println(PREFIX + msg);
+		String timeStamp = "";
+		if(printTimestamp) {
+			timeStamp = new SimpleDateFormat("[HH:mm:ss]").format(new Date());
+		}
+		
+		System.out.println(timeStamp + PREFIX + msg);
 		if (debugging && console != null) {
-			console.println(PREFIX + msg);
+			console.println(timeStamp + PREFIX + msg);
 		}
 	}
 
 	private static String printExecutionTime(long start) {
 		long duration = System.currentTimeMillis() - start;
-		// Low priority: formatting breaks when hours exceeds 1. 1 hour 66 mins... etc
-		return (String.format("%d days, %d hours, %d min, %d sec", TimeUnit.MILLISECONDS.toDays(duration),
-				TimeUnit.MILLISECONDS.toHours(duration), TimeUnit.MILLISECONDS.toMinutes(duration),
-				TimeUnit.MILLISECONDS.toSeconds(duration)
-						- TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))));
+		long days = TimeUnit.MILLISECONDS.toDays(duration);
+		long hours = TimeUnit.MILLISECONDS.toHours(duration) % 24;
+		long minutes = TimeUnit.MILLISECONDS.toMinutes(duration) % 60;
+		long seconds = TimeUnit.MILLISECONDS.toSeconds(duration)	- TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration));
+		
+		return (String.format("%d days, %d hours, %d min, %d sec", days, hours, minutes, seconds));
 	}
 
 	/**
@@ -264,16 +320,20 @@ public class Main {
 	 * @throws IOException
 	 */
 	private static void processProject(Register register, File file) throws IOException {
-		// String memory = Long.toString(((Runtime.getRuntime().totalMemory() -
-		// Runtime.getRuntime().freeMemory()) / 1024 / 1024));
 		Project project = createProject(file);
 		storeProject(project, file);
 		register.check(project, false);
-		System.gc();
+		runGarbageCollection();
+	}
 
-		// printMain("Memory usage: " + memory + " -> " +
-		// ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) /
-		// 1024 / 1024) + "\t\t" + file.getAbsolutePath());
+	private static void runGarbageCollection() {
+		long preGC = Runtime.getRuntime().totalMemory() / MEGABYTE;
+		System.gc();
+		long postGC = Runtime.getRuntime().totalMemory() / MEGABYTE; 	
+		long current = postGC - (Runtime.getRuntime().freeMemory() / MEGABYTE);
+		if (preGC > postGC) {
+			printMain("[GC] Freed up " + (preGC - postGC) + " MB after GC. Current memory usage: " + current + " MB");
+		}
 	}
 
 	/**
@@ -299,6 +359,8 @@ public class Main {
 	 */
 	private static void registerDetectors(Register register) throws IOException {
 		/*
+		 * Add detectors. 
+		 * 
 		 * register.add(new LongMethodDetector()); register.add(new
 		 * LongParamListDetector()); register.add(new LargeClassDetector());
 		 * register.add(new DataClassDetector()); register.add(new BlobDecorDetector());
@@ -337,7 +399,6 @@ public class Main {
 	 * @return Project object after processing the files.
 	 */
 	private static Project createProject(File projectFolder) {
-		// printMain("Project: " + projectFolder.getAbsolutePath());
 		List<String> allFiles = FileHelper.getPythonFilePaths(projectFolder);
 		Map<String, Module> trees = File2Tree.getAsts(allFiles);
 		ModelBuilder mb = new ModelBuilder(projectFolder, trees.values());

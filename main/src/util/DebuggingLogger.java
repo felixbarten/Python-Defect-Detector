@@ -90,7 +90,7 @@ public class DebuggingLogger {
 			debugFileStream.println(o);
 	}
 	
-	public void debugSet(Set<String> unknownTypeVars, String clsName) throws IOException {
+	public void debugIISet(Set<String> unknownTypeVars, String clsName) throws IOException {
 		if(this.IIPath == null) {
 			Properties config = Settings.getConfig();
 			this.IIPath =  FileHelper.stampedFileName(config.getProperty("locations.log.out"), "debugII", "log");

@@ -1,11 +1,14 @@
 package model;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import util.DebuggingLogger;
 
 /**
  * Model for project contains modules. 
@@ -13,9 +16,6 @@ import java.util.stream.Collectors;
  */
 public class Project implements Unlinkable, Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -2643092858223935288L;
 	private final Map<String, Module> modules;
 	private final File folder;
@@ -81,6 +81,11 @@ public class Project implements Unlinkable, Serializable {
 		Project project = (Project) o;
 
 		return this.getFolder().equals(project.getFolder());
+	}
 
+	@Override 
+	public void finalize() throws IOException {
+		DebuggingLogger.getInstance().debug("Project: " + this.getName() + " cleaned by GC.");
 	}
 }
+

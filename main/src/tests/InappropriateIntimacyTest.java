@@ -50,16 +50,11 @@ public class InappropriateIntimacyTest {
 			}
 			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	
 		
 		assert(b.getReferencedClassNames().size() == 1);
 		assert(a.getReferencedClassNames().size() == 1);
-		
-		
-
 	}
 
 	@Test
@@ -125,30 +120,27 @@ public class InappropriateIntimacyTest {
 			}
 			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	
-		// no way to assert the right stuff. 
+		// no way to assert the II diagnosis as it is not stored in memory. See testIntensiveCouplingProject.
 		assert(clsB.getReferencedClassNames().size() == 2);
 		assert(clsA.getReferencedClassNames().size() == 1);
 		assert(clsC.getReferencedClassNames().size() == 1);
 		assert(clsD.getReferencedClassNames().size() == 2);
-
-		
-
 	}
 	
 	/**
-	 * Disclaimer: This method will run like a regular project which has caveats. Unless your data folder in \temp contains data for these files it will not find defects. 
+	 * Disclaimer: This method will run like a regular project which has caveats. 
+	 * Unless your data folder in \temp contains data for these files it will not find defects. 
 	 * 
+	 * If you would like your data files not to affect testing data create another config file and run with different launch parameters.
+	 * Need to manually check the outcome unfortunately. 
 	 */
 	@Test
 	public void testIntensiveCouplingProject() {
 		Project testProject = TestHelper.getProject("main/src/tests/samples/intensive_coupling_two");
-	
-		Map<String, Class> classes = TestHelper.getClasses(testProject);
-		
+			
 		try {
 			// fetch default config. 
 			Properties config = Settings.getConfig();			
@@ -163,10 +155,10 @@ public class InappropriateIntimacyTest {
 			csvCreator.createStream("RESULTS", "Project", "Url", "Location", "Defect");
 			register.finish(null, csvCreator);
 			
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (FileNotFoundException fof) {
+			fof.printStackTrace();
+		} catch (IOException io) {
+			io.printStackTrace();
 		}
 	}
 	
