@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import analysis.Metric;
@@ -17,8 +18,8 @@ import util.Settings;
 import util.StringHelper;
 
 /**
- * Inappropriate Intimacy Detector using Fowler's Code Smell definition.
- * Created by felixb on 9-4-2018
+ * Inappropriate Intimacy Detector using Fowler's Code Smell definition. Created
+ * by felixb on 9-4-2018
  */
 public class InappropriateIntimacyDetector extends Detector {
 
@@ -29,6 +30,7 @@ public class InappropriateIntimacyDetector extends Detector {
 
 	private DebuggingLogger debug;
 	private DataStore global;
+	private boolean verbose = false;
 
 	private int couplingThreshold = 0;
 
@@ -40,8 +42,12 @@ public class InappropriateIntimacyDetector extends Detector {
 
 		// get from settings
 		try {
-			this.couplingThreshold = Integer
-					.parseInt(Settings.getConfig().getProperty("detectors.ii.couplingthreshold"));
+			Properties config = Settings.getConfig();
+			this.couplingThreshold = Integer.parseInt(config.getProperty("detectors.ii.couplingthreshold"));
+			if (config.containsKey("detectors.ii.verbose")
+					&& config.getProperty("detectors.ii.verbose").equalsIgnoreCase("true")) {
+				this.verbose = true;
+			}
 		} catch (NumberFormatException e) {
 			setDefaultThresholds();
 		}
@@ -49,6 +55,7 @@ public class InappropriateIntimacyDetector extends Detector {
 		if (couplingThreshold == 0) {
 			setDefaultThresholds();
 		}
+
 		System.out.println("[II] Initialized Detector with threshold: " + this.couplingThreshold);
 	}
 
@@ -66,7 +73,7 @@ public class InappropriateIntimacyDetector extends Detector {
 	@Override
 	protected Boolean isPreliminarilyDefective(model.Class cls) {
 		boolean preliminarilyDefective = hasImports(cls);
-		if(preliminarilyDefective) {
+		if (preliminarilyDefective && verbose) {
 			debug.debug("[II] Class: " + cls.getShortName() + " is preliminary defective: " + preliminarilyDefective);
 		}
 		/*
@@ -81,23 +88,25 @@ public class InappropriateIntimacyDetector extends Detector {
 		model.Module module = cls.getParent();
 		if (module != null && module instanceof model.Module) {
 			return module.getClassImports().size() > 0 || module.getModuleImports().size() > 0;
-			//return module.getClassImports().size() > 0 || module.getModuleImports().size() > 0 || module.getLibraryImports().size() > 0;
+			// return module.getClassImports().size() > 0 ||
+			// module.getModuleImports().size() > 0 || module.getLibraryImports().size() >
+			// 0;
 		}
 		return false;
 	}
 
 	@Override
 	protected Boolean confirmDefect(String fullPath, String projectPath) {
-		/* 
-		 * Step 1: check referenced classes.
-		 * Step 2: check if any of ref. classes has coupling with this class.
-		 * Step 3: check if the amount of coupling is more or equal to the threshold.
+		/*
+		 * Step 1: check referenced classes. Step 2: check if any of ref. classes has
+		 * coupling with this class. Step 3: check if the amount of coupling is more or
+		 * equal to the threshold.
 		 */
 
 		List<IIMatch> matches = new ArrayList<IIMatch>();
 		List<IIMatch> positiveMatches = new ArrayList<IIMatch>();
 
-		// Map of (String) class path => amount of times referenced (Long) 
+		// Map of (String) class path => amount of times referenced (Long)
 		Map<String, Long> coupledClasses = getCouplingMap(fullPath);
 
 		// This might be time intensive.
@@ -107,16 +116,16 @@ public class InappropriateIntimacyDetector extends Detector {
 				matches.add(new IIMatch(path, fullPath, coupledClasses.get(path), result));
 			}
 		}
-		// validate matches. 
+		// validate matches.
 		matches.forEach((m) -> {
-			if(m.validate(couplingThreshold)) {
+			if (m.validate(couplingThreshold)) {
 				positiveMatches.add(m);
 			}
 		});
-		
+
 		printResults(positiveMatches);
 
-		return positiveMatches.size() > 0 ;
+		return positiveMatches.size() > 0;
 	}
 
 	private void printResults(List<IIMatch> positiveMatches) {
@@ -127,11 +136,14 @@ public class InappropriateIntimacyDetector extends Detector {
 	}
 
 	/**
-	 * Check if there is a bidirectional relationship between classes. 
-	 * Retrieves the coupling data of {@code path} and sees if it contains {@code origPath}. 
-	 * @param path to class file
-	 * @param origPath path to original class 
-	 * @return Long of how many times {@code path} has references to {@code origPath}. If {@code origPath} cannot be found in coupling data return {@code null}
+	 * Check if there is a bidirectional relationship between classes. Retrieves the
+	 * coupling data of {@code path} and sees if it contains {@code origPath}.
+	 * 
+	 * @param path     to class file
+	 * @param origPath path to original class
+	 * @return Long of how many times {@code path} has references to
+	 *         {@code origPath}. If {@code origPath} cannot be found in coupling
+	 *         data return {@code null}
 	 */
 	private Long checkForBidirectionalMapping(String path, String origPath) {
 		Map<String, Long> map = getCouplingMap(path);
@@ -145,7 +157,8 @@ public class InappropriateIntimacyDetector extends Detector {
 	}
 
 	/**
-	 * Returns a map of referenced classes with {@code fullPath} as the origin. 
+	 * Returns a map of referenced classes with {@code fullPath} as the origin.
+	 * 
 	 * @param fullPath
 	 * @return map of coupling data.
 	 */
@@ -154,7 +167,7 @@ public class InappropriateIntimacyDetector extends Detector {
 		if (couplingData == null) {
 			return Collections.<String, Long>emptyMap();
 		}
-		
+
 		Map<String, Long> map = new HashMap<String, Long>();
 		for (String data : couplingData) {
 			String[] arr = data.split("&ref=");
@@ -169,7 +182,7 @@ public class InappropriateIntimacyDetector extends Detector {
 	}
 
 	/**
-	 * Helper class for storing Matching data. 
+	 * Helper class for storing Matching data.
 	 * 
 	 * @author felix
 	 *
@@ -198,13 +211,14 @@ public class InappropriateIntimacyDetector extends Detector {
 		public final Long getOccurrence1() {
 			return occurrencesAtoB;
 		}
-		
+
 		public final Long getOccurrence2() {
 			return occurrencesBtoA;
 		}
 
-		public boolean validate(Integer threshold) { 
-			return this.occurrencesAtoB != null && this.occurrencesBtoA != null && (this.occurrencesAtoB >= threshold && this.occurrencesBtoA >= threshold);
+		public boolean validate(Integer threshold) {
+			return this.occurrencesAtoB != null && this.occurrencesBtoA != null
+					&& (this.occurrencesAtoB >= threshold && this.occurrencesBtoA >= threshold);
 		}
 
 		@Override
@@ -212,7 +226,7 @@ public class InappropriateIntimacyDetector extends Detector {
 			StringBuilder sb = new StringBuilder();
 			sb.append("Class A: " + pathClsA);
 			sb.append("\nClass B: " + pathClsB);
-			sb.append("\nA to B: " + occurrencesAtoB); 
+			sb.append("\nA to B: " + occurrencesAtoB);
 			sb.append("\nB to A: " + occurrencesBtoA);
 			sb.append("\nValid: " + (occurrencesAtoB >= 3 && occurrencesBtoA >= 3));
 			return sb.toString();

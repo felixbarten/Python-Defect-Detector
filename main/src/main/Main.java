@@ -232,7 +232,7 @@ public class Main {
 		 // Get amount of free memory within the heap in bytes. This size will increase // after garbage collection and decrease as new objects are created.
 		long heapFreeSize = Runtime.getRuntime().freeMemory() / MEGABYTE; 		
 		printMain("<------------------------------------------------------------------------------>");
-		printMain("Heap Size: " + heapSize + "MB Max size: " + heapMaxSize + "MB Free: " + heapFreeSize + "MB");
+		printMain("Current memory use: " + (heapSize - heapFreeSize) + " MB Max size: " + heapMaxSize + " MB");
 		printMain("<------------------------------------------------------------------------------>");
 
 	}

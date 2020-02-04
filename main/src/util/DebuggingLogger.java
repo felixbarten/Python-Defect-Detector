@@ -86,8 +86,9 @@ public class DebuggingLogger {
 	}
 	
 	private void debugFile(Object o) {
-		if(debugFileStream != null)
+		if(debugFileStream != null) {
 			debugFileStream.println(o);
+		}
 	}
 	
 	public void debugIISet(Set<String> unknownTypeVars, String clsName) throws IOException {

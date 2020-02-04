@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import analysis.storage.PrimitiveFloatMap;
 import analysis.storage.PrimitiveIntMap;
@@ -66,6 +67,7 @@ public class RefusedBequestDetector extends Detector {
 	
 	private int memberThreshold = 0;
 	private int overrideThreshold = 0;
+	private boolean verbose = false;
 
 	public RefusedBequestDetector() throws IOException {
 		super();
@@ -73,8 +75,13 @@ public class RefusedBequestDetector extends Detector {
 		global = DataStore.getInstance();
 		// get from settings
 		try {
-			this.overrideThreshold = Integer.parseInt(Settings.getConfig().getProperty("detectors.rb.overridethreshold"));
-			this.memberThreshold = Integer.parseInt(Settings.getConfig().getProperty("detectors.rb.memberthreshold"));
+			Properties config = Settings.getConfig();
+			this.overrideThreshold = Integer.parseInt(config.getProperty("detectors.rb.overridethreshold"));
+			this.memberThreshold = Integer.parseInt(config.getProperty("detectors.rb.memberthreshold"));
+			if (config.containsKey("detectors.rb.verbose")
+					&& config.getProperty("detectors.rb.verbose").equalsIgnoreCase("true")) {
+				this.verbose = true;
+			}
 		} catch(NumberFormatException e) {
 			setDefaultThresholds();
 		}
@@ -115,7 +122,7 @@ public class RefusedBequestDetector extends Detector {
 	@Override
 	protected Boolean isPreliminarilyDefective(Class cls) {
 		boolean hasParent = hasParent(cls);
-		if(hasParent) {
+		if(hasParent && verbose) {
 			debug.debug("[RB] Class: " +  cls.getShortName() + " is preliminary defective: " + hasParent);
 		}
 		return hasParent; 

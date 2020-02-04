@@ -38,17 +38,12 @@ public class Metrics {
 	private final Map<Metric, SetStrMap> strMetrics;
 	private DataStore globalDataStore;
 
-	private Map<Project, Integer> projectStore;
-	private Map<model.Class, Integer> classStore;
 	private Project project;
 	private DebuggingLogger debug = DebuggingLogger.getInstance();
 
 	public Metrics() throws IOException {
 		this.collector = new Collector();
 		this.finishedCollecting = false;
-
-		this.projectStore = new HashMap<>();
-		this.classStore = new HashMap<>();
 		this.globalDataStore = DataStore.getInstance();
 
 		this.intMetrics = new HashMap<>();
@@ -279,7 +274,7 @@ public class Metrics {
 			currentCls = m;
 			projectAMW += amw;
 
-			classStore.put(m, m.getLoc());
+			//classStore.put(m, m.getLoc());
 			classCount++;
 			return null;
 		}
@@ -342,7 +337,8 @@ public class Metrics {
 				if (unknownTypeVars.contains(a.getName())) {
 					if (instancedVars.containsKey(a.getName())) {
 						// when encountering a double key grab the first one. Tracking them all introduces considerable complexity. 
-						debug.debug("Double key: " + a.getName());
+						//debug.debug("Double key: " + a.getName());
+						
 					}
 					instancedVars.put(a.getName(), a.getValue());
 				}
@@ -352,7 +348,7 @@ public class Metrics {
 				if (unknownTypeVars.contains(a.getName())) {
 					if (instancedVars.containsKey(a.getName())) {
 						// same as with the Class keys in set. Class assigns take precedence over subroutine assigns. 
-						debug.debug("Double key: " + a.getName());
+						//debug.debug("Double key: " + a.getName());
 					}
 					instancedVars.put(a.getName(), a.getValue());
 				}
