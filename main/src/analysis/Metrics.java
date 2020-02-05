@@ -261,7 +261,7 @@ public class Metrics {
 			globalDataStore.getPrimitiveIntMapStore(Metric.CLASS_PROTECTED_FIELDS.toString()).add(m.getFullPath(),
 					m.getProtectedVars().getAsSet().size());
 
-			globalDataStore.getPrimitiveIntMapStore(Metric.CLASS_WMC.toString()).add(m.getFullPath(), m.getWMC());
+			globalDataStore.getPrimitiveIntMapStore(Metric.CLASS_WMC.toString()).add(m.getFullPath(), Math.round(m.getWMC()));
 			globalDataStore.getPrimitiveFloatMapStore(Metric.CLASS_AMW.toString()).add(m.getFullPath(), amw);
 			globalDataStore.getPrimitiveIntMapStore(Metric.CLASS_LOC.toString()).add(m.getFullPath(), m.getLoc());
 			globalDataStore.getPrimitiveIntMapStore(Metric.CLASS_METHODS.toString()).add(m.getFullPath(), m.getNOM());

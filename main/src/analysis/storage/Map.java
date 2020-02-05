@@ -96,7 +96,7 @@ public abstract class Map<T> {
 	 * Deserialize is a weird name as data is stored in cleartext. 
 	 * @throws IOException
 	 */
-	public void deserialize() throws IOException {
+	public void deserialize() throws IOException, NumberFormatException {
 		// read all data
 		this.deserialize(true);
 	}
@@ -136,6 +136,10 @@ public abstract class Map<T> {
 
 	public String getNextVal() {
 		return this.currentVal;
+	}
+	
+	public String getFilePath() {
+		return this.filePath;
 	}
 
 	public void clean() {

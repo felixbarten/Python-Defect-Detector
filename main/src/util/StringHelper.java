@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -14,7 +15,7 @@ import java.util.List;
 public class StringHelper {
 	public static List<String> explode(String str, String delimiter) {
 		String escapedDelimiter = delimiter.replaceAll("([\\\\\\.\\[\\{\\(\\*\\+\\?\\^\\$\\|])", "\\\\$1");
-		return Arrays.asList(str.split(escapedDelimiter));
+		return new LinkedList<String>(Arrays.asList(str.split(escapedDelimiter)));
 	}
 
 	public static String implode(List<String> strings, String delimiter) {

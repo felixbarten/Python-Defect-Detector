@@ -96,10 +96,26 @@ public class DataStore {
 	 */
 	@SuppressWarnings("rawtypes")
 	public void deserializeData() throws IOException {
-		for (analysis.storage.Map m : this.dataStores.values()) {
-			m.deserialize();
-		}
-
+		String currentMap = null;
+		try {
+			for (analysis.storage.Map m : this.dataStores.values()) {
+				currentMap = m.getFilePath();
+				m.deserialize();
+			}
+		} catch (IOException io) {
+			io.printStackTrace();
+			System.out.println("IO Exception with map: " + currentMap);
+			io.printStackTrace(System.out);
+		} catch (NumberFormatException e) {
+		e.printStackTrace();
+		System.out.println("NumberFormat Exception with map: " + currentMap);
+		e.printStackTrace(System.out);
+	} catch (Exception e) {
+		e.printStackTrace();
+		System.out.println("Unknown Exception with map: " + currentMap);
+		e.printStackTrace(System.out);
+	}
+		
 	}
 	
 }

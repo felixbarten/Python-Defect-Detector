@@ -2,6 +2,7 @@ package analysis.detector;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -134,7 +135,7 @@ public class RefusedBequestDetector extends Detector {
 		boolean bequest = cls_ignores_bequest(fullPath);
 		boolean complex = clsComplex(fullPath, projectPath);
 
-		if (bequest && complex) {
+		if (bequest && complex && verbose) {
 			debug.debug("[RB] Class with path: " + fullPath + " has Refused (Parent) Bequest.");
 		}
 		
@@ -167,9 +168,17 @@ public class RefusedBequestDetector extends Detector {
 		 */
 		//Integer memberCount = cls.getProtectedParentVars().getAsSet().size();
 		Integer parentMember = 0;
-		for (String parent : global.getStrSetMap(CLASS_PARENTS).get(path)) {
-			parentMember += (Integer) global.getPrimitiveIntMapStore(CLASS_PROTECTED_FIELDS).get(parent);
+		Set<String> classParents = global.getStrSetMap(CLASS_PARENTS).get(path);
+		
+		if(classParents != null) {
+			for (String parent : classParents) {
+				Integer temp = (Integer) global.getPrimitiveIntMapStore(CLASS_PROTECTED_FIELDS).get(parent);	
+				if (temp != null) {
+					parentMember += temp;	
+				}
+			}
 		}
+		
 		boolean condition = parentMember > memberThreshold;
 		
 		return condition;
@@ -193,20 +202,22 @@ public class RefusedBequestDetector extends Detector {
 		int methodsCount = 0;
 		float ratio = 0.33f;
 		
-		Integer classRefs = (Integer) global.getPrimitiveIntMapStore(CLASS_REF_CLS_COUNT).get(path);
-		Integer varRefs = (Integer) global.getPrimitiveIntMapStore(CLASS_REF_VAR_COUNT).get(path);
+		//Integer classRefs = (Integer) global.getPrimitiveIntMapStore(CLASS_REF_CLS_COUNT).get(path);
+		//Integer varRefs = (Integer) global.getPrimitiveIntMapStore(CLASS_REF_VAR_COUNT).get(path);
 		
 		Set<String> parents = global.getStrSetMap(CLASS_PARENTS).get(path);
 		List<String> parentVars = new ArrayList<>();
 		Set<String> parentMethods = new HashSet<>();
-		for (String parent : parents) {
-			Set<String> fieldnames =  global.getStrSetMap(CLASS_FIELDNAMES).get(parent);
-			if (fieldnames != null) {
-				parentVars.addAll(fieldnames);
-			}
-			Set<String> definedMethods = global.getStrSetMap(CLASS_DEF_METHODS).get(parent);
-			if (definedMethods != null) {
-				parentMethods.addAll(definedMethods);
+		if (parents != null) {
+			for (String parent : parents) {
+				Set<String> fieldnames =  global.getStrSetMap(CLASS_FIELDNAMES).get(parent);
+				if (fieldnames != null) {
+					parentVars.addAll(fieldnames);
+				}
+				Set<String> definedMethods = global.getStrSetMap(CLASS_DEF_METHODS).get(parent);
+				if (definedMethods != null) {
+					parentMethods.addAll(definedMethods);
+				}
 			}
 		}
 		
@@ -259,13 +270,13 @@ public class RefusedBequestDetector extends Detector {
 		
 		Set<String> parentSubRoutines = new HashSet<>();
 		Set<String> superClasses = global.getStrSetMap(CLASS_PARENTS).get(path);
-		
-		for(String parent : superClasses) {
-			Set<String> subroutines = global.getStrSetMap(CLASS_DEF_METHODS).get(parent);
-			if (subroutines != null) 
-				parentSubRoutines.addAll(subroutines);
+		if(superClasses != null) {
+			for(String parent : superClasses) {
+				Set<String> subroutines = global.getStrSetMap(CLASS_DEF_METHODS).get(parent);
+				if (subroutines != null) 
+					parentSubRoutines.addAll(subroutines);
+			}
 		}
-		
 		Set<String> defMethods = global.getStrSetMap(CLASS_DEF_METHODS).get(path);
 		Set<String> intersection = new HashSet<String>();	
 		// duplicate set
@@ -301,8 +312,10 @@ public class RefusedBequestDetector extends Detector {
 	private boolean clsSizeAboveAvg(String path, String projectPath) {
 		Integer LOC = (Integer) global.getPrimitiveIntMapStore(CLASS_LOC).get(path);
 		Integer clsLOC = (Integer) global.getPrimitiveIntMapStore(CLASS_AVG_LOC).get(projectPath);
-		boolean sizeAboveAvg =  LOC >= clsLOC;
-		
+		boolean sizeAboveAvg = false;
+		if(LOC != null && clsLOC != null) {
+			sizeAboveAvg =  LOC >= clsLOC;
+		}
 		return sizeAboveAvg;
 	}
 
@@ -315,16 +328,18 @@ public class RefusedBequestDetector extends Detector {
 	 */
 	private boolean funcComplexityAboveAvg(String path, String projectPath) {
 		// get functional CC for project				
-		Float projectAvg =  global.getPrimitiveFloatMapStore(PROJECT_AVG_AMW).get(projectPath);
+		Float projectAvg = (Float) global.getPrimitiveFloatMapStore(PROJECT_AVG_AMW).get(projectPath);
 		Float AMW = 0.0f;
 		Integer NOM = (Integer) global.getPrimitiveIntMapStore(CLASS_METHODS).get(path);
 		Integer WMC = (Integer) global.getPrimitiveIntMapStore(CLASS_WMC).get(path);
 		// Check if class contains methods 
 
-		AMW = (float)WMC / checkIfZero(NOM);
-		
-		boolean condition = AMW > projectAvg;
-		
+		boolean condition = false;
+		// Really java you're making me check EVERY null?
+		if(WMC != null && NOM != null && projectAvg != null) {
+			AMW = (float)WMC / checkIfZero(NOM);
+			condition = AMW > projectAvg;
+		}
 		return condition;
 	}
 
@@ -342,7 +357,11 @@ public class RefusedBequestDetector extends Detector {
 		Float avgWMC = (Float) global.getPrimitiveFloatMapStore(CLASS_AVG_CC).get(projectPath);
 		Integer WMC = (Integer) global.getPrimitiveIntMapStore(CLASS_WMC).get(path);
 		//debug.debug(cls.getShortName() + " has CC above avg: " + cls.getWMC() + " > " + avgWMC);
-		boolean condition = WMC > avgWMC;
+		
+		boolean condition = false;
+		if (WMC != null && avgWMC != null) {
+			condition = WMC > avgWMC;
+		}
 		return condition;
 	}
 	

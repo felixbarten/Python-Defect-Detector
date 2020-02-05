@@ -130,7 +130,7 @@ public class InappropriateIntimacyDetector extends Detector {
 
 	private void printResults(List<IIMatch> positiveMatches) {
 		for (IIMatch m : positiveMatches) {
-			System.out.println("[II] Detected II between " + m.pathClsA + " and " + m.pathClsB);
+			System.out.println("[II] Detected II between " + m.getPathA() + " and " + m.getPathB() + ". " + m.getOccurrencesAtoB() + "<=>" + m.getOccurrencesBtoA());
 			debug.debug(m);
 		}
 	}
@@ -208,11 +208,11 @@ public class InappropriateIntimacyDetector extends Detector {
 			return pathClsB;
 		}
 
-		public final Long getOccurrence1() {
+		public final Long getOccurrencesAtoB() {
 			return occurrencesAtoB;
 		}
 
-		public final Long getOccurrence2() {
+		public final Long getOccurrencesBtoA() {
 			return occurrencesBtoA;
 		}
 

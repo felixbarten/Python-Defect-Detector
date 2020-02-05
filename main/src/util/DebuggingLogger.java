@@ -67,10 +67,10 @@ public class DebuggingLogger {
 		try {
 			String cls1 = path1.split(">")[1];
 			String cls2 = path2.split(">")[1];
-			
-			debugStream.println("[II] II Found between class: " + cls1 + " " + cls2);
+			debug("[II] Detected II between " + cls1 + " and " + cls2 + ". " + m.getOccurrencesAtoB() + "<=>" + m.getOccurrencesBtoA());
+
 		} catch (IndexOutOfBoundsException e) {
-			debugStream.println("[II] II found between: " + path1 + " " + path2);
+			debug("[II] II found between: " + path1 + " " + path2);
 		}
 	}
 		
