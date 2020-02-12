@@ -27,6 +27,8 @@ public class FilterAssistant {
 	private static int classCountThreshold = 20;
 	private static int parseRatioThreshold = 90;
 	private static String STORAGE = "filtered";
+	private static String STORAGESTATS = "filteredInclStats";
+
 	private static String TOTALS = "totalStats";
 	private static String EXTENSION = "txt";
 	private static final String delimiter = ";";
@@ -65,7 +67,13 @@ public class FilterAssistant {
 		if(!resultsStorage.exists()) {
 			resultsStorage.createNewFile();
 		}
+		
+		File resultsStatsStorage = new File(FileHelper.stampedFileName(config.getProperty("locations.data.results"), STORAGESTATS, EXTENSION));
+		if(!resultsStatsStorage.exists()) {
+			resultsStatsStorage.createNewFile();
+		}
 		PrintStream results = new PrintStream(resultsStorage);
+		PrintStream resultsStats = new PrintStream(resultsStatsStorage);
 		int projectCount = 0, accepted = 0, rejected = 0;		
 		// layout of stats file: project;git link;modules;LOC;classes;parse ratio
 		File statsCSV = new File(path);
@@ -81,10 +89,12 @@ public class FilterAssistant {
 					accepted++;
 					//results.println(StringHelper.implode(Arrays.asList(data), delimiter));
 					results.println(data[0]);
+					resultsStats.println(StringHelper.implode(Arrays.asList(data), delimiter));
 					moduleCount += Long.parseLong(data[2]);
 					classCount += Long.parseLong(data[4]);
 					locCount += Long.parseLong(data[3]);
 					results.flush();
+					resultsStats.flush();
 				} else {
 					rejected++;
 					System.out.println("Rejected: " + data[0]);
@@ -101,6 +111,7 @@ public class FilterAssistant {
 			}
 		}
 		results.close();
+		resultsStats.close();
 		File totalsStorage = new File(FileHelper.stampedFileName(config.getProperty("locations.data.results"), TOTALS, EXTENSION));
 		if (!totalsStorage.exists()) {
 			totalsStorage.createNewFile();

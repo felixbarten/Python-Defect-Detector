@@ -217,10 +217,12 @@ public class Main {
 	private static void exit(PrintStream out, PrintStream err) {
 		err.flush();
 		out.flush();
-		processLog.flush();
 		err.close();
 		out.close();
-		processLog.close();
+		if (processLog != null) {
+			processLog.flush();
+			processLog.close();
+		}
 	}
 
 	private static void printHeapStatus() {
