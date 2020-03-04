@@ -30,7 +30,7 @@ public class Class extends ContentContainer implements Serializable {
 
 	private final VarDefinitions inheritedVars;
 	private Integer complexity;
-	private float WMC;
+	private Integer WMC;
 	private float AMW;
 
 	/**
@@ -300,14 +300,17 @@ public class Class extends ContentContainer implements Serializable {
 	 */
 	public Integer getCC() {
 		if (complexity == null) {
-			complexity = calculateCC();
+			int cc = calculateCC();
+			complexity = cc;
+			WMC = cc;
+
 		}
 		return complexity;
 	}
 
 	public float getAMW() {
 		if (definedSubroutines.size() > 0) {
-			AMW = getWMC() / definedSubroutines.size();
+			AMW = getWMC() / getNOM();
 		}
 		return AMW;
 	}
@@ -315,7 +318,7 @@ public class Class extends ContentContainer implements Serializable {
 	public float getWMC() {
 		return getCC();
 	}
-
+	
 	public Set<String> getSubroutineNames() {
 		Set<String> names = new HashSet<String>();
 		for (Subroutine s : definedSubroutines.values()) {
