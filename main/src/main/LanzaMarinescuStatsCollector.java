@@ -31,7 +31,7 @@ public class LanzaMarinescuStatsCollector {
 		} else {
 			config = Settings.getConfig();
 		}
-		
+		System.out.println("Starting Stats Collection.");
 		PrintStream out = new PrintStream(new FileOutputStream(FileHelper.stampedFileName(config.getProperty("locations.log.out"), "out", "log")));
 		PrintStream err = new PrintStream(new FileOutputStream(FileHelper.stampedFileName(config.getProperty("locations.log.error"), "err", "log")));
 		//System.setOut(out);
@@ -42,6 +42,7 @@ public class LanzaMarinescuStatsCollector {
 		LanzaMarinescuStatsCsvCreator statsCsvCreator = new LanzaMarinescuStatsCsvCreator(subfolders, config);
 		statsCsvCreator.createStatsCsv();
 		statsCsvCreator.close();
+		System.out.println("Finished Stats Collection.");
 	}
 
 	private static void handleException(Exception ex) {

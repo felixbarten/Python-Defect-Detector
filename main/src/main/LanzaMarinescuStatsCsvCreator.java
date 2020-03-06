@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -69,13 +71,8 @@ public class LanzaMarinescuStatsCsvCreator extends CsvCreator {
 				System.gc();
 			} else {
 				if (projects.contains(f.getAbsolutePath())) {
-					System.out.print(
-							((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024));
 					this.createStatsCsv(f);
 					System.gc();
-					System.out.println(" -> "
-							+ ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024)
-							+ "\t\t" + f.getAbsolutePath());
 				}
 			}
 		}
@@ -83,7 +80,7 @@ public class LanzaMarinescuStatsCsvCreator extends CsvCreator {
 
 	private void createClassStream() throws IOException {
 		this.createStream(CLASS_STREAM_NAME, "project", "module", "class name", "# of private variables",
-				"# of protected variables", "# of public variables", "# of accessors", "LCOM", "LOC", "# of parents",
+				"# of protected variables", "# of public variables", "# of accessors", "LCOM", "LOC", "CC", "# of parents",
 				"# of methods with no params", "# of used globals", "# of defined globals", "# of methods",
 				"total method AID", "total method ALD", "average method AID", "average method ALD");
 	}
@@ -93,17 +90,16 @@ public class LanzaMarinescuStatsCsvCreator extends CsvCreator {
 	}
 
 	private void createProjectStream() throws IOException {
-		this.createStream(PROJECT_STREAM_NAME, "project", "git link", "modules", "LOC", "classes", "parse ratio");
+		this.createStream(PROJECT_STREAM_NAME, "project", "git link", "modules", "LOC", "CC", "classes", "parse ratio");
 	}
 
 	private void createMetricsStream() throws IOException {
 		this.createStream(METRICS_STREAM_NAME, "project", "CYCLO/LOC", "LOC/Method", "NOM/Class", "LOC", "CC", "NOM",
-				"classes", "parse ratio");
+				"classes", "modules",  "parse ratio");
 	}
 
 	private void createStatsCsv(File projectFolder) {
-		System.out.println(
-				"----------------------------------------------- NEW PROJECT -----------------------------------------------");
+		System.out.println("----------------------------------------------- NEW PROJECT -----------------------------------------------");
 		System.out.println("Name: " + projectFolder.getAbsolutePath());
 		try {
 			List<String> allFiles = FileHelper.getPythonFilePaths(projectFolder);
@@ -136,19 +132,46 @@ public class LanzaMarinescuStatsCsvCreator extends CsvCreator {
 			}
 			int moduleCount = project.getModules().size();
 			Double corrParse = correctlyParsed.doubleValue() / moduleCount;
-			this.printProjectLine(project.getPath(), link, moduleCount, LOC, classCount,
+			this.printProjectLine(project.getPath(), link, moduleCount, LOC, CC, classCount,
 					corrParse);
 			// maybe more low level would be better and then add all values divided by the
 			// amount of figures.
-
-			Double cycloLOC = (double) (CC / LOC);
-			Double locMethod = (double) (LOC / NOM);
-			Double nomClass = (double) (NOM / classCount);
-
-			this.printMetricsLine(project.getPath(), moduleCount, LOC, CC, NOM,  classCount, corrParse, cycloLOC,
-					nomClass, locMethod);
-
+			BigDecimal bdLOC, bdCC, bdNOM;
+			bdLOC = new BigDecimal(LOC);
+			bdCC = new BigDecimal(CC);
+			bdNOM = new BigDecimal(NOM);
 			
+			MathContext context = new MathContext(32);
+			
+			BigDecimal cycloLOC =  new BigDecimal(0);
+			BigDecimal locMethod = new BigDecimal(0);
+			BigDecimal nomClass = new BigDecimal(0);
+
+			// div/0
+			if(bdLOC.intValue() != 0) {
+				cycloLOC = bdCC.divide(bdLOC,context);
+			} else {
+				cycloLOC = bdCC.divide(new BigDecimal(1),context);
+			}
+			
+			if(bdNOM.intValue() != 0) {
+				locMethod = bdLOC.divide(bdNOM, context);
+			} else {
+				locMethod = bdLOC.divide(new BigDecimal(1), context);
+			}
+			
+			if(classCount != 0) {
+				nomClass = bdNOM.divide(new BigDecimal(classCount), context);
+			} else {
+				nomClass = bdNOM.divide(new BigDecimal(1), context);
+			}
+
+			this.printMetricsLine(project.getPath(), moduleCount, LOC, CC, NOM,  
+					classCount, 
+					corrParse, 
+					cycloLOC,
+					nomClass, 
+					locMethod);
 			
 		} catch (Exception ex) {
 			System.err.println("EXCEPTION: " + ex.getMessage());
@@ -160,15 +183,20 @@ public class LanzaMarinescuStatsCsvCreator extends CsvCreator {
 	}
 
 	private void printMetricsLine(String projectPath, Integer moduleCount, Long LOC, Integer CC, Integer NOM,
-			Integer classCount, Double ParseRatio, Double cycloLOC, Double nomClass, Double locMethod) {
+			Integer classCount, 
+			Double ParseRatio,
+			BigDecimal cycloLOC, 
+			BigDecimal nomClass, 
+			BigDecimal locMethod) {
+		
 		List<String> statsLine = this.createMetricsLine(projectPath, moduleCount, LOC, CC, NOM, classCount, ParseRatio,
 				cycloLOC, nomClass, locMethod);
 		this.addLine(METRICS_STREAM_NAME, statsLine);
 	}
 
-	private void printProjectLine(String projectPath, String gitLink, Integer moduleCount, Long loc, Integer classCount,
+	private void printProjectLine(String projectPath, String gitLink, Integer moduleCount, Long loc, Integer CC,  Integer classCount,
 			Double parseRatio) {
-		List<String> projectLine = this.createProjectLine(projectPath, gitLink, moduleCount, loc, classCount,
+		List<String> projectLine = this.createProjectLine(projectPath, gitLink, moduleCount, loc, CC, classCount,
 				parseRatio);
 		this.addLine(PROJECT_STREAM_NAME, projectLine);
 	}
@@ -183,14 +211,18 @@ public class LanzaMarinescuStatsCsvCreator extends CsvCreator {
 		this.addLine(CLASS_STREAM_NAME, classLine);
 	}
 
-	private List<String> createMetricsLine(String projectPath, Integer moduleCount, Long loc, Integer cc,
-			Integer classCount, Integer NOM, Double parseRatio, Double cycloLoc, Double nomClass, Double locMethod) {
+	private List<String> createMetricsLine(String projectPath, 
+			Integer moduleCount, Long loc, Integer cc,
+			Integer NOM, Integer classCount,
+			Double parseRatio, BigDecimal cycloLOC,
+			BigDecimal nomClass, BigDecimal locMethod) {
+		
 		Double parsePercentage = parseRatio * 100;
 
 		List<String> line = new ArrayList<>();
 		line.add(projectPath);
 		// line.add(moduleCount);
-		line.add(String.valueOf(cycloLoc));
+		line.add(String.valueOf(cycloLOC));
 		line.add(String.valueOf(locMethod));
 		line.add(String.valueOf(nomClass));
 
@@ -199,11 +231,13 @@ public class LanzaMarinescuStatsCsvCreator extends CsvCreator {
 		line.add(NOM.toString());
 
 		line.add(classCount.toString());
+		line.add(moduleCount.toString());
 		line.add(parsePercentage.toString());
 		return line;
 	}
 
-	private List<String> createProjectLine(String projectPath, String gitLink, Integer moduleCount, Long loc,
+	private List<String> createProjectLine(String projectPath, String gitLink, 
+			Integer moduleCount, Long loc, Integer CC,
 			Integer classCount, Double parseRatio) {
 		Double parsePercentage = parseRatio * 100;
 
@@ -212,6 +246,7 @@ public class LanzaMarinescuStatsCsvCreator extends CsvCreator {
 		line.add(gitLink);
 		line.add(String.valueOf(moduleCount));
 		line.add(String.valueOf(loc));
+		line.add(String.valueOf(CC));
 		line.add(String.valueOf(classCount));
 		line.add(String.valueOf(parsePercentage.intValue()));
 		return line;
@@ -224,6 +259,7 @@ public class LanzaMarinescuStatsCsvCreator extends CsvCreator {
 		line.add(module.getFilePath());
 		line.add(module.hasError() ? "0" : "1");
 		line.add(String.valueOf(module.getLoc()));
+		//line.add(String.valueOf(module.getCC()));
 		line.add(String.valueOf(module.getDefinedClassesInclSubclassesSet().size()));
 		return line;
 	}
@@ -239,6 +275,7 @@ public class LanzaMarinescuStatsCsvCreator extends CsvCreator {
 		line.add(String.valueOf(cls.getDefinedSubroutinesSet().stream().filter(Subroutine::isAccessor).count()));
 		line.add(String.valueOf(cls.getLcom()));
 		line.add(String.valueOf(cls.getLoc()));
+		line.add(String.valueOf(cls.getCC()));
 		line.add(String.valueOf(cls.superclassCount()));
 		line.add(String.valueOf(cls.subroutinesWithNoParamsCount()));
 		line.add(String.valueOf(cls.getReferencedGlobalsSet().size()));
