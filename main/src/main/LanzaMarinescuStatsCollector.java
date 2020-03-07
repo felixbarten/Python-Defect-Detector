@@ -43,6 +43,8 @@ public class LanzaMarinescuStatsCollector {
 		statsCsvCreator.createStatsCsv();
 		statsCsvCreator.close();
 		System.out.println("Finished Stats Collection.");
+		out.close();
+		err.close();
 	}
 
 	private static void handleException(Exception ex) {
