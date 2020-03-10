@@ -38,6 +38,8 @@ public class Main {
 	private static GitLocationProcessor gitLocs;
 
 	private static final String CSV_NAME = "RESULTS";
+	private static final String CSV_NAME_SUMMARY = "RESULTS_SUMMARY";
+
 	private static final String PREFIX = "[MAIN] ";
 	private static boolean debugging = true;
 	private static boolean useDateDirs = false;
@@ -157,6 +159,7 @@ public class Main {
 
 		CsvCreator csvCreator = new CsvCreator(config.getProperty("locations.data.results"));
 		csvCreator.createStream(CSV_NAME, "Project", "Url", "Location", "Defect");
+
 		register.finish(gitLocs, csvCreator);
 		String endTime = printExecutionTime(startTime);
 		printMain("Finished program in : " + endTime);

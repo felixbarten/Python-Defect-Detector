@@ -157,6 +157,21 @@ public class LanzaMarinescuStatsCsvCreator extends CsvCreator {
 				if (!module.hasError()) {
 					correctlyParsed++;
 				}
+				int moduleLOC = module.getLoc();
+				AtomicInteger adjustedLOC = new AtomicInteger(0);
+				module.getDefinedClassesInclSubclassesSet().stream().forEach((f) -> {
+					adjustedLOC.addAndGet(f.getLoc());
+				});
+				module.getDefinedSubroutinesSet().stream().forEach((s) -> {
+					adjustedLOC.addAndGet(s.getLoc());
+				});
+				
+				if(moduleLOC != adjustedLOC.intValue()) {
+					// 
+					System.out.println("LOC values diverge");
+				}
+				
+				
 				totalLOC += module.getLoc();
 				totalNOM += module.getDefinedSubroutinesSet().size();
 				

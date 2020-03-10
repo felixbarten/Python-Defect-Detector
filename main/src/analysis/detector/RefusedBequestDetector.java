@@ -57,7 +57,10 @@ public class RefusedBequestDetector extends Detector {
 	
 	private static final String CLASS_DEF_METHODS = "CLASS_DEF_METHODS";		
 	private static final String CLASS_METHODS = "CLASS_METHODS";	
+	// class > num of protected members
 	private static final String CLASS_PROTECTED_FIELDS = "CLASS_PROTECTED_FIELDS";	
+	private static final String CLASS_PROTECTED_FIELDS_NAMES = "CLASS_PROTECTED_FIELDS_NAMES";
+
 	private static final String CLASS_FIELDNAMES = "CLASS_FIELDNAMES";
 	private static final String CLASS_REF_METHOD_NAMES = "CLASS_REF_METHOD_NAMES";
 	private static final String CLASS_REF_CLS_NAMES = "CLASS_REF_CLS_NAMES";
@@ -68,7 +71,16 @@ public class RefusedBequestDetector extends Detector {
 	
 	private int memberThreshold = 0;
 	private int overrideThreshold = 0;
+	
+	private double lanzaAMWAVG = 0;
+	private double lanzaWMCAVG = 0; 
+	private double lanzaNOMAVG = 0;
+	private double lanzaLOCAVG = 0;
+	// one third
+	private final double A_THIRD = 0.33;
+	
 	private boolean verbose = false;
+	private boolean useLanzaMetrics = true;
 
 	public RefusedBequestDetector() throws IOException {
 		super();
@@ -83,11 +95,26 @@ public class RefusedBequestDetector extends Detector {
 					&& config.getProperty("detectors.rb.verbose").equalsIgnoreCase("true")) {
 				this.verbose = true;
 			}
+			
+			if(config.containsKey("detectors.rb.lanzaMarinescu") && config.getProperty("detectors.rb.lanzaMarinescu").equalsIgnoreCase("true") ) {
+				useLanzaMetrics = true;
+				fetchAverages(config);
+			} else { 
+				useLanzaMetrics = false;
+			}
 		} catch(NumberFormatException e) {
 			setDefaultThresholds();
 		}
 		if(memberThreshold == 0 || overrideThreshold == 0) setDefaultThresholds();
 		System.out.println("[RB] Initialized Detector with thresholds: " + this.memberThreshold + " and " + this.overrideThreshold);
+	}
+
+	private void fetchAverages(Properties config) {
+		lanzaAMWAVG = Double.parseDouble(config.getProperty("detectors.rb.lanzaMarinescu.amw"));
+		lanzaWMCAVG = Double.parseDouble(config.getProperty("detectors.rb.lanzaMarinescu.wmc"));
+		lanzaNOMAVG = Double.parseDouble(config.getProperty("detectors.rb.lanzaMarinescu.nom"));
+		lanzaLOCAVG = Double.parseDouble(config.getProperty("detectors.rb.lanzaMarinescu.loc"));
+
 	}
 
 	@Override
@@ -103,6 +130,8 @@ public class RefusedBequestDetector extends Detector {
 		global.addDataStore(CLASS_REF_VAR_COUNT, new PrimitiveIntMap(this.getDataStoreFilePath(CLASS_REF_VAR_COUNT)));
 		global.addDataStore(CLASS_PARENTS, new SetStrMap(this.getDataStoreFilePath(CLASS_PARENTS)));
 		global.addDataStore(CLASS_PROTECTED_FIELDS, new PrimitiveIntMap(this.getDataStoreFilePath(CLASS_PROTECTED_FIELDS)));
+		global.addDataStore(CLASS_PROTECTED_FIELDS_NAMES, new SetStrMap(this.getDataStoreFilePath(CLASS_PROTECTED_FIELDS_NAMES)));
+
 		global.addDataStore(CLASS_AVG_CC, new PrimitiveFloatMap(this.getDataStoreFilePath(CLASS_AVG_CC)));
 		global.addDataStore(CLASS_AMW, new PrimitiveFloatMap(this.getDataStoreFilePath(CLASS_AMW)));
 		global.addDataStore(CLASS_WMC, new PrimitiveIntMap(this.getDataStoreFilePath(CLASS_WMC)));
@@ -131,15 +160,12 @@ public class RefusedBequestDetector extends Detector {
 
 	@Override
 	protected Boolean confirmDefect(String fullPath, String projectPath) {		
-		// debugging 
-		boolean bequest = cls_ignores_bequest(fullPath);
-		boolean complex = clsComplex(fullPath, projectPath);
+		boolean defective = clsComplex(fullPath, projectPath) && cls_ignores_bequest(fullPath);
 
-		if (bequest && complex && verbose) {
+		if (defective && verbose) {
 			debug.debug("[RB] Class with path: " + fullPath + " has Refused (Parent) Bequest.");
 		}
-		
-		return complex && bequest;
+		return defective;
 	}
 
 	@Override
@@ -150,7 +176,7 @@ public class RefusedBequestDetector extends Detector {
 	private boolean cls_ignores_bequest(String path) {
 		boolean prot = fewProtectedMembers(path);
 		boolean refused = refusedBequest(path);
-		boolean overrides = overridesMethods(path);
+		boolean overrides = childHasFewOverrides(path);
 		// ^ debugging
 		return (prot && refused) || overrides;
 	}
@@ -158,6 +184,9 @@ public class RefusedBequestDetector extends Detector {
 	
 	/**
 	 * NProtM > FEW
+	 * 
+	 * NProtM = number of protected members
+	 * 
 	 * @param cls
 	 * @return
 	 */
@@ -165,21 +194,23 @@ public class RefusedBequestDetector extends Detector {
 		/* 
 		 * this one is weird in Python as a class can have more than one parent. 
 		 * So the threshold may need to be higher than in Java. 
+		 * 
+		 * While Python does support protected members it does not support protected methods. 
 		 */
 		//Integer memberCount = cls.getProtectedParentVars().getAsSet().size();
-		Integer parentMember = 0;
+		Integer NProtM = 0;
 		Set<String> classParents = global.getStrSetMap(CLASS_PARENTS).get(path);
 		
 		if(classParents != null) {
 			for (String parent : classParents) {
 				Integer temp = (Integer) global.getPrimitiveIntMapStore(CLASS_PROTECTED_FIELDS).get(parent);	
 				if (temp != null) {
-					parentMember += temp;	
+					NProtM += temp;	
 				}
 			}
 		}
 		
-		boolean condition = parentMember > memberThreshold;
+		boolean condition = NProtM > memberThreshold;
 		
 		return condition;
 	}
@@ -187,87 +218,65 @@ public class RefusedBequestDetector extends Detector {
 	
 	/**
 	 * BUR < A THIRD
+	 * Base Usage Ratio(BUR) = inheritance members used from parent / parent inheritance members provided
+	 * inheritance member = protected member
 	 * @param cls
 	 * @return
 	 */
-	private boolean refusedBequest(String path) {
-		// TODO Comment needs to be verified. 
-		
-		// roadblock. Needs additional information from the AST about method calls. which is not currently available. 
-		// collect call data 
-		// check if parent data is called. 
-		int parentMemberCount = 0;
-		
-		int count = 0; 
-		int methodsCount = 0;
-		float ratio = 0.33f;
-		
-		//Integer classRefs = (Integer) global.getPrimitiveIntMapStore(CLASS_REF_CLS_COUNT).get(path);
-		//Integer varRefs = (Integer) global.getPrimitiveIntMapStore(CLASS_REF_VAR_COUNT).get(path);
+	private boolean refusedBequest(String path) {		
+		int membersUsed = 0; 
 		
 		Set<String> parents = global.getStrSetMap(CLASS_PARENTS).get(path);
 		List<String> parentVars = new ArrayList<>();
-		Set<String> parentMethods = new HashSet<>();
+		Integer parentProtMemberCount = 0;
 		if (parents != null) {
 			for (String parent : parents) {
-				Set<String> fieldnames =  global.getStrSetMap(CLASS_FIELDNAMES).get(parent);
-				if (fieldnames != null) {
-					parentVars.addAll(fieldnames);
+				Integer parentProtMembers = (Integer) global.getPrimitiveIntMapStore(CLASS_PROTECTED_FIELDS).get(parent);
+				if(parentProtMembers != null) {
+					parentProtMemberCount += parentProtMembers;
 				}
-				Set<String> definedMethods = global.getStrSetMap(CLASS_DEF_METHODS).get(parent);
-				if (definedMethods != null) {
-					parentMethods.addAll(definedMethods);
+				Set<String> protMemberNames = global.getStrSetMap(CLASS_PROTECTED_FIELDS_NAMES).get(parent);
+				if(protMemberNames != null) {
+					parentVars.addAll(protMemberNames);
 				}
 			}
 		}
 		
-		Set<String> calledMethods = global.getStrSetMap(CLASS_REF_METHOD_NAMES).get(path);
-		Set<String> referencedVars = global.getStrSetMap(CLASS_REF_VAR_NAMES).get(path);
-		
-		// methodsCount is never incremented. In the rascal version it was possible to track method invocations of the parent.
-		if (calledMethods != null) {
-			for(String method : calledMethods) {
-				if (parentMethods.contains(method)) {
-					methodsCount++;
-				}
-			}
-		}
+		Set<String> referencedVars = global.getStrSetMap(CLASS_REF_VAR_NAMES).get(path); // if null class has no ref var names. 
 		
 		if(referencedVars != null) {
 			for(String var : referencedVars) {
 				if (parentVars.contains(var)) {
-					count++;
+					membersUsed++;
 				}
 			}
-		}
-		parentMemberCount = parentVars.size() + parentMethods.size();
-						
-		return ((count + methodsCount) / checkIfZero(parentMemberCount)) < ratio;
-	}
-	
-	private int checkIfZero(int n) {
-		return n == 0 ? 1 : n;
+		}		
+		double BUR = membersUsed / checkIfZero(parentVars.size());
+		return BUR < A_THIRD;
 	}
 
-	
 	/**
 	 * "Overriding methods are rare in child" 
 	 * This implementation checks all parent classes for methods, adds them to a set of method names and then compares the methods in the parent with the methods in the child.
 	 * If the sets intersect there are overrides present in the child class. 
 	 * BOvR < A THIRD
 	 * 
+	 * BOvR = overriding methods / NOM 
+	 * 
 	 * In Python an override is assumed if the deriving class has a method of the same name. 
 	 * Therefore if we compare the set of subroutines in the parent with the set of subroutines in the child an intersection would show the overrides. 
 	 * @return boolean whether it has more or fewer overriding methods than the threshold. 
 	 */
-	private boolean overridesMethods(String path) {	
+	private boolean childHasFewOverrides(String path) {	
 		/*
 			Step 1: get parents 
 			Step 2: foreach parent lookup set of subroutine names 
 			Step 3: add all to a set
 			Step 4: compare set to current class set of subroutines. 
+				Overlapping subroutines are overrides of the parent.
 		*/
 		
+		Integer NOM = (Integer) global.getPrimitiveIntMapStore(CLASS_METHODS).get(path);
 		Set<String> parentSubRoutines = new HashSet<>();
 		Set<String> superClasses = global.getStrSetMap(CLASS_PARENTS).get(path);
 		if(superClasses != null) {
@@ -285,9 +294,10 @@ public class RefusedBequestDetector extends Detector {
 		}
 		intersection.retainAll(parentSubRoutines);
 		// Debugging marker.
-		boolean condition = intersection.size() > overrideThreshold;
+		//boolean condition = intersection.size() > overrideThreshold;
 		
-		return condition;
+		double BOvR = intersection.size() / checkIfZero(NOM);
+		return BOvR < A_THIRD;
 	}
 
 	/**
@@ -297,23 +307,23 @@ public class RefusedBequestDetector extends Detector {
 	 * @return
 	 */
 	private boolean clsComplex(String path, String projectPath) {
-		boolean funcComplexityAbvAvg = funcComplexityAboveAvg(path, projectPath);
-		boolean clsCCAboveAvg = clsCCAboveAvg(path, projectPath);
-		boolean clsSizeAbvAvg = clsSizeAboveAvg(path, projectPath);
-		// debugging 
-		return (funcComplexityAbvAvg || clsCCAboveAvg ) && clsSizeAbvAvg;
+		return (funcComplexityAboveAvg(path, projectPath) || clsCCAboveAvg(path, projectPath)) && clsSizeAboveAvg(path, projectPath);
 	}
 	
 	/**
-	 * Number of Methods > more than average (of the classes in the project).
+	 * Number of Methods > more than average
 	 * @param cls
 	 * @return
 	 */
 	private boolean clsSizeAboveAvg(String path, String projectPath) {
+		Integer NOM = (Integer) global.getPrimitiveIntMapStore(CLASS_METHODS).get(path);
 		Integer LOC = (Integer) global.getPrimitiveIntMapStore(CLASS_LOC).get(path);
 		Integer clsLOC = (Integer) global.getPrimitiveIntMapStore(CLASS_AVG_LOC).get(projectPath);
+		
 		boolean sizeAboveAvg = false;
-		if(LOC != null && clsLOC != null) {
+		if(useLanzaMetrics) {
+			return NOM > lanzaNOMAVG;
+		} else if(LOC != null && clsLOC != null) {
 			sizeAboveAvg =  LOC >= clsLOC;
 		}
 		return sizeAboveAvg;
@@ -322,7 +332,7 @@ public class RefusedBequestDetector extends Detector {
 	/**
 	 * Calculates the Average Method Weight
 	 * AMW > avg
-	 * WMC / NOM = AMW 
+	 * AMW = WMC / NOM 
 	 * @param cls
 	 * @return
 	 */
@@ -335,9 +345,11 @@ public class RefusedBequestDetector extends Detector {
 		// Check if class contains methods 
 
 		boolean condition = false;
+		AMW = (float)WMC / checkIfZero(NOM);
 		// Really java you're making me check EVERY null?
-		if(WMC != null && NOM != null && projectAvg != null) {
-			AMW = (float)WMC / checkIfZero(NOM);
+		if(useLanzaMetrics && WMC != null && NOM != null) {
+			condition = AMW > lanzaAMWAVG;
+		} else if(WMC != null && NOM != null && projectAvg != null) {
 			condition = AMW > projectAvg;
 		}
 		return condition;
@@ -359,7 +371,9 @@ public class RefusedBequestDetector extends Detector {
 		//debug.debug(cls.getShortName() + " has CC above avg: " + cls.getWMC() + " > " + avgWMC);
 		
 		boolean condition = false;
-		if (WMC != null && avgWMC != null) {
+		if(useLanzaMetrics && WMC != null) {
+			condition = WMC > lanzaWMCAVG;
+		} else if (WMC != null && avgWMC != null) {
 			condition = WMC > avgWMC;
 		}
 		return condition;
@@ -376,8 +390,19 @@ public class RefusedBequestDetector extends Detector {
 	
 	private void setDefaultThresholds() {
 		// set to default values if they can't be fetched from settings 
-		this.overrideThreshold = 3;
-		this.memberThreshold = 3; 
+		this.overrideThreshold = 5;
+		this.memberThreshold = 5;
+	}
+	
+	private int checkIfZero(int n) {
+		return n == 0 ? 1 : n;
+	}
+	
+	private int checkIfZero(Integer n) {
+		if(n == null) {
+			return 1;
+		}
+		return n.intValue() == 0 ? 1 : n.intValue();
 	}
 	
 }

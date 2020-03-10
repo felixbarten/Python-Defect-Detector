@@ -239,6 +239,10 @@ public class Metrics {
 			Set<String> refVars = m.getReferencedVariableNames();
 			globalDataStore.getStrSetMap(Metric.CLASS_REF_VAR_NAMES.toString()).add(m.getFullPath(), refVars);
 
+			Set<String> protMemberSet = m.getProtectedVars().getNames();		
+			globalDataStore.getStrSetMap(Metric.CLASS_PROTECTED_FIELDS_NAMES.toString()).add(m.getFullPath(),
+					protMemberSet);
+			
 			// loop through variables get an actual path that we can use maybe and write to file.
 			// this should save whether the Key class accessed a member of class B.
 			Set<Variable> refVarInstances = m.getReferencedVariablesSet();
@@ -261,6 +265,8 @@ public class Metrics {
 			globalDataStore.getPrimitiveIntMapStore(Metric.CLASS_PROTECTED_FIELDS.toString()).add(m.getFullPath(),
 					m.getProtectedVars().getAsSet().size());
 
+			
+			
 			globalDataStore.getPrimitiveIntMapStore(Metric.CLASS_WMC.toString()).add(m.getFullPath(), Math.round(m.getWMC()));
 			globalDataStore.getPrimitiveFloatMapStore(Metric.CLASS_AMW.toString()).add(m.getFullPath(), amw);
 			globalDataStore.getPrimitiveIntMapStore(Metric.CLASS_LOC.toString()).add(m.getFullPath(), m.getLoc());

@@ -61,11 +61,6 @@ public class Register {
 		
 		project.getModules().forEach(m -> this.check(project.getPath(), m, processed));
 		this.metrics.getProjectData(project); //write metric data for one project. 
-		
-		if(!processed) {
-			// performance hog.
-			//project.unlink();
-		}
 	}
 
 	/**
